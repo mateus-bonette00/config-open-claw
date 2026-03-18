@@ -1,0 +1,3712 @@
+{
+  "sessionStart": "2026-03-13T02:21:45.890Z",
+  "htmlFile": "/home/mateus/Documentos/Projetos/config-open-claw/Produtos_Mateus_22_02_2026_141622.html",
+  "totalProducts": 409,
+  "mode": "dry-run",
+  "inputMetrics": {
+    "totalRows": 502,
+    "includedProducts": 409,
+    "skippedRows": 93,
+    "warningRows": 89,
+    "skipCounts": {
+      "nome-indica-pagina-ou-colecao": 26,
+      "url-fornecedor-duplicada": 50,
+      "url-de-listagem-detectada": 17
+    },
+    "warningCounts": {
+      "upc-invalido-ou-ausente": 89
+    },
+    "deduplicatedBySupplierUrl": 50,
+    "skippedListingUrls": 17,
+    "skippedByInvalidSupplierUrl": 0,
+    "invalidOrMissingUpc": 89,
+    "uniqueSupplierUrls": 409,
+    "duplicateNameDifferentUrl": 6,
+    "listingUrlsKept": 0
+  },
+  "productResults": {
+    "2": {
+      "status": "needs_review",
+      "name": "RIDGID 19366 758 Loop for 141/161 Receding Geared Threaders",
+      "upc": "095691193667",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-19366-758-loop-for-141-161-receding-geared-threaders",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.893Z"
+    },
+    "3": {
+      "status": "needs_review",
+      "name": "RIDGID 31055 8\" End Pipe Wrench - Model E-8",
+      "upc": "095691310552",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31055-8-end-pipe-wrench-model-e-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.894Z"
+    },
+    "4": {
+      "status": "needs_review",
+      "name": "Ridgid 71858 Head, Penetrating Tip K9-306",
+      "upc": "8447502680373",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-71858-head-penetrating-tip-k9-306",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.894Z"
+    },
+    "5": {
+      "status": "needs_review",
+      "name": "Ridgid A-6583 5/8\" Female Coupling for Drain Cleaning Cable",
+      "upc": "095691928108",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92810-5-8-female-coupling",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.895Z"
+    },
+    "6": {
+      "status": "needs_review",
+      "name": "RIDGID 92815 2\" Replacement Blade for T-411 Double Cutter",
+      "upc": "095691928153",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92815-2-replacement-blade-for-t-411-double-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.896Z"
+    },
+    "8": {
+      "status": "needs_review",
+      "name": "RIDGID 27023 One Stop Wrench",
+      "upc": "095691270238",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-27023-one-stop-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.897Z"
+    },
+    "9": {
+      "status": "needs_review",
+      "name": "RIDGID 31075 18\" End Pipe Wrench - Model E-18",
+      "upc": "095691310750",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31075-18-end-pipe-wrench-model-e-18",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.897Z"
+    },
+    "10": {
+      "status": "needs_review",
+      "name": "RIDGID 31410 5/16\" No Hub Torque Wrench 60in. LBS. Model 902",
+      "upc": "095691314109",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31410-torque-wrench-for-no-hub-cast-iron-soil-pipe-couplings-model-902",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.898Z"
+    },
+    "11": {
+      "status": "needs_review",
+      "name": "Ridgid 31605 Hook Jaw for #10 Heavy-Duty and Aluminum Wrenches",
+      "upc": "095691316059",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31605-e579-10-hook-jaw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.899Z"
+    },
+    "12": {
+      "status": "needs_review",
+      "name": "RIDGID 31990 1/2\" Replacement Strap for RIDGID Strap Wrench",
+      "upc": "095691319906",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31990-1-2-replacement-strap-for-ridgid-strap-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.899Z"
+    },
+    "13": {
+      "status": "needs_review",
+      "name": "RIDGID 32078 Quick Acting CSST Tube Cutter, 3/8\" - 1\"",
+      "upc": "095691320780",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32078-151-quick-acting-csst-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.900Z"
+    },
+    "14": {
+      "status": "needs_review",
+      "name": "RIDGID 33180 E5299 Plastic Tube Cutter Replacement Wheel",
+      "upc": "095691331809",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33180-e5299-wheel-f-plastic",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.901Z"
+    },
+    "15": {
+      "status": "needs_review",
+      "name": "RIDGID 33210 E702 134 Cutter Wheel for Plastic",
+      "upc": "095691332103",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33210-e702-134-wheel-f-plastic",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.902Z"
+    },
+    "16": {
+      "status": "needs_review",
+      "name": "RIDGID 34780 Model 2 - A HD Pipe Cutter Wheel Pin w/clip (Pack of 5) R",
+      "upc": "095691347800",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-34780-f9-pin-clip-per-pin",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.903Z"
+    },
+    "17": {
+      "status": "needs_review",
+      "name": "RIDGID 37880 1\" 12R NPT High Speed Threading Dies",
+      "upc": "095691378804",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37880-1-12r-npt-high-speed-threading-dies",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.903Z"
+    },
+    "18": {
+      "status": "needs_review",
+      "name": "Ridgid 44495 Oil Spout Assembly For Use With Model 535 Pipe and Bolt T",
+      "upc": "095691444950",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44495-oil-spout",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.904Z"
+    },
+    "19": {
+      "status": "needs_review",
+      "name": "Ridgid 51317 5/8\" x 10' Heavy-Duty Wind Sectional Cable",
+      "upc": "095691513175",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-51317-cable-c9",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.905Z"
+    },
+    "20": {
+      "status": "needs_review",
+      "name": "RIDGID 59205 Left Hand Drain Cleaning Mitt",
+      "upc": "095691592057",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59205-glove-left-hand-a1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.906Z"
+    },
+    "21": {
+      "status": "needs_review",
+      "name": "RIDGID 62855 T-102 Funnel Auger",
+      "upc": "095691628558",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62855-t-102-funnel-auger",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.906Z"
+    },
+    "22": {
+      "status": "needs_review",
+      "name": "RIDGID 62875 T-106 3-1/2\" Grease Cutter for 1/2\" Inner Core Drain Cabl",
+      "upc": "095691628756",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62875-t-106-3-1-2-grease-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.907Z"
+    },
+    "23": {
+      "status": "needs_review",
+      "name": "RIDGID 62915 T-109 Spiral Cutter 1-3/4 Fits 7/8\" Sectional Cable",
+      "upc": "095691629159",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62915-cutter-t109-spiral-1-3-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.908Z"
+    },
+    "24": {
+      "status": "needs_review",
+      "name": "RIDGID 70830 Low Odor Anti-Misting Dark Thread Cutting Oil, 1 Gallon",
+      "upc": "095691708304",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-70830-dark-threading-oil-1-gallon",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.909Z"
+    },
+    "25": {
+      "status": "needs_review",
+      "name": "Ridgid 74993 Auger Bag",
+      "upc": "9859089891637",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-74993-auger-bag",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.909Z"
+    },
+    "26": {
+      "status": "needs_review",
+      "name": "RIDGID 92530 T-416 6\" Double Cutter for 5/8\" and 3/4\" Drain Cables",
+      "upc": "095691925305",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92530-t-416-6-double-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.910Z"
+    },
+    "27": {
+      "status": "needs_review",
+      "name": "Ridgid 15383 HANDLE, 418",
+      "upc": "9859087728949",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-15383-handle-418",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.911Z"
+    },
+    "28": {
+      "status": "needs_review",
+      "name": "Ridgid 64898 Steel Wheel Bearing for Tubing Cutter Machine PTC-400",
+      "upc": "8675645653301",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64898-steel-wheel-bearing-for-tubing-cutter-machine-ptc-400",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.912Z"
+    },
+    "30": {
+      "status": "needs_review",
+      "name": "Reed RCS8-36 Rotary Cutter Wheel - Steel, Stainless Steel (03530)",
+      "upc": "8590299201845",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-rcs8-36-rotary-cutter-wheel-steel-stainless-steel-03530",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.912Z"
+    },
+    "31": {
+      "status": "needs_review",
+      "name": "RIDGID 23493 PC-1375 Plastic Pipe & Tubing Cutter",
+      "upc": "095691234933",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-23493-pc-1375-plastic-pipe-tubing-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.913Z"
+    },
+    "32": {
+      "status": "needs_review",
+      "name": "RIDGID 31705 Pipe Wrench Replacement Coil & Flat Spring for 4A501 Wren",
+      "upc": "6966510190639",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31705-pipe-wrench-replacement-coil-flat-spring-for-4a501-wrench-24",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.914Z"
+    },
+    "33": {
+      "status": "needs_review",
+      "name": "RIDGID 46520 E-660 Throw Out Lever for 811A Die Head",
+      "upc": "530968018977",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46520-e-660-throw-out-lever",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.914Z"
+    },
+    "34": {
+      "status": "needs_review",
+      "name": "RIDGID 59917 T-121 Repair End for 1/2\" Drain Cable",
+      "upc": "6550237151279",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59917-t-121-repair-end-for-1-2-drain-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.915Z"
+    },
+    "35": {
+      "status": "needs_review",
+      "name": "RIDGID 62557 repair kit,new style ram for 258",
+      "upc": "095691625571",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62557-repair-kit-new-style-ram-for-258",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.916Z"
+    },
+    "36": {
+      "status": "needs_review",
+      "name": "RIDGID 63210 3-1/2\" T-9 Grease Cutter",
+      "upc": "4802467561519",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63210-3-1-2-t-9-grease-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.916Z"
+    },
+    "37": {
+      "status": "needs_review",
+      "name": "RIDGID 64288 2\" K9-102 Flexshaft Carbide Knocker",
+      "upc": "3930691436567",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64288-k9-102-2-carbide-knocker",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.917Z"
+    },
+    "38": {
+      "status": "needs_review",
+      "name": "Ridgid 65682 Replacement ConeIdler for K-60SP Drain Cleaning Machine",
+      "upc": "4418576285743",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-65682-replacement-coneidler-for-k-60sp-drain-cleaning-machine",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.918Z"
+    },
+    "39": {
+      "status": "needs_review",
+      "name": "RIDGID 65903 1-7/8\" x 10' Professional Grade Vacuum Hose",
+      "upc": "4459313102895",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-65903-1-7-8-x-10-professional-grade-vacuum-hose",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.918Z"
+    },
+    "40": {
+      "status": "needs_review",
+      "name": "RIDGID 66618 3\" FlexShaft Plain Chain Knocker",
+      "upc": "4600913887279",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-66618-3-flexshaft-plain-chain-knocker",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.919Z"
+    },
+    "41": {
+      "status": "needs_review",
+      "name": "Ridgid 71848 Head, Penetrating Ball K9-204",
+      "upc": "8447502450997",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-71848-head-penetrating-ball-k9-204",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.920Z"
+    },
+    "42": {
+      "status": "needs_review",
+      "name": "RIDGID 89435 14\" Heavy-Duty Offset Pipe Wrench",
+      "upc": "095691894359",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-89435-14-heavy-duty-offset-pipe-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.921Z"
+    },
+    "43": {
+      "status": "needs_review",
+      "name": "RIDGID 93642 Drive & Groove Roll Set 2\" - 6\" Sch. 10",
+      "upc": "530972868641",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93642-drive-groove-roll-set-2-6-sch-10",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.921Z"
+    },
+    "44": {
+      "status": "needs_review",
+      "name": "Ridgid 94692 Reamer Blade for Ridgid 122XL Copper Cutting and Prep Mac",
+      "upc": "095691946928",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-94692-reamer-blade",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.922Z"
+    },
+    "45": {
+      "status": "needs_review",
+      "name": "RIDGID 97260 E10649 Replacement Button Switch for 700 115V Power Drive",
+      "upc": "095691972606",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-97260-e10649-700-switch-button",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.923Z"
+    },
+    "46": {
+      "status": "needs_review",
+      "name": "RIDGID 97457 VF6000 HEPA Rated Material, 5-Layer Allergen Filter",
+      "upc": "095691974570",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-97457-vf6000-hepa-rated-filter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.923Z"
+    },
+    "47": {
+      "status": "needs_review",
+      "name": "RIDGID 97787 117 Self Feed Midget Tubing Cutter (3/16\" - 15/16\")",
+      "upc": "095691977878",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-97787-117-self-feed-midget-tubing-cutter-3-16-15-16",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.924Z"
+    },
+    "48": {
+      "status": "needs_review",
+      "name": "RIDGID 98060 T150-2 4\" SharkTooth Cutter Fits 7/8\" Sectional Cable",
+      "upc": "095691980601",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-98060-cutter-t150-2-4-sharktooth",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.925Z"
+    },
+    "49": {
+      "status": "needs_review",
+      "name": "RIDGID 73370 1619F Inside Flat Reading Fiberglass Folding Ruler, 6' SA",
+      "upc": "095691733702",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-73370-6-inside-flat-reading-ruler",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.926Z"
+    },
+    "51": {
+      "status": "needs_review",
+      "name": "RIDGID 31355 2P Strap Wrench for Plastic Pipe",
+      "upc": "095691313553",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31355-2p-strap-wrench-for-plastic-pipe",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.927Z"
+    },
+    "52": {
+      "status": "needs_review",
+      "name": "RIDGID 32020 24\" Replacement Strap for RIDGID Strap Wrench",
+      "upc": "095691320209",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32020-24-replacement-strap-for-ridgid-strap-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.928Z"
+    },
+    "53": {
+      "status": "needs_review",
+      "name": "RIDGID 32920 15 Tubing Cutter (3/16\" - 1-1/8\")",
+      "upc": "095691329202",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32920-15-tubing-cutter-3-16-1-1-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.928Z"
+    },
+    "54": {
+      "status": "needs_review",
+      "name": "RIDGID 32985 104 Midget Tubing Cutter (3/16\" - 15/16\")",
+      "upc": "095691329851",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32985-104-midget-tubing-cutter-3-16-15-16",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.929Z"
+    },
+    "55": {
+      "status": "needs_review",
+      "name": "Ridgid 33145 F367 6S Heavy-Duty Pipe Cutter Replacement Wheel for 3285",
+      "upc": "095691331458",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33145-f367-hd-cutter-wheel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.930Z"
+    },
+    "56": {
+      "status": "needs_review",
+      "name": "RIDGID 34570 E2660U 246 Soil Pipe Cutter Chain Extension Assembly",
+      "upc": "095691345707",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-34570-e2660u-246-chain-extension",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.931Z"
+    },
+    "57": {
+      "status": "needs_review",
+      "name": "RIDGID 35830 Pipe Taps: Hand Use Only",
+      "upc": "095691358301",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-35830-tap-1-2-npt-e5115",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.932Z"
+    },
+    "58": {
+      "status": "needs_review",
+      "name": "RIDGID 35835 Model E-5116 3/4 Pipe Tap-NPT Pipe Taps: Hand Use Only",
+      "upc": "095691358356",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-35835-tap-3-4-npt-e5116",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.932Z"
+    },
+    "59": {
+      "status": "needs_review",
+      "name": "RIDGID 35840 1\" NPT E5117 Pipe Tap",
+      "upc": "095691358400",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-35840-tap-1-npt-e5117",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.933Z"
+    },
+    "60": {
+      "status": "needs_review",
+      "name": "RIDGID 41320 E-45 1/2\" Hammer-Type Flaring Tool",
+      "upc": "095691413208",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41320-e-45-1-2-hammer-type-flaring-tool",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.934Z"
+    },
+    "61": {
+      "status": "needs_review",
+      "name": "RIDGID 44235 Screw, Lock With Pin",
+      "upc": "095691442352",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44235-screw-lock-w-pin",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.935Z"
+    },
+    "62": {
+      "status": "needs_review",
+      "name": "RIDGID 44852 1/4\", 5/16\", 3/8\" 456 Tri-Bender",
+      "upc": "095691448521",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44852-456-tri-bender",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.936Z"
+    },
+    "63": {
+      "status": "needs_review",
+      "name": "RIDGID 46500 E631 Set of Rear Centering Jaw",
+      "upc": "095691465009",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46500-e631-centering-jaw-set",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.936Z"
+    },
+    "64": {
+      "status": "needs_review",
+      "name": "RIDGID 51752 T-122 Repair End, 3/8\" (10 mm)",
+      "upc": "095691517524",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-51752-3-8-repair-end",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.937Z"
+    },
+    "65": {
+      "status": "needs_review",
+      "name": "RIDGID 59295 Right Hand Drain Cleaning Mitt",
+      "upc": "095691592958",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59295-glove-right-hand-a2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.938Z"
+    },
+    "66": {
+      "status": "needs_review",
+      "name": "RIDGID 62067 T-201A Straight Flex Auger Use with 5/8\" Drain Cleaning C",
+      "upc": "095691620675",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62067-t-201a-straight-flex-auger",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.939Z"
+    },
+    "67": {
+      "status": "needs_review",
+      "name": "Ridgid 63000 T-203 7/8\" O.D. Bulb Auger",
+      "upc": "095691630001",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63000-t203-7-8-bulb-auger",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.940Z"
+    },
+    "68": {
+      "status": "needs_review",
+      "name": "Ridgid 63075 3\" T-22 Drain Clean Tools Spiral Cutter",
+      "upc": "095691630759",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63075-cutter-t22-spiral-3",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.940Z"
+    },
+    "69": {
+      "status": "needs_review",
+      "name": "RIDGID 63200 Model T-7 Hook Auger",
+      "upc": "095691632005",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63200-auger-t7-hook",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.941Z"
+    },
+    "70": {
+      "status": "needs_review",
+      "name": "RIDGID 26803 Replacement Blade for PC-1250 Single Stroke Plastic Pipe",
+      "upc": "095691268037",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-26803-blade-pc-1250-replacement",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.942Z"
+    },
+    "71": {
+      "status": "needs_review",
+      "name": "RIDGID 27642 Straight Retrieving Auger for 1/2\" Inner Core Drain Cable",
+      "upc": "095691276421",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-27642-auger-t125-retrieving",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.943Z"
+    },
+    "72": {
+      "status": "needs_review",
+      "name": "Ridgid 78103 K-46 Cordless SinkSnake Inner Drum",
+      "upc": "9967161409845",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-78103-k-46-cordless-sinksnake-inner-drum",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.944Z"
+    },
+    "74": {
+      "status": "needs_review",
+      "name": "Ridgid 12543 NaviTrack Marker Chips and Clip",
+      "upc": "9849721946421",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-12543-navitrack-marker-chips-and-clip",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.945Z"
+    },
+    "75": {
+      "status": "needs_review",
+      "name": "RIDGID 31730 Pipe Wrench Replacement Coil & Flat Spring Assembly for 4",
+      "upc": "9849727680821",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31730-pipe-wrench-replacement-coil-flat-spring-assembly-for-4a502-wrench-36",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.946Z"
+    },
+    "76": {
+      "status": "needs_review",
+      "name": "RIDGID 33150 F-367-S Heavy Duty Stainless Steel Pipe Cutter Replacemen",
+      "upc": "8447501074741",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33150-f-367-s-heavy-duty-stainless-steel-pipe-cutter-replacement-wheel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.946Z"
+    },
+    "77": {
+      "status": "needs_review",
+      "name": "RIDGID 37922 Guide Tube",
+      "upc": "8795714027829",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37922-guide-tube",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.947Z"
+    },
+    "78": {
+      "status": "needs_review",
+      "name": "RIDGID 44190 E1032S Cutter Wheel for Stainless Steel",
+      "upc": "095691441904",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44190-e1032s-cutter-wheel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.948Z"
+    },
+    "79": {
+      "status": "needs_review",
+      "name": "Ridgid 46708 85 mm Pipe Guide, 25 mm Camera, Pack of 2",
+      "upc": "9849722339637",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46708-85-mm-pipe-guide-25-mm-camera-pack-of-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.949Z"
+    },
+    "80": {
+      "status": "needs_review",
+      "name": "RIDGID 51050 E-731 3/8\" NPT Pipe Adapter for Model 819 Nipple Chuck, 3",
+      "upc": "8795716354357",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-51050-e-731-3-8-npt-pipe-adapter-for-model-819-nipple-chuck-3-8-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.950Z"
+    },
+    "81": {
+      "status": "needs_review",
+      "name": "RIDGID 60752 3 Pieces of Bearings",
+      "upc": "9849721782581",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-60752-3-pieces-of-bearings",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.951Z"
+    },
+    "82": {
+      "status": "needs_review",
+      "name": "RIDGID 63105 T-3 Standard 2-1/2\" Steel Funnel Auger with 1-1/4\" Connec",
+      "upc": "8057931039029",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63105-t-3-standard-2-1-2-steel-funnel-auger-with-1-1-4-connection-size",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.952Z"
+    },
+    "83": {
+      "status": "needs_review",
+      "name": "RIDGID 64338 Flexshaft 8 Oz Lubricant",
+      "upc": "9046679814453",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64338-flexshaft-8-oz-lubricant",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.952Z"
+    },
+    "84": {
+      "status": "needs_review",
+      "name": "RIDGID 64712 KJ-1350 H22 Water Jetter Penetrating Nozzle Female, NPT 1",
+      "upc": "8681559032117",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64712-kj-1350-h22-water-jetter-penetrating-nozzle-female-npt-1-8-thread",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.954Z"
+    },
+    "85": {
+      "status": "needs_review",
+      "name": "RIDGID 64792 H72 Water Jetter Penetrating Nozzle Female, NPT 1/4\" Thre",
+      "upc": "8795724939573",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64792-h72-water-jetter-penetrating-nozzle-female-npt-1-4-thread",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.954Z"
+    },
+    "86": {
+      "status": "needs_review",
+      "name": "Ridgid 71847 ARM, ASM CABLE TORQUE",
+      "upc": "9859089203509",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-71847-arm-asm-cable-torque",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.955Z"
+    },
+    "87": {
+      "status": "needs_review",
+      "name": "RIDGID 81280 Model 1602, 2m Metric Ruler",
+      "upc": "8681558573365",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-81280-model-1602-2m-metric-ruler",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.956Z"
+    },
+    "88": {
+      "status": "needs_review",
+      "name": "Ridgid 87687 SCREW, ADJUSTMENT",
+      "upc": "9859088580917",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-87687-screw-adjustment",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.957Z"
+    },
+    "89": {
+      "status": "needs_review",
+      "name": "Ridgid 93657 Washer, Load Thrust",
+      "upc": "8447499600181",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93657-washer-load-thrust",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.958Z"
+    },
+    "90": {
+      "status": "needs_review",
+      "name": "Ridgid Tool Company 62953 2 1/2\" Locking Nozzle, Car (LA2503)",
+      "upc": "8447501369653",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-tool-company-62953-2-1-2-locking-nozzle-car-la2503",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.959Z"
+    },
+    "92": {
+      "status": "needs_review",
+      "name": "RIDGID 26578 VT2540 Wet/Dry Vacuum Claw Nozzle",
+      "upc": "4770114404399",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-26578-vt2540-wet-dry-vacuum-claw-nozzle",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.961Z"
+    },
+    "93": {
+      "status": "needs_review",
+      "name": "Ridgid 27007 Hose, Inlet 36\" Long 1224",
+      "upc": "7114276012079",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-27007-hose-inlet-36-long-1224",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.962Z"
+    },
+    "94": {
+      "status": "needs_review",
+      "name": "RIDGID 32412 Centering Jaws Set for 1224 Threading Machine",
+      "upc": "095691324122",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32412-centering-jaws-for-1224",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.963Z"
+    },
+    "95": {
+      "status": "needs_review",
+      "name": "RIDGID 32505 D29 Aluminum Offset Pipe Wrench,18\"",
+      "upc": "530969067553",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32505-d29-18-offset-hook-jaw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.964Z"
+    },
+    "96": {
+      "status": "needs_review",
+      "name": "RIDGID 35620 Individual Pipe Extractor - 1\" Pipe",
+      "upc": "530970148897",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-35620-individual-pipe-extractor-1-pipe",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.964Z"
+    },
+    "97": {
+      "status": "needs_review",
+      "name": "RIDGID 40073 HF0500 Pre-Filter Wet Dry Vacuum for HF1000",
+      "upc": "6944359350319",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-40073-hf0500-pre-filter-wet-dry-vacuum-for-hf1000",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.965Z"
+    },
+    "98": {
+      "status": "needs_review",
+      "name": "RIDGID 41655 #2 Pump Repair Kit C850-X",
+      "upc": "095691416551",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41655-2-pump-repair-kit-c-850-x",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.966Z"
+    },
+    "99": {
+      "status": "needs_review",
+      "name": "RIDGID 43573 Model 127 Inner-Outer Reamer For Stainless Steel",
+      "upc": "3494062981143",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-43573-model-127-inner-outer-reamer-for-stainless-steel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.967Z"
+    },
+    "100": {
+      "status": "needs_review",
+      "name": "RIDGID 57038 KWIK-SPIN+ Hand Drain Cleaner with AUTOFEED",
+      "upc": "3494500040727",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-57038-kwik-spin-hand-drain-cleaner-with-autofeed",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.969Z"
+    },
+    "101": {
+      "status": "needs_review",
+      "name": "RIDGID 61790 T4 Heavy Duty Funnel Auger for 1 1/4\" Sectional Cable C-1",
+      "upc": "6574824751151",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-61790-t4-heavy-duty-funnel-auger-for-1-1-4-sectional-cable-c-11c-12c-14-and-c-15",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.970Z"
+    },
+    "102": {
+      "status": "needs_review",
+      "name": "RIDGID 62840 T-1 Straight Standard Auger",
+      "upc": "4881186947119",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62840-t-1-straight-standard-auger",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.971Z"
+    },
+    "103": {
+      "status": "needs_review",
+      "name": "RIDGID 62928 2-1/2\" Locking Nozzle, Utility (LA2509)",
+      "upc": "4459313168431",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62928-2-1-2-locking-nozzle-utility-la2509",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.972Z"
+    },
+    "104": {
+      "status": "needs_review",
+      "name": "RIDGID 63085 T-23 4\" Spiral Sawtooth Cutter for Use with Sectional Cab",
+      "upc": "4802467495983",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63085-t-23-4-spiral-sawtooth-cutter-for-use-with-sectional-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.973Z"
+    },
+    "105": {
+      "status": "needs_review",
+      "name": "RIDGID 65898 Vacuum Hose with Cuffs",
+      "upc": "4462311374895",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-65898-vacuum-hose-with-cuffs",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.974Z"
+    },
+    "106": {
+      "status": "needs_review",
+      "name": "RIDGID 74730 E2156 Polyethylene Tube Cutter Replacement Wheel",
+      "upc": "095691747303",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-74730-e2156-wheel-polyethylene",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.975Z"
+    },
+    "107": {
+      "status": "needs_review",
+      "name": "RIDGID 86917 12\" Adjustable Wrench (762)",
+      "upc": "7044742119471",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-86917-12-adjustable-wrench-762",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.976Z"
+    },
+    "108": {
+      "status": "needs_review",
+      "name": "RIDGID 92560 T468 3/4 Flexible Leader",
+      "upc": "3494063046679",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92560-t468-3-4-flexible-leader",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.977Z"
+    },
+    "109": {
+      "status": "needs_review",
+      "name": "Ridgid 98040 4\" Sharktooth Cutter for K-1500, K-1500SP, K-1500G",
+      "upc": "4418576187439",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-98040-4-sharktooth-cutter-for-k-1500-k-1500sp-k-1500g",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.979Z"
+    },
+    "110": {
+      "status": "needs_review",
+      "name": "RIDGID 98045 T-50-3 6\" Sharktooth Cutter Fits 1 1/4\" Sectional Cable",
+      "upc": "6944360726575",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-98045-t-50-3-6-sharktooth-cutter-fits-1-1-4-sectional-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.980Z"
+    },
+    "111": {
+      "status": "needs_review",
+      "name": "RIDGID 24572 Pinion Gear with Set Screw",
+      "upc": "8797750001973",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-24572-pinion-gear-with-set-screw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.981Z"
+    },
+    "112": {
+      "status": "needs_review",
+      "name": "RIDGID 32520 D30 Replacement Hook Jaw for 24\" Offset Wrench.",
+      "upc": "095691325204",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32520-d30-24-offset-hook-jaw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.982Z"
+    },
+    "113": {
+      "status": "needs_review",
+      "name": "RIDGID 33805 E947X 205 Wheel Pin with Clip",
+      "upc": "095691338051",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33805-e947x-205-wheel-pin-w-clip",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.984Z"
+    },
+    "114": {
+      "status": "needs_review",
+      "name": "RIDGID 37870 1/2\" 12R NPT High Speed Threading Dies",
+      "upc": "095691378705",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37870-1-2-12r-npt-high-speed-threading-dies",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.985Z"
+    },
+    "115": {
+      "status": "needs_review",
+      "name": "RIDGID 37885 1-1/4\" 12R NPT High Speed Threading Dies",
+      "upc": "095691378859",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37885-1-1-4-12r-npt-high-speed-threading-dies",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.986Z"
+    },
+    "116": {
+      "status": "needs_review",
+      "name": "RIDGID 39976 Threaded Studs",
+      "upc": "095691399762",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-39976-threaded-studs",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.987Z"
+    },
+    "117": {
+      "status": "needs_review",
+      "name": "RIDGID 41050 E-3171X Tristand Handle and Nut Assembly",
+      "upc": "095691410504",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41050-e-3171-x-handle-nut-assy",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.989Z"
+    },
+    "118": {
+      "status": "needs_review",
+      "name": "RIDGID 41608 PTEC3000 Tailpiece Extension Cutter",
+      "upc": "095691416087",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41608-ptec3000-tailpiece-extension-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.990Z"
+    },
+    "119": {
+      "status": "needs_review",
+      "name": "RIDGID 41937 Leather Work Gloves",
+      "upc": "095691419378",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41937-leather-work-gloves",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.991Z"
+    },
+    "120": {
+      "status": "needs_review",
+      "name": "RIDGID 44725 Retaining Ring Assembly for 300 Power Drive 38 RPM",
+      "upc": "095691447258",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44725-retaining-ring-assy-for-300",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.992Z"
+    },
+    "121": {
+      "status": "needs_review",
+      "name": "RIDGID 46220 E-517 Thumb Screw",
+      "upc": "095691462206",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46220-e-517-thumb-screw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.994Z"
+    },
+    "122": {
+      "status": "needs_review",
+      "name": "RIDGID 59575 Km6B Clutch Handle",
+      "upc": "095691595751",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59575-handle-clutch-km6b",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.994Z"
+    },
+    "123": {
+      "status": "needs_review",
+      "name": "RIDGID 61800 T2 Heavy Duty Straight Auger",
+      "upc": "095691618009",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-61800-auger-t2-hd-straight",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.996Z"
+    },
+    "124": {
+      "status": "needs_review",
+      "name": "RIDGID 62265 C-7 Sectional Cable",
+      "upc": "095691622655",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62265-c-7-sectional-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.998Z"
+    },
+    "125": {
+      "status": "needs_review",
+      "name": "RIDGID 62880 T-107 1-3/4\" Spade Cutter for 1/2\" Inner Core Drain Cable",
+      "upc": "095691628800",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62880-cutter-t107-spade-1-3-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:45.999Z"
+    },
+    "126": {
+      "status": "needs_review",
+      "name": "Ridgid 63030 Model T-210 1\" Spade Grease Cutter",
+      "upc": "095691630308",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63030-t-210-spade-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.000Z"
+    },
+    "127": {
+      "status": "needs_review",
+      "name": "RIDGID 63055 T215 1-3/4\" 4-Blade Cutter for 3/8\" Inner Core & 3/8\" & 1",
+      "upc": "095691630551",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63055-t215-4-blade-cutter-1-3-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.002Z"
+    },
+    "128": {
+      "status": "needs_review",
+      "name": "RIDGID 66737 150-L Constant Swing Cutter (1/4\" - 1-3/8\")",
+      "upc": "095691667373",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-66737-150-l-constant-swing-cutter-1-4-1-3-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.003Z"
+    },
+    "129": {
+      "status": "needs_review",
+      "name": "RIDGID 75567 Heavy Duty Steel Pipe Cutter Wheel",
+      "upc": "095691755674",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-75567-wheel-cutter-f366-steel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.004Z"
+    },
+    "130": {
+      "status": "needs_review",
+      "name": "RIDGID 93617 Pivot Pin",
+      "upc": "095691936172",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93617-pivot-pin",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.005Z"
+    },
+    "131": {
+      "status": "needs_review",
+      "name": "RIDGID 96397 E-1525 Tube Cutter Replacement Wheel",
+      "upc": "095691963970",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-96397-wheel-cutter-ridgid-ss",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.007Z"
+    },
+    "133": {
+      "status": "needs_review",
+      "name": "RIDGID 31070 E-14 Cast Iron End Pipe Wrench, 14\" 2\" Jaw Capacity",
+      "upc": "095691310705",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31070-e-14-14-end-pipe-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.008Z"
+    },
+    "134": {
+      "status": "needs_review",
+      "name": "RIDGID 31680 Pipe Wrench Replacement Coil & Flat Spring for 4A500 Pipe Wrench, 18\"",
+      "upc": "095691316806",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31680-e2676-18-coil-flat-sprg",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.010Z"
+    },
+    "135": {
+      "status": "needs_review",
+      "name": "Ridgid 31760 Replacement Nut for 48\" Straight Pipe Wrench",
+      "upc": "095691317605",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31760-d1336-48-wrench-nut",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.012Z"
+    },
+    "137": {
+      "status": "needs_review",
+      "name": "RIDGID 31010 10\" Straight Pipe Wrench - Model 10",
+      "upc": "095691310101",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31010-10-straight-pipe-wrench-model-10",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.013Z"
+    },
+    "138": {
+      "status": "needs_review",
+      "name": "RIDGID 31660 Pipe Wrench Replacement Coil & Flat Spring, 14\"",
+      "upc": "4689991827503",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31660-pipe-wrench-replacement-coil-flat-spring-14",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.015Z"
+    },
+    "139": {
+      "status": "needs_review",
+      "name": "Ridgid 32490 14 Offset Wrench Hook Jaw Replacement Part",
+      "upc": "10380282888501",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32490-14-offset-wrench-hook-jaw-replacement-part",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.016Z"
+    },
+    "140": {
+      "status": "needs_review",
+      "name": "Ridgid 34318 GUIDE, MICRODRAIN (2PK) BAL",
+      "upc": "9859088908597",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-34318-guide-microdrain-2pk-bal",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.019Z"
+    },
+    "141": {
+      "status": "needs_review",
+      "name": "RIDGID 37860 12-R High Speed Right Hand Pipe Threading Die, 1/4\" NPT",
+      "upc": "9899098865973",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37860-12-r-high-speed-right-hand-pipe-threading-die-1-4-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.020Z"
+    },
+    "142": {
+      "status": "needs_review",
+      "name": "Ridgid 38815 DIEHEAD, ASM 11R 1-1/4",
+      "upc": "9859089498421",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-38815-diehead-asm-11r-1-1-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.021Z"
+    },
+    "143": {
+      "status": "needs_review",
+      "name": "RIDGID 40545 Upper Jaw",
+      "upc": "10057201680693",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-40545-upper-jaw",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.022Z"
+    },
+    "144": {
+      "status": "needs_review",
+      "name": "Ridgid 42580 PKG OF 5 RINGS",
+      "upc": "9859089006901",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-42580-pkg-of-5-rings",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.024Z"
+    },
+    "145": {
+      "status": "needs_review",
+      "name": "Ridgid 45152 RING, RET EXT 1.19DIA 5100-118",
+      "upc": "9859088417077",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45152-ring-ret-ext-1-19dia-5100-118",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.027Z"
+    },
+    "146": {
+      "status": "needs_review",
+      "name": "Ridgid 54208 VF3400 Half Height Dirt Filter",
+      "upc": "10380282855733",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-54208-vf3400-half-height-dirt-filter",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.029Z"
+    },
+    "147": {
+      "status": "needs_review",
+      "name": "Ridgid 66612 Handle Assembly",
+      "upc": "10382021525813",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-66612-handle-assembly",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.030Z"
+    },
+    "148": {
+      "status": "needs_review",
+      "name": "Ridgid 78093 K-46 Cordless SinkSnake Replacement Kickstand",
+      "upc": "10357883633973",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-78093-k-46-cordless-sinksnake-replacement-kickstand",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.032Z"
+    },
+    "149": {
+      "status": "needs_review",
+      "name": "Ridgid 87682 PKG OF 2 SUPPORT BAR",
+      "upc": "9859089695029",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-87682-pkg-of-2-support-bar",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.034Z"
+    },
+    "150": {
+      "status": "needs_review",
+      "name": "Ridgid 87912 PKG OF 2 SPRING",
+      "upc": "9859088613685",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-87912-pkg-of-2-spring",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.035Z"
+    },
+    "151": {
+      "status": "needs_review",
+      "name": "Ridgid 92555 T458 5/8 in Flexible Leader",
+      "upc": "10380282822965",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92555-t458-5-8-in-flexible-leader",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.037Z"
+    },
+    "153": {
+      "status": "needs_review",
+      "name": "Ridgid 31595 Nut, 8 Wrench",
+      "upc": "9849721979189",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31595-nut-8-wrench",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.039Z"
+    },
+    "154": {
+      "status": "needs_review",
+      "name": "RIDGID 31665 Pipe Wrench Replacement Nut, 14\"",
+      "upc": "9849726009653",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31665-pipe-wrench-replacement-nut-14",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.040Z"
+    },
+    "155": {
+      "status": "needs_review",
+      "name": "Ridgid 31785 60\" Pipe Wrench Nut",
+      "upc": "9849722011957",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31785-60-pipe-wrench-nut",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.042Z"
+    },
+    "156": {
+      "status": "needs_review",
+      "name": "RIDGID 32475 E6085 5-Piece Set of Spring Pins",
+      "upc": "9849720471861",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32475-e6085-5-piece-set-of-spring-pins",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.044Z"
+    },
+    "157": {
+      "status": "needs_review",
+      "name": "Ridgid 45132 SHAFT, GROOVE ROLL 916",
+      "upc": "9859087597877",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45132-shaft-groove-roll-916",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.045Z"
+    },
+    "158": {
+      "status": "needs_review",
+      "name": "Ridgid 45265 Set of 3 Screws, for Use with Model 918 Roll Groover, Mod",
+      "upc": "9849721913653",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45265-set-of-3-screws-for-use-with-model-918-roll-groover-model-300-300a-power-drive",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.047Z"
+    },
+    "159": {
+      "status": "needs_review",
+      "name": "Ridgid 45345 RING, THRUST",
+      "upc": "9859087368501",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45345-ring-thrust",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.049Z"
+    },
+    "160": {
+      "status": "needs_review",
+      "name": "Ridgid 46235 Model E-518 312 Handgrip",
+      "upc": "9840779231541",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46235-model-e-518-312-handgrip",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.051Z"
+    },
+    "161": {
+      "status": "needs_review",
+      "name": "Ridgid 47793 36 mm Pipe Guide, 25 mm Camera",
+      "upc": "9849722732853",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-47793-36-mm-pipe-guide-25-mm-camera",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.053Z"
+    },
+    "162": {
+      "status": "needs_review",
+      "name": "RIDGID 51045 E-730 1/4\" NPT Pipe Adapter for Model 819 Nipple Chuck, 1",
+      "upc": "9849720078645",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-51045-e-730-1-4-npt-pipe-adapter-for-model-819-nipple-chuck-1-4-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.054Z"
+    },
+    "163": {
+      "status": "needs_review",
+      "name": "RIDGID 66742 150-LS Enclosed Feed Cutter With H-D wheel",
+      "upc": "9849725714741",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-66742-150-ls-enclosed-feed-cutter-with-h-d-wheel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.056Z"
+    },
+    "164": {
+      "status": "needs_review",
+      "name": "RIDGID 75632 Replacement Seal Oil Pan Liner for Compact 300",
+      "upc": "9849719816501",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-75632-replacement-seal-oil-pan-liner-for-compact-300",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.058Z"
+    },
+    "165": {
+      "status": "needs_review",
+      "name": "Ridgid 75862 Wheel Pin Set (4pk) fits 424 Hinged Pipe Cutter",
+      "upc": "9840779395381",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-75862-wheel-pin-set-4pk-fits-424-hinged-pipe-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.060Z"
+    },
+    "166": {
+      "status": "needs_review",
+      "name": "RIDGID 91557 Plunger Kit",
+      "upc": "9849723486517",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-91557-plunger-kit",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.061Z"
+    },
+    "167": {
+      "status": "needs_review",
+      "name": "Ridgid 93612 Ball Detent 5/16-8",
+      "upc": "9849719882037",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93612-ball-detent-5-16-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.063Z"
+    },
+    "168": {
+      "status": "needs_review",
+      "name": "Ridgid 93777 PKG OF 3 BEARINGS",
+      "upc": "9859088253237",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93777-pkg-of-3-bearings",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.064Z"
+    },
+    "169": {
+      "status": "needs_review",
+      "name": "Ridgid 93782 PKG OF 3 THRUST WASHERS",
+      "upc": "9859090022709",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93782-pkg-of-3-thrust-washers",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.066Z"
+    },
+    "170": {
+      "status": "needs_review",
+      "name": "Ridgid 93812 BEARING, FLANGE BRONZE",
+      "upc": "9859088089397",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93812-bearing-flange-bronze",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.068Z"
+    },
+    "171": {
+      "status": "needs_review",
+      "name": "Ridgid 94817 SHAFT, REAMER",
+      "upc": "9859088384309",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-94817-shaft-reamer",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.070Z"
+    },
+    "172": {
+      "status": "needs_review",
+      "name": "Reed R12DN 1 1/2 R12+ Hss Die - Npt Segments 1 1/2\"",
+      "upc": "8590476640565",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-r12dn-1-1-2-r12-hss-die-npt-segments-1-1-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.072Z"
+    },
+    "173": {
+      "status": "needs_review",
+      "name": "Reed R12DN 1 1/4 R12+ Hss Die - Npt Segments 1 1/4\"",
+      "upc": "8590435483957",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-r12dn-1-1-4-r12-hss-die-npt-segments-1-1-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.074Z"
+    },
+    "174": {
+      "status": "needs_review",
+      "name": "Reed R12DN 1/2 R12+ Hss Die - Npt Segments 1/2\"",
+      "upc": "8590445543733",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-r12dn-1-2-r12-hss-die-npt-segments-1-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.076Z"
+    },
+    "175": {
+      "status": "needs_review",
+      "name": "Reed R12DN 3/4 R12+ Hss Die - Npt Segments 3/4\"",
+      "upc": "8590337966389",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-r12dn-3-4-r12-hss-die-npt-segments-3-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.078Z"
+    },
+    "176": {
+      "status": "needs_review",
+      "name": "Reed RSP1 1-1/4\" Ratchet Shears for PVC, PE, PP, PEX, and ABS Pipe",
+      "upc": "8590486241589",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-rsp1-1-1-4-ratchet-shears-for-pvc-pe-pp-pex-and-abs-pipe",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.079Z"
+    },
+    "177": {
+      "status": "needs_review",
+      "name": "Reed SC125 1.7” Scissor Shear",
+      "upc": "8590482276661",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-sc125-1-7-scissor-shear",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.081Z"
+    },
+    "178": {
+      "status": "needs_review",
+      "name": "Reed TC1.6Q Qck Release Tc For Metal - 1/4\" - 1 5/8\" W/\"O\" Wheel",
+      "upc": "8590451310901",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-tc1-6q-qck-release-tc-for-metal-1-4-1-5-8-w-o-wheel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.092Z"
+    },
+    "179": {
+      "status": "needs_review",
+      "name": "Ridgid 33970 E1189 Cutter Wheel Pin and Clip - 5 Pack",
+      "upc": "9840779100469",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33970-e1189-cutter-wheel-pin-and-clip-5-pack",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.094Z"
+    },
+    "180": {
+      "status": "needs_review",
+      "name": "RIDGID 44565 Armature Ball Bearing fits RIDGID 300, 535 and Armature 44565",
+      "upc": "8795723661621",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44565-armature-ball-bearing-fits-ridgid-300-535-and-armature-44565",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.096Z"
+    },
+    "181": {
+      "status": "needs_review",
+      "name": "Ridgid 45025 Motor Brush Holders - 2 Pack",
+      "upc": "9840777953589",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45025-motor-brush-holders-2-pack",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.098Z"
+    },
+    "182": {
+      "status": "needs_review",
+      "name": "Ridgid 46620 Retaining Ring 1/4-1\" - Pipe Cutters",
+      "upc": "9840777986357",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46620-retaining-ring-1-4-1-pipe-cutters",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.100Z"
+    },
+    "183": {
+      "status": "needs_review",
+      "name": "RIDGID 52368 3/4” Draw Stud – Punch Accessory",
+      "upc": "8795717271861",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-52368-3-4-draw-stud-punch-accessory",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.102Z"
+    },
+    "184": {
+      "status": "needs_review",
+      "name": "RIDGID 64822 H92 Penetrating Nozzle 1/4\" NPT For KJ-3000 Jetter",
+      "upc": "8795713601845",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64822-h92-penetrating-nozzle-1-4-npt-for-kj-3000-jetter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.105Z"
+    },
+    "185": {
+      "status": "needs_review",
+      "name": "Ridgid 73118 K9-204 2\" Flexshaft Single-Chain Knocker, Plain",
+      "upc": "9849725681973",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-73118-k9-204-2-flexshaft-single-chain-knocker-plain",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.107Z"
+    },
+    "186": {
+      "status": "needs_review",
+      "name": "RIDGID 95845 Switch",
+      "upc": "8795723923765",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-95845-switch",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.110Z"
+    },
+    "188": {
+      "status": "needs_review",
+      "name": "Reed 64190 2PK-30-40P 2-Pack Cutter Wheels, 0.343\"",
+      "upc": "8590305067317",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-64190-2pk-30-40p-2-pack-cutter-wheels-0-343",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.112Z"
+    },
+    "189": {
+      "status": "needs_review",
+      "name": "Reed OP2 Cutter Wheel for Tubing Cutters - Plastic",
+      "upc": "8590303428917",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-op2-cutter-wheel-for-tubing-cutters-plastic",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.114Z"
+    },
+    "190": {
+      "status": "needs_review",
+      "name": "Reed R12DN 1 R12+ Hss Die - Npt Segments 1\"",
+      "upc": "8590328430901",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/reed-r12dn-1-r12-hss-die-npt-segments-1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.116Z"
+    },
+    "191": {
+      "status": "needs_review",
+      "name": "RIDGID 33612 Set Of Cover Plates For Electrical & Heating",
+      "upc": "7151524610095",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33612-set-of-cover-plates-for-electrical-heating",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.118Z"
+    },
+    "192": {
+      "status": "needs_review",
+      "name": "RIDGID 37865 12-R High Speed Right Hand Pipe Threading Die, 3/8\" NPT",
+      "upc": "8211402391861",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37865-12-r-high-speed-right-hand-pipe-threading-die-3-8-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.120Z"
+    },
+    "193": {
+      "status": "needs_review",
+      "name": "RIDGID 41235 Support Tray with Screw for 300 Power Drive",
+      "upc": "8252858106165",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41235-support-tray-with-screw-for-300-power-drive",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.122Z"
+    },
+    "194": {
+      "status": "needs_review",
+      "name": "Ridgid 43740 Rear Back Plate fits 300 & 300C Pipe Threading Machine",
+      "upc": "4338448138287",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-43740-rear-back-plate-fits-300-300c-pipe-threading-machine",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.124Z"
+    },
+    "195": {
+      "status": "needs_review",
+      "name": "RIDGID 45505 / 45505R Support Arm for No. 360 Cutter",
+      "upc": "6568124186671",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45505-45505r-support-arm-for-no-360-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.127Z"
+    },
+    "196": {
+      "status": "needs_review",
+      "name": "RIDGID 47065 Replacement Hinge Reamer Arm Pin for the 300 Power Drive",
+      "upc": "4728061460527",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-47065-replacement-hinge-reamer-arm-pin-for-the-300-power-drive",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.128Z"
+    },
+    "197": {
+      "status": "needs_review",
+      "name": "RIDGID 50617 Outlet Jumper Assembly",
+      "upc": "8252858368309",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-50617-outlet-jumper-assembly",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.130Z"
+    },
+    "198": {
+      "status": "needs_review",
+      "name": "Ridgid 59232 Switch, Rocker HC450",
+      "upc": "8447498846517",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59232-switch-rocker-hc450",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.132Z"
+    },
+    "199": {
+      "status": "needs_review",
+      "name": "RIDGID 59330 A22B 5/8\" Drain Cleaner Jaws Set",
+      "upc": "8354022818101",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59330-a22b-5-8-drain-cleaner-jaws-set",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.134Z"
+    },
+    "200": {
+      "status": "needs_review",
+      "name": "RIDGID 59625 T21 Spiral Sawtooth Cutter, 2-1/2",
+      "upc": "6564617093167",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-59625-t21-spiral-sawtooth-cutter-2-1-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.136Z"
+    },
+    "201": {
+      "status": "needs_review",
+      "name": "RIDGID 61970 T-13 2-1/2\" Sawtooth Cutter For Use with Sectional Cable",
+      "upc": "7039437242415",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-61970-t-13-2-1-2-sawtooth-cutter-for-use-with-sectional-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.139Z"
+    },
+    "202": {
+      "status": "needs_review",
+      "name": "RIDGID 64283 K9-102 1.5\" Carbide Knocker",
+      "upc": "4162971172887",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64283-k9-102-1-5-carbide-knocker",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.141Z"
+    },
+    "203": {
+      "status": "needs_review",
+      "name": "RIDGID 70032 PVC Drain Cleaning Work Gloves Set",
+      "upc": "4885619703855",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-70032-pvc-drain-cleaning-work-gloves-set",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.143Z"
+    },
+    "205": {
+      "status": "needs_review",
+      "name": "RIDGID 31743 Vacuum Adapter Kit",
+      "upc": "530969362465",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31743-vacuum-adapter-kit",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.145Z"
+    },
+    "206": {
+      "status": "needs_review",
+      "name": "RIDGID 32808 Endura-Clear Thread Cutting Oil - 1 Gallon",
+      "upc": "095691328083",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32808-endura-clear-thread-cutting-oil-1-gallon",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.147Z"
+    },
+    "207": {
+      "status": "needs_review",
+      "name": "RIDGID 32915 Screw Feed Tubing & Conduit Cutter, #10 w HD WHEEL 1/8\"-1",
+      "upc": "554109599777",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-32915-cutter-10-tubing-w-hd-wh",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.150Z"
+    },
+    "208": {
+      "status": "needs_review",
+      "name": "RIDGID 33200 E1740 Alternate Cutter Wheel for Soft Flexible Plastic",
+      "upc": "095691332004",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-33200-e1740-cutter-wheel-se174",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.153Z"
+    },
+    "209": {
+      "status": "needs_review",
+      "name": "RIDGID 37915 12-R Hi-Speed Stainless R-Hand Pipe Threading Die, 1/2\" N",
+      "upc": "1419222122519",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37915-12-r-hi-speed-stainless-r-hand-pipe-threading-die-1-2-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.155Z"
+    },
+    "210": {
+      "status": "needs_review",
+      "name": "RIDGID 37950 Dies, 12R 1/4 National Straight Mechanical Pipe",
+      "upc": "095691379504",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-37950-dies-12r-1-4-national-straight-mechanical-pipe",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.157Z"
+    },
+    "211": {
+      "status": "needs_review",
+      "name": "RIDGID 41312 Wheel, Cutter F158 Blister Pack",
+      "upc": "530973720609",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41312-wheel-cutter-f158-blister-pack",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.159Z"
+    },
+    "212": {
+      "status": "needs_review",
+      "name": "RIDGID 43400 Lever Arm Assembly",
+      "upc": "095691434005",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-43400-lever-arm-assmbly",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.162Z"
+    },
+    "213": {
+      "status": "needs_review",
+      "name": "RIDGID 44795 Replacement Package of 2 Brush Holder for 700 Power Drive",
+      "upc": "095691447951",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-44795-pkg-of-2-brush-holders",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.164Z"
+    },
+    "214": {
+      "status": "needs_review",
+      "name": "Ridgid 45520 E-3819 Hinge Pin for 360 Cutter",
+      "upc": "530969722913",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-45520-e-3819-360-hinge-pin",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.166Z"
+    },
+    "215": {
+      "status": "needs_review",
+      "name": "RIDGID 46790 Screws, 6 Pack",
+      "upc": "095691467904",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-46790-pkg-of-6-screws",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.168Z"
+    },
+    "216": {
+      "status": "needs_review",
+      "name": "RIDGID 60360 A-2475 Solid Sectional Sewer Rod, 5'",
+      "upc": "1457152622615",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-60360-a-2475-solid-sectional-sewer-rod-5",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.170Z"
+    },
+    "217": {
+      "status": "needs_review",
+      "name": "RIDGID 64323 FlexShaft Knocker, 5/16\" Cable, 2\" Pipe, 2 Chain",
+      "upc": "3930691534871",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-64323-k9-204-2-knocker",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.174Z"
+    },
+    "218": {
+      "status": "needs_review",
+      "name": "RIDGID 68947 K39 Clamp Spring",
+      "upc": "1538161999895",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-68947-k39-clamp-spring",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.178Z"
+    },
+    "219": {
+      "status": "needs_review",
+      "name": "RIDGID 93307 960 Slide Key",
+      "upc": "530970411041",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-93307-key-slide-960",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.180Z"
+    },
+    "220": {
+      "status": "needs_review",
+      "name": "RIDGID 98050 T-150 3\" & 4\" Sharktooth Cutter Fits 7/8\" Sectional Cable",
+      "upc": "1372815163415",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-98050-t-150-3-4-sharktooth-cutter-fits-7-8-sectional-cable",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.182Z"
+    },
+    "222": {
+      "status": "needs_review",
+      "name": "Ridgid 26867 Electrical Lockout Plate",
+      "upc": "095691268679",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-26867-lockout-plate",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.188Z"
+    },
+    "223": {
+      "status": "needs_review",
+      "name": "RIDGID 31170 Basin Wrench with Forged Alloy Steel Jaws and Steel Shank, 10\"",
+      "upc": "095691311702",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31170-10-basin-wrench-model-1010",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.190Z"
+    },
+    "224": {
+      "status": "needs_review",
+      "name": "RIDGID 31180 10\"-17\" Telescoping Basin Wrench - Model 1019",
+      "upc": "095691311801",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31180-10-17-telescoping-basin-wrench-model-1019",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.192Z"
+    },
+    "225": {
+      "status": "needs_review",
+      "name": "RIDGID 31610 Pipe Wrench Replacement Heel Jaw & Pin Assembly, 10\"",
+      "upc": "095691316103",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31610-e4202x-10-heel-jaw-pin",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.195Z"
+    },
+    "226": {
+      "status": "needs_review",
+      "name": "RIDGID 31622 150 Enclosed Feed Tubing Cutter (1/8\" - 1-1/8\")",
+      "upc": "095691316226",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31622-150-enclosed-feed-tubing-cutter-1-8-1-1-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.197Z"
+    },
+    "227": {
+      "status": "needs_review",
+      "name": "RIDGID 31627 150 Enclosed Feed Tubing Cutter w/ H-D wheel (1/8\" - 1-1/",
+      "upc": "095691316271",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31627-150-enclosed-feed-tubing-cutter-w-h-d-wheel-1-8-1-1-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.199Z"
+    },
+    "228": {
+      "status": "needs_review",
+      "name": "RIDGID 31632 Model 151 Quick-Acting Tubing Cutter (1/4\" - 1-5/8\")",
+      "upc": "10095691316322",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31632-model-151-quick-acting-tubing-cutter-1-4-1-5-8",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.205Z"
+    },
+    "229": {
+      "status": "needs_review",
+      "name": "RIDGID 31735 Pipe Wrench Replacement Nut for 4A502 Pipe Wrench, 36\"",
+      "upc": "095691317353",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31735-d1335-36-wrench-nut",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.207Z"
+    },
+    "230": {
+      "status": "needs_review",
+      "name": "RIDGID 31780 Pipe Wrench Replacement Coil & Flat Spring, 60\"",
+      "upc": "095691317803",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-31780-e2680-60-coil-flat-spring",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.210Z"
+    },
+    "231": {
+      "status": "needs_review",
+      "name": "RIDGID 35825 E-5114 High Speed Hand Pipe Tap, 3/8-18\" NPT",
+      "upc": "095691358257",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-35825-e-5114-hand-pipe-tap-3-8-npt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.212Z"
+    },
+    "232": {
+      "status": "needs_review",
+      "name": "RIDGID 41590 Low Odor Anti-Misting Dark Threading Oil, 1 Quart",
+      "upc": "095691415905",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-41590-dark-threading-oil-1-quart",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.214Z"
+    },
+    "233": {
+      "status": "needs_review",
+      "name": "RIDGID 50652 Cable, S2 1/4\" x 25' with Bulb Auger",
+      "upc": "095691506528",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-50652-cable-s2-1-4-x-25-with-bulb-auger",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.216Z"
+    },
+    "234": {
+      "status": "needs_review",
+      "name": "RIDGID 62870 T-105 2-1/2\" Spade Grease Cutter for 1/2\" Inner Core Drai",
+      "upc": "095691628701",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-62870-t-105-2-1-2-grease-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.220Z"
+    },
+    "235": {
+      "status": "needs_review",
+      "name": "RIDGID 63205 Model T-8 Grease Cutter, 2 1?2\" (65 mm)",
+      "upc": "095691632050",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-63205-cutter-t8-2-1-2-grease",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.222Z"
+    },
+    "236": {
+      "status": "needs_review",
+      "name": "RIDGID 92535 T432 2\" 3-Blade Cutter for 5/8\" and 3/4\" Drain Cables",
+      "upc": "095691925350",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-92535-cutter-t432-2-3-blade",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.226Z"
+    },
+    "237": {
+      "status": "needs_review",
+      "name": "RIDGID 97212 Model 15-SI Stainless Tubing Cutter",
+      "upc": "095691972125",
+      "supplierDomain": "plumbingtoolstore.com",
+      "supplierUrl": "https://plumbingtoolstore.com/products/ridgid-97212-model-15-si-stainless-tubing-cutter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.228Z"
+    },
+    "238": {
+      "status": "needs_review",
+      "name": "AMH 1\" x 20' Ratchet Tie Down - Vinyl S-Hook TD0120VH",
+      "upc": "1771691222264",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/amflo-hoses-td0120vh",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.231Z"
+    },
+    "239": {
+      "status": "needs_review",
+      "name": "AMH 2\" x 4' Sling Polyester Web Eye & Eye 2 Ply Flat Eye EE290204",
+      "upc": "810140872289",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/amh-lifting-equipment-amh-ee290204",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.233Z"
+    },
+    "240": {
+      "status": "needs_review",
+      "name": "Bosch 1-1/4\" Starlock Bi-Metal Xtra Clean Plunge Cut Blade OSL114JF",
+      "upc": "000346480337",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/bosch-power-tools-osl114jf",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.236Z"
+    },
+    "241": {
+      "status": "needs_review",
+      "name": "Champion 1/2\" Brute XL28 Mechanics Length Drill Bit XL28-1/2",
+      "upc": "846035044370",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/champion-cutting-tools-xl28-1-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.238Z"
+    },
+    "242": {
+      "status": "needs_review",
+      "name": "Clearance & Overstock",
+      "upc": "540678140382",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/clearance?price=10-80&product_list_order=price_asc",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.240Z"
+    },
+    "243": {
+      "status": "needs_review",
+      "name": "Crescent 7\" Straight Jaw Locking Pliers C7SVN",
+      "upc": "037103299536",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/crescent-tools-c7svn",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.244Z"
+    },
+    "244": {
+      "status": "needs_review",
+      "name": "DeWalt 6\" Jab Saw DWHT20540",
+      "upc": "076174205404",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/dewalt-dwht20540",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.246Z"
+    },
+    "245": {
+      "status": "needs_review",
+      "name": "Flex 6-1/2\" 24-Tooth Carbide Circular Saw Blade FA201002",
+      "upc": "840163200387",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/flex-fa201002",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.250Z"
+    },
+    "246": {
+      "status": "needs_review",
+      "name": "Greenlee 1-1/8\" Variable Pitch Hole Saw 825-1-1/8",
+      "upc": "783310191414",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/greenlee-825-1-1-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.254Z"
+    },
+    "247": {
+      "status": "needs_review",
+      "name": "Grey Pneumatic 1/2\" Drive x 22mm Deep Impact Socket 2022MD",
+      "upc": "729440465384",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/grey-pneumatic-sockets-2022md",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.257Z"
+    },
+    "248": {
+      "status": "needs_review",
+      "name": "J-B Weld HighHeat Epoxy Putty (Repair Metal, Plastic, Fuel Resistant) - 4 oz 8298U",
+      "upc": "043425082985",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/j-b-weld-8298u",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.262Z"
+    },
+    "249": {
+      "status": "needs_review",
+      "name": "Klein Standard Safety Glasses, Clear Lens 60159",
+      "upc": "092644601590",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/klein-tools-60159",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.265Z"
+    },
+    "250": {
+      "status": "needs_review",
+      "name": "Marshalltown Pointing Trowels 45 4.5",
+      "upc": "035965011228",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/marshalltown-45-4-5",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.268Z"
+    },
+    "251": {
+      "status": "needs_review",
+      "name": "Marshalltown 6\" x 4\" Straight End Hand Edger w/ 1/2\" Radius 166SSD",
+      "upc": "035965042291",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/marshalltown-6-x-4-straight-end-hand-edger-w-1-2-radius-166ssd",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.271Z"
+    },
+    "252": {
+      "status": "needs_review",
+      "name": "Gardner Bender Cable Tie Mounting 8\" 50 lb; Natural 48-308",
+      "upc": "62348308",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/oklahoma-rig-supply-nasco-623-48-308",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.274Z"
+    },
+    "253": {
+      "status": "needs_review",
+      "name": "RIDGID Tools Replacement Tube Cutting Wheel: Cuts Aluminum/Copper, For Mfr No. 31652/31662/32940 33170",
+      "upc": "095691331700",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/ridgid-tools-33170",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.276Z"
+    },
+    "254": {
+      "status": "needs_review",
+      "name": "Shurtape CF 120 FrogTape Painter's Tape 2\" x 180' Multi Surface 157900",
+      "upc": "50682994820311",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/shurtape-157900",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.282Z"
+    },
+    "255": {
+      "status": "needs_review",
+      "name": "Simpson Strong-Tie Gas-Actuated Angle Clip Assembly GAC-R100",
+      "upc": "707392843306",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/simpson-strong-tie-gac-r100",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.284Z"
+    },
+    "256": {
+      "status": "needs_review",
+      "name": "Wright Tool 3/8\" Drive 6 Point Standard Universal Power Socket - 5/8\" 3860",
+      "upc": "076799038609",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/wright-tool-3860",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.287Z"
+    },
+    "258": {
+      "status": "needs_review",
+      "name": "AJAX Round Shank 3\" Scaling Chisel Blade (9\") 323-3",
+      "upc": "697041069808",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/ajax-tools-323-3",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.289Z"
+    },
+    "259": {
+      "status": "needs_review",
+      "name": "AMH Lifting Equipment Heavy-Duty, 2-Ply, 1\" X 10' Web Sling EE290110",
+      "upc": "810140872241",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/amh-lifting-equipment-ee290110",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.291Z"
+    },
+    "261": {
+      "status": "needs_review",
+      "name": "Bosch Glass and Tile Bit 3/4\" GT800",
+      "upc": "000346372311",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/bosch-power-tools-gt800",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.294Z"
+    },
+    "262": {
+      "status": "needs_review",
+      "name": "Bosch AutoStart Pilot Bit for Diamond Hole Saws 3/4\" - 4-1/8\" HDGPB6",
+      "upc": "000346392234",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/bosch-power-tools-hdgpb6",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.297Z"
+    },
+    "263": {
+      "status": "needs_review",
+      "name": "Bosch 1-1/4\" Starlock Bi-Metal Plunge Cut Blade OSL114F",
+      "upc": "000346480290",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/bosch-power-tools-osl114f",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.299Z"
+    },
+    "264": {
+      "status": "needs_review",
+      "name": "Champion Cutting Tools Spiral Flute Screw Extractor Size 6, Diameter Small End 3/8\", Diameter Large End, 19/32 X1-6",
+      "upc": "846035052641",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/champion-cutting-tools-x1-6",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.301Z"
+    },
+    "266": {
+      "status": "needs_review",
+      "name": "CoverMe 2\"-3.5\" Rectangular Adjustable Hole Cover RT30-040",
+      "upc": "1771691374427",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/coverme-rt30-040",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.304Z"
+    },
+    "267": {
+      "status": "needs_review",
+      "name": "Greenlee 400 lbs. Breakaway Pin Kit 7/8\" Swivel 39303",
+      "upc": "783310393030",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/greenlee-39303",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.306Z"
+    },
+    "268": {
+      "status": "needs_review",
+      "name": "Grey Pneumatic 3/8\" Drive x T27 Internal Star Impact Driver 1127T",
+      "upc": "729440462901",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/grey-pneumatic-sockets-1127t",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.309Z"
+    },
+    "269": {
+      "status": "needs_review",
+      "name": "Grey Pneumatic Sockets 3/8\" Drive x 10mm Deep Length Duo-Socket 81010MD",
+      "upc": "729440481148",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/grey-pneumatic-sockets-81010md",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.312Z"
+    },
+    "270": {
+      "status": "needs_review",
+      "name": "Klein 1/4\" Keystone Cushion-Grip Screwdriver 600-4",
+      "upc": "092644850028",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/klein-tools-600-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.314Z"
+    },
+    "271": {
+      "status": "needs_review",
+      "name": "Marshalltown 6-3/4\" x 3/8\" Tuck Pointer 505",
+      "upc": "035965013055",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/marshalltown-505",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.317Z"
+    },
+    "272": {
+      "status": "needs_review",
+      "name": "PIP Safety JSP® 4-Point Chin Strap 281-CS-4PT",
+      "upc": "5038428131230",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/pip-safety-281-cs-4pt",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.319Z"
+    },
+    "273": {
+      "status": "needs_review",
+      "name": "Shurtape UV-Resistant Marine Hull Preservation Tape - 48MM - 33M Roll - Straight Edge White 105745",
+      "upc": "1771691413875",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/shurtape-105745",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.322Z"
+    },
+    "274": {
+      "status": "needs_review",
+      "name": "Tamco 7/8\" x 12\" .580\" Hex Shank Round Retainer Moil Point Chipping Hammer Chisel 1711-012",
+      "upc": "1771691386486",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/tamco-tools-1711-012",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.325Z"
+    },
+    "276": {
+      "status": "needs_review",
+      "name": "Tamco Tools 13/16\"x12\"x1\" HSOR Chipping Hammer Chisel 1501-012",
+      "upc": "1771691348292",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/tamco-tools-tam1501-012",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.328Z"
+    },
+    "277": {
+      "status": "needs_review",
+      "name": "Stren-Flex 2' Heavy Duty Eye Flat 2 PLY 2\" EEF-2-902-02",
+      "upc": "1771691471139",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/2-heavy-duty-eye-flat-2-ply-2",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.331Z"
+    },
+    "279": {
+      "status": "needs_review",
+      "name": "DeWalt TOUGHSYSTEM 2.0 Adaptor DWST08017",
+      "upc": "885911918718",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/dewalt-dwst08017",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.334Z"
+    },
+    "280": {
+      "status": "needs_review",
+      "name": "DeWalt TOUGHSYSTEM 2.0 Deep Compact Organizer DWST08020",
+      "upc": "076174833928",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/dewalt-dwst08020",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.338Z"
+    },
+    "281": {
+      "status": "needs_review",
+      "name": "DeWalt 6-Piece Chisel Woodworking Box M444SB6N",
+      "upc": "024721096630",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/dewalt-m444sb6n",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.341Z"
+    },
+    "282": {
+      "status": "needs_review",
+      "name": "Freud Diablo 9 in. Steel Demon Amped™ Carbide Blades for Thick Metal Cutting (3-Pack) DS0908CFA3",
+      "upc": "008925156642",
+      "supplierDomain": "ohiopowertool.com",
+      "supplierUrl": "https://ohiopowertool.com/freud-diablo-ds0908cfa3",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.345Z"
+    },
+    "288": {
+      "status": "needs_review",
+      "name": "12V Automotive ATC ATO Blade Fuses",
+      "upc": "6857814245469",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/12v-automotive-atc-ato-blade-fuses",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.347Z"
+    },
+    "289": {
+      "status": "needs_review",
+      "name": "12V Automotive ATC Blade Glow Fuse with LED Indicator Illumination",
+      "upc": "6857839542365",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/12v-automotive-atc-blade-glow-fuse-with-led-indicator-illumination",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.351Z"
+    },
+    "290": {
+      "status": "needs_review",
+      "name": "Dual Battery Voltmeter Monitor 12VDC for Main and AUX Battery",
+      "upc": "6857836888157",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/dual-battery-voltmeter-monitor-12vdc-for-main-and-aux-battery",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.354Z"
+    },
+    "291": {
+      "status": "needs_review",
+      "name": "Dual Spot Panel | Sparked Innovations",
+      "upc": "6857819127901",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/dual-spot-panel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.358Z"
+    },
+    "292": {
+      "status": "needs_review",
+      "name": "Single Spot Panel | Sparked Innovations",
+      "upc": "6857819193437",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/single-spot-panel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.361Z"
+    },
+    "293": {
+      "status": "needs_review",
+      "name": "Team Flag",
+      "upc": "7944986722397",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/team-flag",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.366Z"
+    },
+    "294": {
+      "status": "needs_review",
+      "name": "Triple Spot Panel",
+      "upc": "6857819095133",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/triple-spot-panel",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.369Z"
+    },
+    "296": {
+      "status": "needs_review",
+      "name": "Single 12VDC Voltmeter Battery Voltage Monitor | Sparked Inn",
+      "upc": "6857820209245",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/single-12vdc-voltmeter-battery-voltage-monitor",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.372Z"
+    },
+    "297": {
+      "status": "needs_review",
+      "name": "Sparked Innovations 60W 12V USB Car Charger and Voltmeter",
+      "upc": "7106458320989",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/sparked-innovations-60w-12v-usb-car-charger-and-voltmeter",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.375Z"
+    },
+    "298": {
+      "status": "needs_review",
+      "name": "Sparked Innovations TTB-HS4 Tweet Tweet Blaster 3\" Tweeter 4ohm 100W",
+      "upc": "7919967567965",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/sparked-innovations-ttb-hs4-tweet-tweet-blaster-3-tweeter-4ohm-100w",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.378Z"
+    },
+    "299": {
+      "status": "needs_review",
+      "name": "Sparky's Gift Card",
+      "upc": "7273418063965",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/sparkys-gift-card",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.381Z"
+    },
+    "300": {
+      "status": "needs_review",
+      "name": "Voltmeter Dual Port USB Charger with Onboard Touch Switch |",
+      "upc": "6857813459037",
+      "supplierDomain": "sparkedinnovations.com",
+      "supplierUrl": "https://sparkedinnovations.com/products/voltmeter-dual-port-usb-charger-with-onboard-touch-switch",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.385Z"
+    },
+    "302": {
+      "status": "needs_review",
+      "name": "1.5 ft Certified Basshead RCA's",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/1-5-ft-certified-basshead-rca-s",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.388Z"
+    },
+    "303": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA1F2MKIT 1 Female to 2 Male Dual Twist RCA 1x Red 1x Black Kit",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/1-female-to-2-male-dual-twist-rca-1x-red-1x-black-kit",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.391Z"
+    },
+    "304": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA2F1M 1 Male to 2 Female Dual Twist RCA",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/1-male-to-2-female-dual-twist-rca",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.394Z"
+    },
+    "305": {
+      "status": "needs_review",
+      "name": "12 ft Certified Basshead RCA's",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/12-ft-certified-basshead-rca-s",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.397Z"
+    },
+    "306": {
+      "status": "needs_review",
+      "name": "3 ft Certified Basshead RCA's",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/3-ft-certified-basshead-rca-s",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.401Z"
+    },
+    "307": {
+      "status": "needs_review",
+      "name": "DS18 FHAFS-150A AFS Mini ANL Fuse Holder 4/8-GA In 4/8-GA Out with 150A Fuse For Car Amplifiers",
+      "upc": "627932485028",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/afs-mini-anl-fuse-holder-4-8ga-in-4-8ga-out-with-150a-fuse",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.404Z"
+    },
+    "308": {
+      "status": "needs_review",
+      "name": "Your Cart (1 item)",
+      "upc": "627932485028",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/cart.php?suggest=c355682b-1425-47d1-be45-3636e621c9ff",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.406Z"
+    },
+    "309": {
+      "status": "needs_review",
+      "name": "CLEARANCE",
+      "upc": "627932485028",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/clearance?sort=priceasc&limit=100&mode=1&min_price=3&max_price=81",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.410Z"
+    },
+    "310": {
+      "status": "needs_review",
+      "name": "DS18 DB1034 Distribution Block 1X0-GA In 3X4-GA Out For Car Amplifiers",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/distribution-block-1x0ga-in-3x4ga-out",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.412Z"
+    },
+    "311": {
+      "status": "needs_review",
+      "name": "DS18 DB1448 Distribution Block 1X4-GA In 4X8-GA Out For Car Amplifiers",
+      "upc": "627932485028",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/distribution-block-1x4ga-in-4x8ga-out",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.418Z"
+    },
+    "312": {
+      "status": "needs_review",
+      "name": "DOWN4SOUND EZ-SNI35-2V - CAR AUDIO 2CH HI - LOW LINE OUT CONVERTER BOX | EZ-SNI35/2V",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-ez-sni35-2v-car-audio-2ch-hi-low-line-out-converter-box",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.421Z"
+    },
+    "313": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA-12FT Dual Twist RCA Cable - 12 Ft Long",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/dual-twist-rca-cable-12-long",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.424Z"
+    },
+    "314": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA-16FT Dual Twist RCA Cable - 16 Ft Long",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/dual-twist-rca-cable-16-long",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.428Z"
+    },
+    "315": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA-20FT Dual Twist RCA Cable - 20 Ft Long",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/dual-twist-rca-cable-20-long",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.446Z"
+    },
+    "316": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA-3FT Dual Twist RCA Cable - 3 Ft Long",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/dual-twist-rca-cable-3-long",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.450Z"
+    },
+    "317": {
+      "status": "needs_review",
+      "name": "DS18 HQRCA-6FT Dual Twist RCA Cable - 6 Ft Long",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/dual-twist-rca-cable-6-long",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.454Z"
+    },
+    "318": {
+      "status": "needs_review",
+      "name": "DS18 V2HL.V2 Hi/Lo Converter 2-Channel with Speaker Emulator (Remote out)",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/hi-lo-converter-2-channel-with-speaker-emulator-remote-out",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.459Z"
+    },
+    "319": {
+      "status": "needs_review",
+      "name": "DS18 PRO-HA52 Bolt On 2\" 57° 2.6\" Depth Aluminum Horn",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/pro-bolt-on-2-100-2-6-depth-aluminum-horn-black",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.463Z"
+    },
+    "320": {
+      "status": "needs_review",
+      "name": "Replacement Diaphragm for PRO-TW420 and Universal 1.5\" VC",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/pro-replacement-diaphragm-for-pro-tw410-and-universal-1-5-vcl",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.466Z"
+    },
+    "321": {
+      "status": "needs_review",
+      "name": "ELITE 6.5\" 2-WAY COAXIAL SPEAKER 180 WATTS - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/Z-654",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.473Z"
+    },
+    "322": {
+      "status": "needs_review",
+      "name": "BSTOCK | Down4Sound D4S-PRO804 - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/bstock-down4sound-d4s-pro804",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.479Z"
+    },
+    "324": {
+      "status": "needs_review",
+      "name": "DS18 CCL2/0 2/0-Ga Copper Ring Terminals Pack of 10",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/copper-cable-lugs-awg-2-0",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.482Z"
+    },
+    "325": {
+      "status": "needs_review",
+      "name": "DS18 PRO-TWN5 3.6\" High Compression Neodymium Hybrid Driver/Tweeter 400 Watts 1.5 \" Pen 4-Ohm Vc",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/copy-of-ds18-pro-twn5-3-6-high-compression-neodymium-hybrid-driver-tweeter-400-watts-1-5-pen-4-ohm-vc",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.489Z"
+    },
+    "326": {
+      "status": "needs_review",
+      "name": "DS18 PRO-TWN5 3.6\" High Compression Neodymium Hybrid Driver/Tweeter 400 Watts 1.5 \" Pen 4-Ohm Vc",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/copy-of-ds18-pro-twn6-8-4-high-compression-neodymium-tweeter-150-watts-1-5-polyimide-8-ohm-vc",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.495Z"
+    },
+    "327": {
+      "status": "needs_review",
+      "name": "Down4sound BassBudz BB1 Wireless Ear Buds - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-bassbudz-bb1-wireless-ear-buds",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.499Z"
+    },
+    "328": {
+      "status": "needs_review",
+      "name": "DOWN4SOUND - EZY RCA110 - GRAY - 1 in 10 out Powered RCA DISTRIBUTION - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-ezy-rca110-gray-1-in-10-out-powered-rca-distribution",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.503Z"
+    },
+    "329": {
+      "status": "needs_review",
+      "name": "DOWN4SOUND HI LOW 5i - INTELLIGENT CAR AUDIO 5CH LINE OUT WITH CLIP DETECTION - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-hi-low-5i-intelligent-car-audio-5ch-line-out-with-clip-detection",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.510Z"
+    },
+    "330": {
+      "status": "needs_review",
+      "name": "Hi/Lo Converter 4-Channel with Speaker Emulator (Remote out)",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/high-performance-4-channel-high-to-low-conversion",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.515Z"
+    },
+    "331": {
+      "status": "needs_review",
+      "name": "DS18 EQX5 8 Volts , 5-Band Equalizer with High Level Input",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/high-volt-5-band-equalizer-with-high-level-input",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.526Z"
+    },
+    "332": {
+      "status": "needs_review",
+      "name": "DS18 LRING10 10\" RGB LED Ring for Speaker and Subwoofers",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/led-rgb-acrylic-ring-for-speakers-and-subwoofers-10",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.530Z"
+    },
+    "333": {
+      "status": "needs_review",
+      "name": "DS18 LRING6 6.5\" RGB LED Ring for Speaker and Subwoofers",
+      "upc": "627932485028",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/led-rgb-acrylic-ring-for-speakers-and-subwoofers-6",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.534Z"
+    },
+    "334": {
+      "status": "needs_review",
+      "name": "DS18 LRING8 8\" RGB LED Ring for Speaker and Subwoofers",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/led-rgb-acrylic-ring-for-speakers-and-subwoofers-8",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.539Z"
+    },
+    "335": {
+      "status": "needs_review",
+      "name": "DS18 OFCKIT8 8-GA OFC Ultra Flex 100% Cooper Installation Kit For Car Amplifiers",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/oxygen-free-copper-8ga-wiring-kit",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.544Z"
+    },
+    "336": {
+      "status": "needs_review",
+      "name": "DS18 PRO-TSQ3IN1 3\" Surface/Flush/Angle High Compression Neodymium Super Bullet Tweeter 200 Watts 1\" Aluminum 4-Ohm Vc",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/pro-1-vc-surface-flush-angle-aluminum-high-compression-neodymium-super-bullet-tweeter-200-watts-4-ohm",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.548Z"
+    },
+    "337": {
+      "status": "needs_review",
+      "name": "DS18 TW2.5 1\" Vc Aluminum Silk Dome Tweeter 100 Watts - PAIR",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/pro-1_-silk-dome-tweeter-100-watts",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.557Z"
+    },
+    "338": {
+      "status": "needs_review",
+      "name": "DS18 PRO-EXL88RCK Recone Kit for PRO-EXL88",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/pro-exl-recone-kit-for-pro-exl88",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.562Z"
+    },
+    "339": {
+      "status": "needs_review",
+      "name": "DS18 BKVR Universal Bass Knob with Voltmeter And Remote On",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/remote-level-control-with-voltmeter-display",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.568Z"
+    },
+    "340": {
+      "status": "needs_review",
+      "name": "Rogue Car Audio R1TK-S| 60W Tweeters - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/rogue-car-audio-r1tk-s-60w-tweeters",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.571Z"
+    },
+    "341": {
+      "status": "needs_review",
+      "name": "ELITE 5x7\" 2-WAY COAXIAL SPEAKER 150 WATTS",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/Z-574",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.575Z"
+    },
+    "343": {
+      "status": "needs_review",
+      "name": "DOWN4SOUND - EZY RCA110 - GREEN - 1 in 10 out Powered RCA DISTRIBUTION - Down4Sound Shop",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-ezy-rca110-green-1-in-10-out-powered-rca-distribution",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.583Z"
+    },
+    "344": {
+      "status": "needs_review",
+      "name": "DOWN4SOUND - EZY RCA110 - TEAL - 1 in 10 out Powered RCA DISTRIBUTION",
+      "upc": "",
+      "supplierDomain": "down4soundshop.com",
+      "supplierUrl": "https://down4soundshop.com/down4sound-ezy-rca110-teal-1-in-10-out-powered-rca-distribution",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.587Z"
+    },
+    "346": {
+      "status": "needs_review",
+      "name": "3” Super Bullet Tweeter with 1” Titanium Voice Coil and Neodymium Magnet | 120W RMS 4-Ohm",
+      "upc": "7762945572925",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/gtx2-bk",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.591Z"
+    },
+    "347": {
+      "status": "needs_review",
+      "name": "Um momento…",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/gtx2-sl",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.606Z"
+    },
+    "348": {
+      "status": "needs_review",
+      "name": "7.7” Marine Speaker Ring Adapter - Fits 6.5\" NXL & CF Speakers",
+      "upc": "7782139854909",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/nxl-adapt6-7-7-wh",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.612Z"
+    },
+    "350": {
+      "status": "needs_review",
+      "name": "Um momento…",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-tw1ld",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.617Z"
+    },
+    "351": {
+      "status": "needs_review",
+      "name": "PRO-X 4x6” Mid-Range Loudspeaker with Bullet | 100W RMS 4-Ohm",
+      "upc": "7689927065661",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-x46-4bm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.622Z"
+    },
+    "352": {
+      "status": "needs_review",
+      "name": "DS18 Ultra Flex 100% OFC RCA – 1 Male / 2 Female (10-Pack)",
+      "upc": "7788880691261",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/r1m2f-10pk",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.626Z"
+    },
+    "353": {
+      "status": "needs_review",
+      "name": "DS18 Universal 6x9” Sealed Woofer Enclosure with Gasket",
+      "upc": "7751739572285",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ry-hd69baffle",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.631Z"
+    },
+    "365": {
+      "status": "needs_review",
+      "name": "10\" Digital LED Ring for Loudspeakers and Speakers",
+      "upc": "7676820389949",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/dlring10",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.637Z"
+    },
+    "366": {
+      "status": "needs_review",
+      "name": "6x9\" Digital LED Ring for Loudspeakers and Speakers",
+      "upc": "7670594797629",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/dlring69",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.642Z"
+    },
+    "367": {
+      "status": "needs_review",
+      "name": "8\" Digital LED Ring for Loudspeakers and Speakers",
+      "upc": "7676818522173",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/dlring8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.649Z"
+    },
+    "368": {
+      "status": "needs_review",
+      "name": "2\" High Compression Hybrid Driver/Tweeter With 1” PEN Voice Coil & Neodymium Magnet | 100W RMS 4-Ohm",
+      "upc": "7618921693245",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/nvy-ctn1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.654Z"
+    },
+    "369": {
+      "status": "needs_review",
+      "name": "8\" Digital LED Ring for Marine and Powersporst Speakers and Towers",
+      "upc": "7670105309245",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/nxl-dlring8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.657Z"
+    },
+    "370": {
+      "status": "needs_review",
+      "name": "PRO 6.5\" Slim Mid-Range Loudspeaker with Water-Resistant Cone | 200W RMS 4-Ohm",
+      "upc": "7729959665725",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-sm6-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.661Z"
+    },
+    "371": {
+      "status": "needs_review",
+      "name": "PRO-X 5x7” Mid-Range Loudspeaker with Bullet | 175W RMS 4-Ohm",
+      "upc": "7689931784253",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-x57-4bm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.664Z"
+    },
+    "373": {
+      "status": "needs_review",
+      "name": "Harley-Davidson Street Glide Amplifier Rack for models 2014–2023",
+      "upc": "7751842955325",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ry-hdarsg-1423",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.672Z"
+    },
+    "374": {
+      "status": "needs_review",
+      "name": "Polaris RZR PRO Plug & Play 4-Channel Output and Remote Output for Ride Command Systems",
+      "upc": "7697320935485",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/rzr-pro-rc",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.676Z"
+    },
+    "385": {
+      "status": "needs_review",
+      "name": "DS18 2-Channel High-to-Low Level Line Output Converter with Remote Turn-On",
+      "upc": "7689892462653",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/2-channel-high-to-low-level-line-output-converter-with-remote-turn-on",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.679Z"
+    },
+    "386": {
+      "status": "needs_review",
+      "name": "DS18 6x9” Water-Resistant Mid-Bass Loudspeaker | 150W RMS 4-Ohm",
+      "upc": "7750045139005",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/69pro300mb-4",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.690Z"
+    },
+    "387": {
+      "status": "needs_review",
+      "name": "DS18 6x9” Water-Resistant Mid-Bass Loudspeaker | 150W RMS 8-Ohm",
+      "upc": "7747984130109",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/69pro300mb-8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.694Z"
+    },
+    "388": {
+      "status": "needs_review",
+      "name": "DS18 2\" Silk Dome Tweeter with Neodymium Magnet",
+      "upc": "7683342630973",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/dxqts",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.703Z"
+    },
+    "389": {
+      "status": "needs_review",
+      "name": "Um momento…",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/nvy-10promb-4rck",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.707Z"
+    },
+    "390": {
+      "status": "needs_review",
+      "name": "Um momento…",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-sm69-4",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.711Z"
+    },
+    "391": {
+      "status": "needs_review",
+      "name": "PRO 8\" Slim Water-Resistant Midrange Loudspeaker | 250W RMS 4-Ohm",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-sm8-4?__cf_chl_tk=a1GXj5L5scGy3fl6NgOUI29DmJCNqWw_p.NmynLMRs0-1771698152-1.0.1.1-Mnhct3gAndN4eDs6gzPJrzH8mmdCthV6qJL2VATaBHI",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.723Z"
+    },
+    "397": {
+      "status": "needs_review",
+      "name": "2\" Silk Dome Tweeter with Neodymium Magnet | 30W RMS 4-Ohm",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/dxqts?__cf_chl_tk=EFaSCVAsDz0VPmQsZfiLFe_TkwJm.26xbjkGxthAMI8-1771698149-1.0.1.1-l6gNFRn4BNldZ4ikA6exnQHLmHf2coelHSUK4pUcKWo",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.727Z"
+    },
+    "400": {
+      "status": "needs_review",
+      "name": "Um momento…",
+      "upc": "",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/utv-kit8-2dr",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.737Z"
+    },
+    "401": {
+      "status": "needs_review",
+      "name": "FBA Automation",
+      "upc": "842026022115",
+      "supplierDomain": "localhost",
+      "supplierUrl": "http://localhost:5173/automation",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.741Z"
+    },
+    "402": {
+      "status": "needs_review",
+      "name": "Replacement Diaphragm for GTX2 & Universal 4-ohm 1” VC",
+      "upc": "7583772999741",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/gtx2vc",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.746Z"
+    },
+    "403": {
+      "status": "needs_review",
+      "name": "Universal OEM Speaker Adapter for 6.5” Speakers",
+      "upc": "7605648785469",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/oemadapt6-5",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.757Z"
+    },
+    "404": {
+      "status": "needs_review",
+      "name": "Universal OEM Speaker Adapter for 6x9” or 6.5\" Speakers",
+      "upc": "7605678899261",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/oemadapt6x9",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.765Z"
+    },
+    "405": {
+      "status": "needs_review",
+      "name": "1FT Ultra Flex 100% OFC RCA Cable Wire – 10-Pack",
+      "upc": "7789227475005",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/rca-1ft-10pk",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.770Z"
+    },
+    "406": {
+      "status": "needs_review",
+      "name": "Harley-Davidson 6.5\" Speaker Spacer Ring for Saddlebags",
+      "upc": "7725309132861",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ry-hdring6-1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.774Z"
+    },
+    "407": {
+      "status": "needs_review",
+      "name": "Harley-Davidson 8\" Speaker Spacer Ring for Saddlebags",
+      "upc": "7731619430461",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ry-hdring8",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.778Z"
+    },
+    "408": {
+      "status": "needs_review",
+      "name": "Polaris RZR PRO Plug & Play Subwoofer RCA Output and Remote Output Harness for Ride Command Systems",
+      "upc": "7696579723325",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/rzr-pro-rcsw",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.782Z"
+    },
+    "409": {
+      "status": "needs_review",
+      "name": "DS18 SELECT 4” 2-Way Coaxial Speaker with Grille | 40W RMS 4-Ohm",
+      "upc": "7704797675581",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/s40",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.787Z"
+    },
+    "418": {
+      "status": "needs_review",
+      "name": "Polaris RZR Plug & Play 2-Channel Output with Remote for Ride Command",
+      "upc": "7696444457021",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/rzr-rc",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.798Z"
+    },
+    "420": {
+      "status": "needs_review",
+      "name": "14-GA Ultra Flex CCA Speaker Wire 100 Ft",
+      "upc": "7674774650941",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/sw-14ga-100rb",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.805Z"
+    },
+    "421": {
+      "status": "needs_review",
+      "name": "DS18 6.5” Round Bolt-On Horn Diffuser",
+      "upc": "7712231587901",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-sdf6r",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.810Z"
+    },
+    "434": {
+      "status": "needs_review",
+      "name": "DS18 AMPKIT4 4 Gauge Advance Amplifier Installation Kit",
+      "upc": "1788216770621",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/amplifier-installation-kit-4ga",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.818Z"
+    },
+    "435": {
+      "status": "needs_review",
+      "name": "3.8\" Super Bullet Tweeter 120W RMS 1\" Aluminum 4-Ohm Vc",
+      "upc": "4493510344765",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-pro-twx1-1-pro-aluminum-super-bullet-tweeter-vc-240-watts-capacitor-crossover-pair",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.823Z"
+    },
+    "436": {
+      "status": "needs_review",
+      "name": "3.8\" Super Bullet Tweeter 120W RMS 1\" Aluminum 4-Ohm Vc",
+      "upc": "4494009172029",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-pro-twx1-1-pro-aluminum-super-bullet-tweeter-vc-240-watts-with-capacitor-crossover-pair-silver",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.828Z"
+    },
+    "437": {
+      "status": "needs_review",
+      "name": "DS18 PRO-X6BM 6.5\" Mid-Range Loudspeaker with Bullet 500 Watts 8-Ohm car audio stereo speakers. bullet speakers.",
+      "upc": "711097712701",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-series-6-5-midrange-loudspeaker-250-watts-rms-500-watts-max",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.839Z"
+    },
+    "438": {
+      "status": "needs_review",
+      "name": "PRO-X 6.5\" Shallow Mid-Range Bullet Loudspeaker | 200W RMS 4-Ohm",
+      "upc": "711098433597",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-series-6-5-midrange-loudspeaker-300-watts-rms-600-watts-max",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.844Z"
+    },
+    "439": {
+      "status": "needs_review",
+      "name": "DS18 PRO-TW120 1\" PRO Aluminum Super Bullet Tweeter VC 240 Watts with Built In Crossover (Pair ) Audio Stereo System Motorcycle tweeters Speaker",
+      "upc": "7697489231933",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-tw120",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.857Z"
+    },
+    "440": {
+      "status": "needs_review",
+      "name": "DS18 PRO-TW120 1\" PRO Aluminum Super Bullet Tweeter VC 240 Watts with Built In Crossover (Pair ) Audio Stereo System Motorcycle tweeters Speaker",
+      "upc": "711143260221",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-tw120b",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.863Z"
+    },
+    "442": {
+      "status": "needs_review",
+      "name": "PRO 1\" Replacement Diaphragm for PRO-TW1L , PRO-TWX1 and Universal 4-O",
+      "upc": "6898644222013",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-pro-tw1vc-pro-1-replacement-diaphragm-for-pro-tw1l-pro-twx1-and-universal-4-ohm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.868Z"
+    },
+    "446": {
+      "status": "needs_review",
+      "name": "PRO 1\" Replacement Diaphragm for PRO-TW1L , PRO-TWX1 and Universal 8-O",
+      "upc": "7186393235517",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-tw1-8vc",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.877Z"
+    },
+    "449": {
+      "status": "needs_review",
+      "name": "Universal Bluetooth 4.0 Audio Receiver | Wireless, Water-Resistant IP65",
+      "upc": "711112622141",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-bt-two-waterproof-bt-4-0-digital-media-receiver",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.882Z"
+    },
+    "450": {
+      "status": "needs_review",
+      "name": "GEN-X 6.5\" 2-Way Coaxial Speakers 50 Watts Rms 4-Ohm",
+      "upc": "7011072671805",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-g6-5xi-gen-x-6-5-2-way-coaxial-speakers-150-watts-4-ohm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.888Z"
+    },
+    "451": {
+      "status": "needs_review",
+      "name": "GEN-X 6x9\" 3-Way Coaxial Speakers | 60W RMS 4-Ohm",
+      "upc": "7011046916157",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-g69xi-gen-x-6x9-4-way-coaxial-speakers-180-watts-4-ohm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.894Z"
+    },
+    "452": {
+      "status": "needs_review",
+      "name": "PRO 6.5\" Shallow Coaxial Hybrid Mid-Range Loudspeaker with Built-in Driver | 150W RMS 4-Ohm",
+      "upc": "6760799928381",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-pro-hy6-4msl-6-5-mid-range-shadow-slim-loudspeaker-with-built-in-driver-300-watts-4-ohm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.900Z"
+    },
+    "453": {
+      "status": "needs_review",
+      "name": "PRO-ZXI 6.5\" Mid-Range Bullet Loudspeaker Neodymium/Ferrite Magnets |",
+      "upc": "6719489998909",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/ds18-pro-zxi6-4bm-mid-range-loudspeaker-with-bullet-500-watts-4-ohm",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.906Z"
+    },
+    "454": {
+      "status": "needs_review",
+      "name": "PRO-X 8\" Mid-Range Loudspeaker with Bullet | 275W RMS 4-Ohm",
+      "upc": "711098597437",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-series-8-midrange-loudspeaker-275-watts-rms-550-watts-max-1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.912Z"
+    },
+    "455": {
+      "status": "needs_review",
+      "name": "PRO-X 6.5\" Mid-Range Loudspeaker with Bullet | 250W RMS 4-Ohm",
+      "upc": "787070451773",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-series-midrange-bullet-loudspeaker-1",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.920Z"
+    },
+    "464": {
+      "status": "needs_review",
+      "name": "PRO-X 6X9\" Mid-Range Loudspeaker with Bullet | 200W RMS 4-Ohm",
+      "upc": "3915252957245",
+      "supplierDomain": "ds18.com",
+      "supplierUrl": "https://ds18.com/products/pro-x-series-6x9-4-ohm-midrange-speaker-with-bullet-550w",
+      "hasValidUPC": true,
+      "processedAt": "2026-03-13T02:21:46.931Z"
+    },
+    "466": {
+      "status": "needs_review",
+      "name": "1.75 Gal Water Storage Container | RotopaX",
+      "upc": "36930737174003",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-75-gallon-water-green",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.936Z"
+    },
+    "467": {
+      "status": "needs_review",
+      "name": "1.75 Gallon Water Tan",
+      "upc": "27294886474629",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-75-gallon-water-tan",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.944Z"
+    },
+    "468": {
+      "status": "needs_review",
+      "name": "1 Gallon Water Storage Container | RotopaX",
+      "upc": "35353896205990",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-gallon-water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.950Z"
+    },
+    "469": {
+      "status": "needs_review",
+      "name": "1 Gallon Water Storage Container | RotopaX",
+      "upc": "42382455433491",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-gallon-water-green",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.955Z"
+    },
+    "470": {
+      "status": "needs_review",
+      "name": "1 Gallon Water Storage Container | RotopaX",
+      "upc": "74360369561863",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-gallon-water-tan",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.971Z"
+    },
+    "471": {
+      "status": "needs_review",
+      "name": "1.75 Gal Water Storage Container | RotopaX",
+      "upc": "41322322383690",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/175-gallon-water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.976Z"
+    },
+    "472": {
+      "status": "needs_review",
+      "name": "1.75 Gallon Water Black",
+      "upc": "60883063567070",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/black-1-75-gallon-water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.988Z"
+    },
+    "473": {
+      "status": "needs_review",
+      "name": "Black - 1 Gallon Water Storage Container | RotopaX",
+      "upc": "26257033446191",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/black-1-gallon-water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:46.992Z"
+    },
+    "474": {
+      "status": "needs_review",
+      "name": "DLX Pack Mounting Kit | RotopaX",
+      "upc": "66471713937512",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/dlx-pack-mount",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.003Z"
+    },
+    "475": {
+      "status": "needs_review",
+      "name": "XTR Rotopax Adapter Plate | RotopaX",
+      "upc": "91468535063420",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/xtr-rotopax-adapter-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.011Z"
+    },
+    "476": {
+      "status": "needs_review",
+      "name": "2 Gallon DEF",
+      "upc": "07961407642814",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-def",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.016Z"
+    },
+    "477": {
+      "status": "needs_review",
+      "name": "2 Gallon Water GEN 2",
+      "upc": "07278414454928",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-gen2water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.025Z"
+    },
+    "478": {
+      "status": "needs_review",
+      "name": "2 Gallon Water GEN 2 Green",
+      "upc": "72712482178243",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-water-gen-2-green",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.030Z"
+    },
+    "479": {
+      "status": "needs_review",
+      "name": "2 Gallon DEF GEN 2",
+      "upc": "75193166373156",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-def-gen-2",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.040Z"
+    },
+    "480": {
+      "status": "needs_review",
+      "name": "2 Gallon Water GEN 2 Tan",
+      "upc": "58474408838890",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-water-gen-2-tan",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.046Z"
+    },
+    "481": {
+      "status": "needs_review",
+      "name": "2 Gallon Water Green",
+      "upc": "12725134032862",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-water-green",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.053Z"
+    },
+    "482": {
+      "status": "needs_review",
+      "name": "2 Gallon Water Tan",
+      "upc": "36985018444634",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-water-tan",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.060Z"
+    },
+    "483": {
+      "status": "needs_review",
+      "name": "5 Gallon Water Black",
+      "upc": "22215388260503",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/camp-jug-black",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.066Z"
+    },
+    "484": {
+      "status": "needs_review",
+      "name": "5 Gallon Water Storage Container | RotopaX",
+      "upc": "00661236125768",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/camp-jug-tan",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.074Z"
+    },
+    "485": {
+      "status": "needs_review",
+      "name": "5 Gallon Water White",
+      "upc": "39261238424219",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/5-gallon-water",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.082Z"
+    },
+    "486": {
+      "status": "needs_review",
+      "name": "5 Gallon Water OD Green",
+      "upc": "66330134594578",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/5-gallon-water-od-green",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.095Z"
+    },
+    "487": {
+      "status": "needs_review",
+      "name": "1- 2- 2G2- 4 Gallon Extension | RotopaX",
+      "upc": "01200648493526",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/1-2-4-gallon-extension",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.100Z"
+    },
+    "488": {
+      "status": "needs_review",
+      "name": "1.75 Gallon Extension",
+      "upc": "16370388291518",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/175-gallon-extension",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.108Z"
+    },
+    "489": {
+      "status": "needs_review",
+      "name": "2 Gallon Interlocking Clip | RotopaX",
+      "upc": "26290486639636",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/2-gallon-clips",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.114Z"
+    },
+    "490": {
+      "status": "needs_review",
+      "name": "Backing Plate for Mounting Kit | RotopaX",
+      "upc": "53447889489399",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/backing-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.121Z"
+    },
+    "491": {
+      "status": "needs_review",
+      "name": "DLX T-Handle",
+      "upc": "49368153338594",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/dlx-t-handle",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.127Z"
+    },
+    "492": {
+      "status": "needs_review",
+      "name": "FuelpaX Deluxe Pack Mount | RotopaX",
+      "upc": "61603861484744",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/fuelpax-dlx-pack-mounts-clone",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.132Z"
+    },
+    "493": {
+      "status": "needs_review",
+      "name": "Polaris RZR Plate | RotopaX",
+      "upc": "00099818690280",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/polaris-rzr-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.140Z"
+    },
+    "494": {
+      "status": "needs_review",
+      "name": "Replacement Lock Cylinder(s) | RotopaX",
+      "upc": "16119810359693",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/replacement-lock-cylinder-s",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.146Z"
+    },
+    "495": {
+      "status": "needs_review",
+      "name": "Single Mounting Plate | RotopaX",
+      "upc": "80681524540895",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/single-mounting-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.153Z"
+    },
+    "496": {
+      "status": "needs_review",
+      "name": "Standard T-Handle | RotopaX",
+      "upc": "30838389510828",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/standard-t-handle",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.161Z"
+    },
+    "497": {
+      "status": "needs_review",
+      "name": "3 Gallon Extension",
+      "upc": "18228966181090",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/3-gallon-extension",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.165Z"
+    },
+    "498": {
+      "status": "needs_review",
+      "name": "L-Bracket",
+      "upc": "68805375846576",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/l-bracket",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.172Z"
+    },
+    "499": {
+      "status": "needs_review",
+      "name": "FuelPaX Universal Plate",
+      "upc": "86092447022377",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/fuelpax-universal-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.180Z"
+    },
+    "500": {
+      "status": "needs_review",
+      "name": "LOX-T-Handle",
+      "upc": "90836894505230",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/lox-t-handle",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.186Z"
+    },
+    "501": {
+      "status": "needs_review",
+      "name": "PAX Bar Mount | RotopaX",
+      "upc": "55818746892159",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/pax-bar-mount-clone",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.199Z"
+    },
+    "502": {
+      "status": "needs_review",
+      "name": "Polaris Base Plate Mounting Kit | RotopaX",
+      "upc": "75992505278508",
+      "supplierDomain": "rotopax.com",
+      "supplierUrl": "https://rotopax.com/products/polaris-base-plate",
+      "hasValidUPC": false,
+      "processedAt": "2026-03-13T02:21:47.205Z"
+    }
+  },
+  "lastProcessedIndex": 408,
+  "lastProcessedAt": "2026-03-13T02:21:47.203Z"
+}

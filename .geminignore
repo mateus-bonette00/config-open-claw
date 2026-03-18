@@ -1,0 +1,76 @@
+# ==========================================
+# UNIVERSAL GEMINI IGNORE - TOKEN SAVER
+# ==========================================
+
+# --- Dependências (OS MAIORES VILÕES) ---
+node_modules/
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Arquivos de Lock (Enormes e sem lógica útil para IA) ---
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+poetry.lock
+Pipfile.lock
+
+# --- Build e Distribuição ---
+dist/
+build/
+.next/
+out/
+.docusaurus/
+.cache/
+.nuxt/
+
+# --- Configurações de IDE e Sistema ---
+.git/
+.svn/
+.hg/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs e Dados Temporários ---
+*.log
+logs/
+tmp/
+temp/
+.npm/
+.eslintcache
+*.csv
+*.sql
+
+# --- Arquivos Sensíveis e Segredos ---
+*.pem
+*.key
+secrets.json
+
+# --- Mídia e Binários ---
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+*.exe
+*.bin
+*.mp3
+*.mp4
+*.wav
+*.txt
+
+# Pastas Pesadas
+data/
+backups/
+migrations/
+database/

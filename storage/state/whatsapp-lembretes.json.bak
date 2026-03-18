@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "id": "cmd-1773417954434-j9csbv",
+      "name": "limpar-cache",
+      "description": "",
+      "content": "sudo sync && sudo sysctl -w vm.drop_caches=3",
+      "tags": [
+        "manual"
+      ],
+      "createdAt": "2026-03-13T16:05:54.434Z",
+      "updatedAt": "2026-03-13T16:05:54.435Z"
+    }
+  ],
+  "snippets": [
+    {
+      "id": "clip-1773418023054-3kdr8o",
+      "title": "prompt-fba",
+      "content": "Sempre valide SKU, preco e link antes de aprovar.",
+      "type": "texto",
+      "tags": [
+        "manual"
+      ],
+      "createdAt": "2026-03-13T16:07:03.054Z",
+      "updatedAt": "2026-03-13T16:07:03.054Z"
+    }
+  ]
+}

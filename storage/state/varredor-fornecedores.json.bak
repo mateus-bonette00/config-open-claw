@@ -1,0 +1,19 @@
+{
+  "runs": [
+    {
+      "id": "sweep-1773416560132-0m0uch",
+      "status": "dry-run",
+      "createdAt": "2026-03-13T15:42:40.132Z",
+      "updatedAt": "2026-03-13T15:42:40.132Z",
+      "prompt": "iniciar varrer-fornecedores indice-inicial=3 indice-final=12 preco-minimo=10.00 preco-maximo=85.00 abas=7",
+      "commandPath": "/home/bonette/.openclaw/workspace/scripts/fba-automation-bot-command.sh",
+      "profile": "varrer-fornecedores",
+      "startIndex": 3,
+      "endIndex": 12,
+      "minPrice": 10,
+      "maxPrice": 85,
+      "tabs": 7,
+      "logPath": "/home/bonette/apps/fba-automation/backend/logs/automation_run.log"
+    }
+  ]
+}
