@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  fba-agent:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: openclaw-fba-agent
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./storage:/app/storage
+      - ./config:/app/config:ro
+      # Chrome profile do host para extensões Keepa/AZInsight
+      - ${CHROME_USER_DATA_DIR:-/home/bonette/.config/google-chrome}:/chrome-profile:ro
+    # Necessário para Puppeteer com Chrome
+    shm_size: "2gb"
+    security_opt:
+      - seccomp=unconfined
+    networks:
+      - openclaw-net
+
+networks:
+  openclaw-net:
+    driver: bridge

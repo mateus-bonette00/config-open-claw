@@ -1,0 +1,16 @@
+     1	# Ferramentas: Pró-Saúde Postagem Automática
+     2	
+     3	Fluxo oficial (sem remoção de fundo automática):
+     4	- A imagem de entrada DEVE vir pronta, de preferência PNG com fundo transparente.
+     5	- O agente NÃO remove fundo.
+     6	- O agente apenas encaixa o produto no template e prepara a arte.
+     7	
+     8	Comando para gerar a arte:
+     9	
+    10	PATH=/home/bonette/.local/bin:$PATH ~/.local/openclaw-node22/current/bin/node -e "import(/home/bonette/openclaw-agents/agents/prosaude-social/index.js).then(m => m.processAndPublish({ imagePath:  Arte finalizada em:  + res.imagePath)).catch(console.error))"
+    11	
+    12	Mensagem obrigatória para o usuário após sucesso:
+    13	Arte gerada, roda o script sync-prosaude-artes.sh no seu notebook para ter acesso a arte
+    14	
+    15	Se o template não estiver configurado corretamente, peça ao usuário um PNG real do layout da Pró-Saúde para salvar em:
+    16	- /home/bonette/openclaw-agents/config/prosaude-templates/default.png

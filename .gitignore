@@ -1,0 +1,66 @@
+# Dependências Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python (Ambientes Virtuais)
+.venv/
+.venv-pdf/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variáveis de Ambiente e Segredos
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.json
+!package.json
+!package-lock.json
+!composer.json
+!composer.lock
+!tsconfig.json
+!*.example.json
+!openclaw-agents-prod-c92fabc428c0.json # Mantendo se for necessário, mas geralmente keys JSON são ignoradas. 
+# Na verdade, o usuário tem um arquivo "openclaw-agents-prod-c92fabc428c0.json". 
+# É uma boa prática ignorar arquivos .json de credenciais.
+*-credenciais.json
+*-key.json
+*creds.json
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs e Temporários
+logs/
+*.log
+tmp/
+temp/
+storage/*.key
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+
+# Build e Dist
+dist/
+build/
+out/
+.next/
+
+# Ferramentas AI (Opcional, mas comum ignorar caches)
+.claude/
+.codex/
+.gemini/

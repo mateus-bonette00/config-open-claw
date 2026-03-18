@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClaw Config Zoe Agents"
+  short_description: "Padrao unico para agentes Zoe/OpenClaw"
+  default_prompt: "Use $openclaw-config-zoe-agents para analisar e evoluir o projeto config-open-claw com padrao de estrutura, integracoes e troubleshooting operacional."

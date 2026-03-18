@@ -1,0 +1,35 @@
+{
+  "name": "openclaw-agents",
+  "version": "1.0.0",
+  "description": "Plataforma multi-agente Open Claw — FBA, WhatsApp, social media, prospecting",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "fba": "node agents/fba/index.js",
+    "fba:parse": "node agents/fba/parser.js",
+    "fba:analyze": "node agents/fba/analyzer.js",
+    "fba:manual": "node agents/fba/index.js --manual",
+    "fba:resume": "node agents/fba/index.js --resume",
+    "supplier-sweep": "node agents/varredor-fornecedores/index.js",
+    "wa:cmd": "node scripts/whatsapp-lembretes-command.js",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:live": "bash scripts/deploy-live.sh",
+    "autodeploy:disable": "bash scripts/remote-disable-autodeploy.sh",
+    "tunnel": "bash scripts/ssh-tunnel.sh"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "googleapis": "^144.0.0",
+    "puppeteer": "^24.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "winston": "^3.17.0",
+    "cron": "^3.3.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}
