@@ -30,6 +30,9 @@ const OWNER_PHONE_FALLBACK = '553598183459';
 const MAX_RETRIES = 3;
 const PRODUCTIVITY_MIGRATION_FLAG = 'mergedProductividadeStateAt';
 const COMMANDS_REGISTRY_MIGRATION_FLAG = 'commandsRegistryMigratedAt';
+const TASK_IMPORTANCE_IMPORTANTE = 'importante';
+const TASK_IMPORTANCE_MENOS_IMPORTANTE = 'menos-importante';
+const TASK_IMPORTANCE_VALUES = new Set([TASK_IMPORTANCE_IMPORTANTE, TASK_IMPORTANCE_MENOS_IMPORTANTE]);
 const DEFAULT_DAILY_CHECKLIST = [
   { name: 'Revisar tarefas do dia', done: false },
   { name: 'Checar e-mails prioritarios', done: false },
@@ -63,12 +66,38 @@ function createReminder({ message, sendAt, phone, recurring = null, category = '
 }
 
 // Estrutura de tarefa
-function createTask({ title, description = '', priority = 'medium', dueDate = null, recurring = null, tags = [] }) {
+function inferTaskImportanceFromPriority(priority = 'medium') {
+  const normalized = String(priority || '').trim().toLowerCase();
+  if (normalized === 'high' || normalized === 'urgent') return TASK_IMPORTANCE_IMPORTANTE;
+  return TASK_IMPORTANCE_MENOS_IMPORTANTE;
+}
+
+function normalizeTaskImportance(value, fallback = TASK_IMPORTANCE_MENOS_IMPORTANTE) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (TASK_IMPORTANCE_VALUES.has(normalized)) return normalized;
+  return fallback;
+}
+
+function taskImportanceLabel(importance) {
+  return importance === TASK_IMPORTANCE_IMPORTANTE ? 'Importante' : 'Menos importante';
+}
+
+function getTaskImportance(task = {}) {
+  return normalizeTaskImportance(task.importance, inferTaskImportanceFromPriority(task.priority));
+}
+
+function createTask({ title, description = '', priority = 'medium', dueDate = null, recurring = null, tags = [], importance = null }) {
+  const normalizedImportance = normalizeTaskImportance(
+    importance,
+    inferTaskImportanceFromPriority(priority)
+  );
+
   return {
     id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title,
     description,
     priority, // low, medium, high, urgent
+    importance: normalizedImportance,
     status: 'pending', // pending, in_progress, done, cancelled
     dueDate,
     recurring, // null, 'daily', 'weekly', 'monthly', cron expression
@@ -754,10 +783,258 @@ function splitNameAndContent(raw) {
   return { name: text.trim(), content: '' };
 }
 
+function getActiveAfazeres() {
+  const tasks = listTasks().filter(task => task.status === 'pending' || task.status === 'in_progress');
+  const sorted = [...tasks].sort((left, right) => {
+    const leftDate = new Date(left.createdAt || 0).getTime();
+    const rightDate = new Date(right.createdAt || 0).getTime();
+    return rightDate - leftDate;
+  });
+
+  const importantes = sorted.filter(task => getTaskImportance(task) === TASK_IMPORTANCE_IMPORTANTE);
+  const menosImportantes = sorted.filter(task => getTaskImportance(task) === TASK_IMPORTANCE_MENOS_IMPORTANTE);
+
+  return {
+    ordered: [...importantes, ...menosImportantes],
+    importantes,
+    menosImportantes
+  };
+}
+
+function parseCommandPayload(input, prefixes = []) {
+  for (const prefix of prefixes) {
+    if (!input.startsWith(prefix)) continue;
+    return input.slice(prefix.length).trim();
+  }
+  return null;
+}
+
+function resolveAfazer(inputKey) {
+  const key = String(inputKey || '').trim();
+  if (!key) return null;
+
+  const { ordered } = getActiveAfazeres();
+  if (/^\d+$/.test(key)) {
+    const byIndex = ordered[Number.parseInt(key, 10) - 1];
+    if (byIndex) return byIndex;
+  }
+
+  return ordered.find(task => task.id === key) || null;
+}
+
+function renderAfazeresList() {
+  const { importantes, menosImportantes } = getActiveAfazeres();
+  if (importantes.length === 0 && menosImportantes.length === 0) {
+    return 'Nao ha afazeres pendentes.';
+  }
+
+  let index = 1;
+  const lines = [];
+
+  const appendSection = (title, tasks) => {
+    lines.push(`**${title}**`);
+    if (tasks.length === 0) {
+      lines.push('- Nenhuma tarefa.');
+      lines.push('');
+      return;
+    }
+
+    for (const task of tasks) {
+      lines.push(`- [${index}] ${task.title}`);
+      index += 1;
+    }
+    lines.push('');
+  };
+
+  appendSection('Importante', importantes);
+  appendSection('Menos importante', menosImportantes);
+
+  lines.push('Use /afazer-feita NUMERO ou /afazer-remover NUMERO.');
+  return lines.join('\n').trim();
+}
+
+function renderAfazeresStatus() {
+  const tasks = listTasks();
+  const pendentes = tasks.filter(task => task.status === 'pending' || task.status === 'in_progress');
+  const concluidas = tasks.filter(task => task.status === 'done');
+  const importantes = pendentes.filter(task => getTaskImportance(task) === TASK_IMPORTANCE_IMPORTANTE);
+  const menosImportantes = pendentes.filter(task => getTaskImportance(task) === TASK_IMPORTANCE_MENOS_IMPORTANTE);
+
+  return [
+    'Status dos afazeres:',
+    `- Pendentes: ${pendentes.length}`,
+    `- Importante: ${importantes.length}`,
+    `- Menos importante: ${menosImportantes.length}`,
+    `- Concluidas: ${concluidas.length}`
+  ].join('\n');
+}
+
+function normalizeAfazerImportanceInput(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (normalized === 'importante' || normalized === 'alta' || normalized === 'alto') {
+    return TASK_IMPORTANCE_IMPORTANTE;
+  }
+
+  if (
+    normalized === 'menos-importante' ||
+    normalized === 'menos_importante' ||
+    normalized === 'menos importante' ||
+    normalized === 'baixa' ||
+    normalized === 'baixo'
+  ) {
+    return TASK_IMPORTANCE_MENOS_IMPORTANTE;
+  }
+
+  return null;
+}
+
+function setAfazerImportance(task, targetImportance) {
+  const normalizedImportance = normalizeTaskImportance(targetImportance);
+  const currentTags = Array.isArray(task.tags) ? task.tags : [];
+  const cleanedTags = currentTags.filter(tag => tag !== TASK_IMPORTANCE_IMPORTANTE && tag !== TASK_IMPORTANCE_MENOS_IMPORTANTE);
+  const nextTags = [...new Set([...cleanedTags, 'afazeres', normalizedImportance])];
+
+  return updateTask(task.id, {
+    importance: normalizedImportance,
+    tags: nextTags
+  });
+}
+
+function renderAfazeresHelp() {
+  return [
+    'Comandos de afazeres:',
+    '/afazer-add TITULO',
+    '/afazer-add-importante TITULO',
+    '/afazer-add-menos-importante TITULO',
+    '/afazer-lista',
+    '/afazer-marcar-importante NUMERO_OU_ID',
+    '/afazer-marcar-menos-importante NUMERO_OU_ID',
+    '/afazer-reclassificar NUMERO_OU_ID IMPORTANTE|MENOS_IMPORTANTE',
+    '/afazer-feita NUMERO_OU_ID',
+    '/afazer-remover NUMERO_OU_ID',
+    '/afazer-status'
+  ].join('\n');
+}
+
 export function handleSlashCommand({ text, phone }) {
   ensureOwnerPhone(phone || getDefaultReminderPhone(), 'phone');
   const input = String(text || '').trim();
   if (!input.startsWith('/')) return null;
+
+  if (input === '/afazer-ajuda' || input === '/afazeres-ajuda') {
+    return renderAfazeresHelp();
+  }
+
+  const addImportantePayload = parseCommandPayload(input, ['/afazer-add-importante ', '/afazeres-add-importante ']);
+  if (addImportantePayload !== null) {
+    if (!addImportantePayload) return 'Formato invalido. Use: /afazer-add-importante TITULO';
+    const task = addTask({
+      title: addImportantePayload,
+      priority: 'high',
+      importance: TASK_IMPORTANCE_IMPORTANTE,
+      tags: ['afazeres', TASK_IMPORTANCE_IMPORTANTE]
+    });
+    return `Afazer adicionado em **${taskImportanceLabel(getTaskImportance(task))}**: ${task.title}`;
+  }
+
+  const addMenosImportantePayload = parseCommandPayload(input, ['/afazer-add-menos-importante ', '/afazeres-add-menos-importante ']);
+  if (addMenosImportantePayload !== null) {
+    if (!addMenosImportantePayload) return 'Formato invalido. Use: /afazer-add-menos-importante TITULO';
+    const task = addTask({
+      title: addMenosImportantePayload,
+      priority: 'low',
+      importance: TASK_IMPORTANCE_MENOS_IMPORTANTE,
+      tags: ['afazeres', TASK_IMPORTANCE_MENOS_IMPORTANTE]
+    });
+    return `Afazer adicionado em **${taskImportanceLabel(getTaskImportance(task))}**: ${task.title}`;
+  }
+
+  const addPayload = parseCommandPayload(input, ['/afazer-add ', '/afazeres-add ']);
+  if (addPayload !== null) {
+    if (!addPayload) return 'Formato invalido. Use: /afazer-add TITULO';
+    const task = addTask({
+      title: addPayload,
+      priority: 'medium',
+      importance: TASK_IMPORTANCE_MENOS_IMPORTANTE,
+      tags: ['afazeres', TASK_IMPORTANCE_MENOS_IMPORTANTE]
+    });
+    return `Afazer adicionado em **${taskImportanceLabel(getTaskImportance(task))}**: ${task.title}`;
+  }
+
+  if (input === '/afazer-lista' || input === '/afazeres-lista') {
+    return renderAfazeresList();
+  }
+
+  if (input === '/afazer-status' || input === '/afazeres-status') {
+    return renderAfazeresStatus();
+  }
+
+  const markImportantePayload = parseCommandPayload(input, [
+    '/afazer-marcar-importante ',
+    '/afazeres-marcar-importante ',
+    '/afazer-mover-importante ',
+    '/afazeres-mover-importante '
+  ]);
+  if (markImportantePayload !== null) {
+    if (!markImportantePayload) return 'Formato invalido. Use: /afazer-marcar-importante NUMERO_OU_ID';
+    const task = resolveAfazer(markImportantePayload);
+    if (!task) return `Afazer nao encontrado: ${markImportantePayload}`;
+    const updated = setAfazerImportance(task, TASK_IMPORTANCE_IMPORTANTE);
+    return `Afazer movido para **${taskImportanceLabel(getTaskImportance(updated))}**: ${updated.title}`;
+  }
+
+  const markMenosImportantePayload = parseCommandPayload(input, [
+    '/afazer-marcar-menos-importante ',
+    '/afazeres-marcar-menos-importante ',
+    '/afazer-mover-menos-importante ',
+    '/afazeres-mover-menos-importante '
+  ]);
+  if (markMenosImportantePayload !== null) {
+    if (!markMenosImportantePayload) return 'Formato invalido. Use: /afazer-marcar-menos-importante NUMERO_OU_ID';
+    const task = resolveAfazer(markMenosImportantePayload);
+    if (!task) return `Afazer nao encontrado: ${markMenosImportantePayload}`;
+    const updated = setAfazerImportance(task, TASK_IMPORTANCE_MENOS_IMPORTANTE);
+    return `Afazer movido para **${taskImportanceLabel(getTaskImportance(updated))}**: ${updated.title}`;
+  }
+
+  const reclassifyPayload = parseCommandPayload(input, ['/afazer-reclassificar ', '/afazeres-reclassificar ']);
+  if (reclassifyPayload !== null) {
+    if (!reclassifyPayload) {
+      return 'Formato invalido. Use: /afazer-reclassificar NUMERO_OU_ID IMPORTANTE|MENOS_IMPORTANTE';
+    }
+
+    const [rawKey, ...rawImportanceParts] = reclassifyPayload.split(/\s+/).filter(Boolean);
+    const importanceInput = rawImportanceParts.join(' ').trim();
+    const parsedImportance = normalizeAfazerImportanceInput(importanceInput);
+    if (!rawKey || !parsedImportance) {
+      return 'Formato invalido. Use: /afazer-reclassificar NUMERO_OU_ID IMPORTANTE|MENOS_IMPORTANTE';
+    }
+
+    const task = resolveAfazer(rawKey);
+    if (!task) return `Afazer nao encontrado: ${rawKey}`;
+    const updated = setAfazerImportance(task, parsedImportance);
+    return `Afazer movido para **${taskImportanceLabel(getTaskImportance(updated))}**: ${updated.title}`;
+  }
+
+  const markDonePayload = parseCommandPayload(input, ['/afazer-feita ', '/afazeres-feita ']);
+  if (markDonePayload !== null) {
+    if (!markDonePayload) return 'Formato invalido. Use: /afazer-feita NUMERO_OU_ID';
+    const task = resolveAfazer(markDonePayload);
+    if (!task) return `Afazer nao encontrado: ${markDonePayload}`;
+    updateTask(task.id, { status: 'done' });
+    return `Afazer concluido: ${task.title}`;
+  }
+
+  const removePayload = parseCommandPayload(input, ['/afazer-remover ', '/afazeres-remover ']);
+  if (removePayload !== null) {
+    if (!removePayload) return 'Formato invalido. Use: /afazer-remover NUMERO_OU_ID';
+    const task = resolveAfazer(removePayload);
+    if (!task) return `Afazer nao encontrado: ${removePayload}`;
+    deleteTask(task.id);
+    return `Afazer removido: ${task.title}`;
+  }
 
   if (input === '/comandos') {
     const commands = listCommands();
