@@ -43,6 +43,14 @@ const FBA_HEADERS = [
   'Status', 'Observacoes'
 ];
 
+function formatObservations(product) {
+  const notes = [...(product.reasons || [])];
+  if (product.sheetSyncKey) {
+    notes.push(`syncKey=${product.sheetSyncKey}`);
+  }
+  return notes.join('; ');
+}
+
 /**
  * Garante que os headers existem na planilha.
  */
@@ -102,7 +110,7 @@ export async function appendProduct(product) {
     product.keepaAvailable ? 'SIM' : 'NAO',
     product.azInsightAvailable ? 'SIM' : 'NAO',
     product.status || '',
-    (product.reasons || []).join('; ')
+    formatObservations(product)
   ];
 
   await sheets.spreadsheets.values.append({
@@ -135,7 +143,7 @@ export async function appendProducts(products) {
     p.amazonSells ? 'SIM' : 'NAO',
     p.keepaAvailable ? 'SIM' : 'NAO',
     p.azInsightAvailable ? 'SIM' : 'NAO',
-    p.status || '', (p.reasons || []).join('; ')
+    p.status || '', formatObservations(p)
   ]);
 
   await sheets.spreadsheets.values.append({

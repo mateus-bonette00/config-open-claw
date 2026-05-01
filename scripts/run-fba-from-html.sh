@@ -48,6 +48,7 @@ OUTPUT_DIR="/home/bonette/Documentos/produtos-amazon-lucros"
 INBOX_DIR="$INPUT_DIR"
 DONE_DIR="$INPUT_DIR/feitos"
 STATE_FILE="$PROJECT_DIR/storage/state/fba.json"
+STATUS_FILE="$PROJECT_DIR/storage/state/fba-status.json"
 
 MODE="auto"
 HTML_INPUT=""
@@ -474,6 +475,7 @@ log "HTML: $FBA_HTML_PATH"
 log "Batch size: $FBA_BATCH_SIZE"
 log "Input dir: $FBA_INPUT_DIR"
 log "Output dir: $FBA_OUTPUT_DIR"
+log "Status painel: $STATUS_FILE"
 log "Audit: $FBA_AUDIT (screenshots=$FBA_AUDIT_SCREENSHOTS)"
 log "Auto VPN: $AUTO_VPN (profile=$VPN_PROFILE, wait=${VPN_WAIT_SECONDS}s)"
 
@@ -520,3 +522,4 @@ case "$MODE" in
 esac
 
 log "Concluido. Relatorios em: $FBA_OUTPUT_DIR"
+log "Status do painel em: $STATUS_FILE"
