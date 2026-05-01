@@ -23,14 +23,14 @@ cd ~/openclaw-agents
 # Ativar VPN US primeiro!
 # Fechar Chrome se estiver aberto
 
-# Primeiro batch (50 produtos):
-node agents/fba/index.js
+# Rodar completo:
+bash scripts/run-fba-from-html.sh --mode auto
 
 # Continuar de onde parou:
-node agents/fba/index.js --resume
+bash scripts/run-fba-from-html.sh --mode resume
 
-# Ver progresso:
-cat storage/state/fba.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Processados: {len(d.get(\"productResults\",{}))} | Ultimo: {d.get(\"lastProcessedIndex\",0)}')"
+# Ver progresso simples para painel:
+cat storage/state/fba-status.json | python3 -m json.tool
 ```
 
 ### Verificar logs
@@ -84,7 +84,7 @@ scp -r bonette@192.168.0.173:~/openclaw-agents/storage/state/ ./backups/state-$(
 
 ### Resetar estado do FBA (recomecar do zero)
 ```bash
-ssh bonette@192.168.0.173 "rm ~/openclaw-agents/storage/state/fba.json"
+ssh bonette@192.168.0.173 "cd ~/openclaw-agents && mkdir -p storage/state/backups && mv storage/state/fba.json storage/state/backups/fba-$(date +%Y%m%d-%H%M%S).json"
 ```
 
 ---
@@ -138,5 +138,6 @@ ssh bonette@192.168.0.173 "find ~/openclaw-agents/storage/screenshots/ -mtime +7
 | Open Claw config | ~/.openclaw/openclaw.json (no servidor) |
 | Guia completo | docs/Guia-Para-Open-Claw.md |
 | Estado FBA | storage/state/fba.json |
+| Status painel FBA | storage/state/fba-status.json |
 | Logs | storage/logs/ |
 | Screenshots | storage/screenshots/ |

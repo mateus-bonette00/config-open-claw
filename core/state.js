@@ -27,17 +27,29 @@ export class StateManager {
       }
     } catch (err) {
       console.error(`[StateManager] Erro ao carregar estado de ${this.agentName}:`, err.message);
+      const backupPath = this.filePath + '.bak';
+      try {
+        if (fs.existsSync(backupPath)) {
+          console.error(`[StateManager] Tentando carregar backup de ${this.agentName}: ${backupPath}`);
+          return JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
+        }
+      } catch (backupErr) {
+        console.error(`[StateManager] Backup de ${this.agentName} tambem falhou:`, backupErr.message);
+      }
     }
     return {};
   }
 
   save() {
     this._ensureDir();
-    // Backup antes de salvar
+    const tmpPath = `${this.filePath}.${process.pid}.tmp`;
+
     if (fs.existsSync(this.filePath)) {
       fs.copyFileSync(this.filePath, this.filePath + '.bak');
     }
-    fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf-8');
+
+    fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf-8');
+    fs.renameSync(tmpPath, this.filePath);
   }
 
   get(key, defaultValue = undefined) {
@@ -46,6 +58,15 @@ export class StateManager {
 
   set(key, value) {
     this.data[key] = value;
+    this.save();
+    return this;
+  }
+
+  setMany(values) {
+    this.data = {
+      ...this.data,
+      ...values
+    };
     this.save();
     return this;
   }
@@ -59,8 +80,10 @@ export class StateManager {
   }
 
   setLastProcessedIndex(index) {
-    this.set('lastProcessedIndex', index);
-    this.set('lastProcessedAt', new Date().toISOString());
+    this.setMany({
+      lastProcessedIndex: index,
+      lastProcessedAt: new Date().toISOString()
+    });
   }
 
   /**
@@ -75,6 +98,37 @@ export class StateManager {
     this.set('productResults', results);
   }
 
+  updateProductResult(index, updates) {
+    const results = this.get('productResults', {});
+    results[index] = {
+      ...(results[index] || {}),
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    this.set('productResults', results);
+  }
+
+  recordProductResult(index, result, lastProcessedIndex = null) {
+    const results = this.get('productResults', {});
+    const now = new Date().toISOString();
+    const nextData = {
+      productResults: {
+        ...results,
+        [index]: {
+          ...result,
+          processedAt: now
+        }
+      }
+    };
+
+    if (lastProcessedIndex !== null && lastProcessedIndex !== undefined) {
+      nextData.lastProcessedIndex = lastProcessedIndex;
+      nextData.lastProcessedAt = now;
+    }
+
+    this.setMany(nextData);
+  }
+
   getStats() {
     const results = this.get('productResults', {});
     const values = Object.values(results);
@@ -82,6 +136,7 @@ export class StateManager {
       total: values.length,
       approved: values.filter(r => r.status === 'approved').length,
       rejected: values.filter(r => r.status === 'rejected').length,
+      needsReview: values.filter(r => r.status === 'needs_review').length,
       skipped: values.filter(r => r.status === 'skipped').length,
       errors: values.filter(r => r.status === 'error').length
     };

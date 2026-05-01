@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import readline from 'node:readline/promises';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { createLogger, StateManager } from '../../core/index.js';
 import { parseProductsHTML, groupBySupplier, analyzeParsedProducts } from './parser.js';
@@ -24,6 +25,8 @@ import {
 } from './browser.js';
 import { evaluateProduct, calculateBuyCost } from './rules.js';
 import { generateApprovedHTML } from './report.js';
+import { createFbaStatusWriter, createSessionId } from './status.js';
+import { syncApprovedProductsToSheets } from './sheets-sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const log = createLogger('fba-agent');
@@ -32,16 +35,34 @@ const state = new StateManager('fba');
 const PROJECT_DIR = path.join(__dirname, '..', '..');
 const INPUT_DIR = process.env.FBA_INPUT_DIR || path.join(PROJECT_DIR, 'amazon-fba', 'produtos-fornecedores-html');
 const OUTPUT_DIR = process.env.FBA_OUTPUT_DIR || path.join(PROJECT_DIR, 'amazon-fba', 'produtos-encontrados');
-const HTML_PATH = process.env.FBA_HTML_PATH || path.join(INPUT_DIR, 'Produtos_Mateus_22_02_2026_141622.html');
+const DEFAULT_HTML_PATH = path.join(INPUT_DIR, 'Produtos_Mateus_22_02_2026_141622.html');
 const RESUME = process.argv.includes('--resume');
 const DRY_RUN = process.argv.includes('--dry-run');
 const MANUAL_MODE = process.argv.includes('--manual');
+const RUN_MODE = DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : RESUME ? 'resume' : 'auto';
 const MAX_ERRORS_CONSECUTIVOS = 5;
 const BATCH_SIZE = parseInt(process.env.FBA_BATCH_SIZE || '200', 10);
 const REPORT_DIR = OUTPUT_DIR;
 const AUDIT_ENABLED = ['1', 'true', 'yes', 'on'].includes(String(process.env.FBA_AUDIT || '').toLowerCase());
 const AUDIT_SCREENSHOTS = ['1', 'true', 'yes', 'on'].includes(String(process.env.FBA_AUDIT_SCREENSHOTS || '').toLowerCase());
 const AUDIT_BASE_DIR = path.join(PROJECT_DIR, 'storage', 'audit', 'fba');
+const SESSION_START = new Date().toISOString();
+const SESSION_ID = createSessionId(new Date(SESSION_START));
+
+function resolveHtmlPathForRun() {
+  const configuredHtmlPath = process.env.FBA_HTML_PATH;
+  if (configuredHtmlPath) return configuredHtmlPath;
+
+  const previousHtmlPath = state.get('htmlFile');
+  if (RESUME && previousHtmlPath && fs.existsSync(previousHtmlPath)) {
+    return previousHtmlPath;
+  }
+
+  return DEFAULT_HTML_PATH;
+}
+
+const HTML_PATH = resolveHtmlPathForRun();
+let dashboardStatus = null;
 
 class ManualAbortError extends Error {
   constructor() {
@@ -74,6 +95,64 @@ function formatReasons(result) {
   return (result.reasons || [])
     .filter(Boolean)
     .join(' | ');
+}
+
+function updateDashboardStatus(patch = {}) {
+  if (!dashboardStatus) return null;
+
+  try {
+    return dashboardStatus.updateFromState(state, patch);
+  } catch (err) {
+    log.warn(`Nao foi possivel atualizar status do painel: ${err.message}`);
+    return null;
+  }
+}
+
+function buildInputSignature(products) {
+  const signatureBase = products
+    .map(product => `${product.index}|${product.upc || ''}|${product.supplierUrl || ''}`)
+    .join('\n');
+  return crypto.createHash('sha256').update(signatureBase).digest('hex');
+}
+
+function validateResumeInput(products, inputSignature) {
+  if (!RESUME) return;
+
+  const previousTotal = state.get('totalProducts');
+  const previousSignature = state.get('inputSignature');
+  const previousHtmlFile = state.get('htmlFile');
+
+  if (previousTotal !== undefined && previousTotal !== products.length) {
+    throw new Error(
+      `Resume bloqueado: o estado anterior tem ${previousTotal} produtos, mas o HTML atual tem ${products.length}. ` +
+      'Use o mesmo HTML da execucao anterior ou rode sem --resume para recomecar.'
+    );
+  }
+
+  if (previousSignature && previousSignature !== inputSignature) {
+    throw new Error(
+      'Resume bloqueado: o HTML atual nao bate com o estado salvo. ' +
+      'Use o HTML original da execucao anterior ou rode sem --resume para recomecar.'
+    );
+  }
+
+  if (previousHtmlFile && path.resolve(previousHtmlFile) !== path.resolve(HTML_PATH)) {
+    log.warn(`Resume usando HTML diferente do salvo no estado: salvo=${previousHtmlFile} atual=${HTML_PATH}`);
+  }
+}
+
+function getResumeStartIndex(products) {
+  const lastProcessed = state.getLastProcessedIndex();
+  const results = state.get('productResults', {});
+  let consecutiveProcessed = -1;
+
+  for (let i = 0; i < products.length; i++) {
+    if (!results[String(products[i].index)]) break;
+    consecutiveProcessed = i;
+  }
+
+  const startIndex = Math.max(lastProcessed, consecutiveProcessed) + 1;
+  return Math.min(Math.max(startIndex, 0), products.length);
 }
 
 function normalizeFiniteNumber(value, { allowZero = false } = {}) {
@@ -114,8 +193,7 @@ function describeSupplierPriceStatus(status) {
 function createAuditTrail() {
   if (!AUDIT_ENABLED) return null;
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const sessionId = `${timestamp}-${process.pid}`;
+  const sessionId = SESSION_ID;
   const dir = path.join(AUDIT_BASE_DIR, sessionId);
   fs.mkdirSync(dir, { recursive: true });
   const eventsPath = path.join(dir, 'events.ndjson');
@@ -125,7 +203,7 @@ function createAuditTrail() {
     sessionId,
     startedAt: new Date().toISOString(),
     htmlPath: HTML_PATH,
-    mode: DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : RESUME ? 'resume' : 'auto',
+    mode: RUN_MODE,
     batchSize: BATCH_SIZE,
     screenshots: AUDIT_SCREENSHOTS
   };
@@ -596,7 +674,7 @@ async function openAmazonResultPage(page, product, bestMatch, manual, audit) {
   return { status: 'ok', pageResult };
 }
 
-async function processProduct(page, product, manual, audit) {
+async function processProduct(page, product, manual, audit, updateStep = () => {}) {
   recordAudit(audit, 'product:start', {
     productIndex: product.index,
     productName: product.name,
@@ -605,6 +683,7 @@ async function processProduct(page, product, manual, audit) {
     supplierDomain: product.supplierDomain
   });
 
+  updateStep('supplier', product);
   const supplierOutcome = await ensureSupplierData(page, product, manual, audit);
   if (supplierOutcome.status !== 'ok') {
     recordAudit(audit, 'product:end', {
@@ -620,6 +699,7 @@ async function processProduct(page, product, manual, audit) {
   const supplierPrice = normalizeFiniteNumber(supplierData.price);
   const supplierPriceStatus = supplierData.priceStatus || (supplierPrice !== null ? 'ok' : 'missing');
 
+  updateStep('amazon-search', product);
   const amazonSearchOutcome = await searchAmazonForProduct(page, product, manual, audit);
   if (amazonSearchOutcome.status !== 'ok') {
     recordAudit(audit, 'product:end', {
@@ -645,6 +725,7 @@ async function processProduct(page, product, manual, audit) {
     `${bestMatchPrice !== null ? `$${bestMatchPrice.toFixed(2)}` : 'preço-não-detectado'}`
   );
 
+  updateStep('amazon-product', product);
   const amazonPageOutcome = await openAmazonResultPage(page, product, bestMatch, manual, audit);
   if (amazonPageOutcome.status !== 'ok') {
     recordAudit(audit, 'product:end', {
@@ -666,6 +747,7 @@ async function processProduct(page, product, manual, audit) {
     };
   }
 
+  updateStep('keepa', product);
   const keepaData = await extractKeepaData(page);
   const amazonSells = await checkAmazonSells(page);
   recordAudit(audit, 'marketplace:data', {
@@ -690,6 +772,7 @@ async function processProduct(page, product, manual, audit) {
     }
   }
 
+  updateStep('azinsight', product);
   const azInsightData = await extractAZInsightData(page);
   const amazonPrice = firstMeaningfulNumber([
     bestMatch.price,
@@ -795,15 +878,19 @@ async function processProduct(page, product, manual, audit) {
 function runDryRun(products, startIndex) {
   for (let i = startIndex; i < products.length; i++) {
     const product = products[i];
-    state.addProductResult(product.index, {
+    state.recordProductResult(product.index, {
       status: 'needs_review',
       name: product.name,
       upc: product.upc,
       supplierDomain: product.supplierDomain,
       supplierUrl: product.supplierUrl,
       hasValidUPC: product.hasValidUPC
+    }, i);
+    updateDashboardStatus({
+      status: 'running',
+      currentStep: 'parse-input',
+      lastProcessedIndex: i
     });
-    state.setLastProcessedIndex(i);
   }
 
   log.info(`\nDry-run concluído: ${products.length - startIndex} produtos para revisão`);
@@ -820,27 +907,94 @@ function generateReport() {
   log.info('\n=== RELATÓRIO FINAL ===');
   log.info(`Total processados: ${stats.total}`);
   log.info(`Aprovados: ${stats.approved}`);
-  log.info(`Pulados/Não aprovados: ${stats.total - stats.approved - stats.errors}`);
+  log.info(`Rejeitados: ${stats.rejected}`);
+  log.info(`Precisam revisão: ${stats.needsReview}`);
+  log.info(`Pulados: ${stats.skipped}`);
   log.info(`Erros: ${stats.errors}`);
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const reportPath = path.join(REPORT_DIR, `fba-aprovados-${timestamp}.html`);
   generateApprovedHTML(approved, reportPath);
+  state.setMany({
+    reportPath,
+    reportGeneratedAt: new Date().toISOString()
+  });
 
   log.info(`\nRelatório HTML: ${reportPath}`);
   log.info(`Estado salvo em: ${state.filePath}`);
+
+  return { reportPath, approved, stats };
+}
+
+async function finalizeSession({ products, audit, finalStatus = 'completed', auditStatus = 'completed' }) {
+  updateDashboardStatus({ status: 'running', currentStep: 'report' });
+  const reportResult = generateReport();
+  updateDashboardStatus({
+    status: 'running',
+    currentStep: 'sheets-sync',
+    reportPath: reportResult.reportPath
+  });
+  const sheetResult = await syncApprovedProductsToSheets({
+    state,
+    approvedProducts: reportResult.approved,
+    updateStatus: patch => updateDashboardStatus({
+      status: 'running',
+      currentStep: 'sheets-sync',
+      ...patch
+    })
+  });
+
+  const finalStats = state.getStats();
+  recordAudit(audit, 'session:end', {
+    status: auditStatus,
+    stats: finalStats,
+    sheets: sheetResult,
+    statePath: state.filePath
+  });
+  updateDashboardStatus({
+    status: finalStatus,
+    currentStep: 'sheets-sync',
+    reportPath: reportResult.reportPath
+  });
+
+  log.info(
+    `Resumo final: processados=${finalStats.total}/${products.length} | ` +
+    `aprovados=${finalStats.approved} | rejeitados=${finalStats.rejected} | ` +
+    `revisao=${finalStats.needsReview} | pulados=${finalStats.skipped} | erros=${finalStats.errors}`
+  );
+  log.info(`Sheets: status=${sheetResult.status} | linhas=${sheetResult.rowsWritten}`);
+  log.info(`Status do painel: ${dashboardStatus.filePath}`);
+
+  return { reportResult, sheetResult, finalStats };
 }
 
 async function run() {
-  const manual = createManualController(MANUAL_MODE);
+  let manual = null;
   const audit = createAuditTrail();
   let browser = null;
   let stopRequested = false;
+  let pausedByErrors = false;
+
+  dashboardStatus = createFbaStatusWriter({
+    sessionId: SESSION_ID,
+    sessionStart: SESSION_START,
+    mode: RUN_MODE,
+    inputHtmlPath: HTML_PATH
+  });
+  updateDashboardStatus({
+    status: 'running',
+    currentStep: 'parse-input',
+    mode: RUN_MODE,
+    inputHtmlPath: HTML_PATH
+  });
 
   try {
+    manual = createManualController(MANUAL_MODE);
     log.info('=== Agente FBA Iniciando ===');
+    log.info('Agente visivel: LUCAS1 | id tecnico: fba-amazon');
+    log.info(`Sessao: ${SESSION_ID}`);
     log.info(`HTML: ${HTML_PATH}`);
-    log.info(`Modo: ${DRY_RUN ? 'DRY-RUN' : MANUAL_MODE ? 'MANUAL' : 'AUTOMÁTICO'}`);
+    log.info(`Modo: ${RUN_MODE}`);
     log.info(`Batch size: ${BATCH_SIZE}`);
     log.info(`Resume: ${RESUME}`);
     if (audit) {
@@ -849,7 +1003,7 @@ async function run() {
 
     recordAudit(audit, 'session:start', {
       htmlPath: HTML_PATH,
-      mode: DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : RESUME ? 'resume' : 'auto',
+      mode: RUN_MODE,
       batchSize: BATCH_SIZE
     });
 
@@ -861,6 +1015,7 @@ async function run() {
     const parsedInput = parseProductsHTML(html);
     const { products, skipped, warnings, totalRows, metrics } = parsedInput;
     const parseAudit = analyzeParsedProducts(parsedInput);
+    const inputSignature = buildInputSignature(products);
     recordAudit(audit, 'parse:summary', {
       totalRows,
       validProducts: products.length,
@@ -885,35 +1040,68 @@ async function run() {
       log.info(`  ${domain}: ${groupedProducts.length} produtos`);
     }
 
+    validateResumeInput(products, inputSignature);
+
     let startIndex = 0;
     if (RESUME) {
-      const lastProcessed = state.getLastProcessedIndex();
-      if (lastProcessed >= 0) {
-        startIndex = lastProcessed + 1;
-        log.info(`Retomando do produto #${startIndex} (último processado: #${lastProcessed})`);
-        log.info(`Estado anterior: ${JSON.stringify(state.getStats())}`);
+      startIndex = getResumeStartIndex(products);
+      if (startIndex >= products.length) {
+        log.info(`Resume: todos os ${products.length} produtos ja tinham progresso salvo.`);
+      } else {
+        log.info(`Retomando do produto #${startIndex + 1} de ${products.length}`);
       }
+      log.info(`Estado anterior: ${JSON.stringify(state.getStats())}`);
     } else {
       state.reset();
       log.info('Estado resetado; processando do início.');
     }
 
-    state.set('sessionStart', new Date().toISOString());
-    state.set('htmlFile', HTML_PATH);
-    state.set('totalProducts', products.length);
-    state.set('mode', DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : 'auto');
-    state.set('inputMetrics', parseAudit);
+    state.setMany({
+      agentTechnicalId: 'fba-amazon',
+      agentDisplayName: 'LUCAS1',
+      sessionId: SESSION_ID,
+      sessionStart: SESSION_START,
+      htmlFile: HTML_PATH,
+      totalProducts: products.length,
+      mode: RUN_MODE,
+      inputMetrics: parseAudit,
+      inputSignature,
+      sheetSyncStatus: 'not-started',
+      sheetRowsWritten: 0
+    });
+    updateDashboardStatus({
+      status: 'running',
+      currentStep: 'parse-input',
+      totalProducts: products.length
+    });
 
     if (DRY_RUN) {
       runDryRun(products, startIndex);
-      generateReport();
-      recordAudit(audit, 'session:end', { status: 'completed-dry-run' });
+      await finalizeSession({
+        products,
+        audit,
+        finalStatus: 'completed',
+        auditStatus: 'completed-dry-run'
+      });
       return;
     }
 
+    if (startIndex >= products.length) {
+      log.info('Nada novo para processar no resume; gerando relatorio/status com o estado atual.');
+      await finalizeSession({
+        products,
+        audit,
+        finalStatus: 'completed',
+        auditStatus: 'completed-resume-noop'
+      });
+      return;
+    }
+
+    updateDashboardStatus({ status: 'running', currentStep: 'verify-vpn' });
     const vpn = await verifyVpnConnection();
     recordAudit(audit, 'vpn:validated', vpn || {});
 
+    updateDashboardStatus({ status: 'running', currentStep: 'launch-browser' });
     browser = await launchBrowser();
     const page = await browser.newPage();
     page.setDefaultTimeout(45000);
@@ -930,14 +1118,39 @@ async function run() {
         const product = products[i];
         log.info(`\n--- [${i + 1}/${products.length}] ${product.name} ---`);
         log.info(`  UPC: ${product.upc} | Fornecedor: ${product.supplierDomain}`);
+        let currentProductStep = 'supplier';
 
         try {
-          const result = await processProduct(page, product, manual, audit);
+          const existingResults = state.get('productResults', {});
+          if (RESUME && existingResults[String(product.index)]) {
+            log.info(`  [RESUME] Produto ja tinha resultado salvo; seguindo para o proximo.`);
+            state.setLastProcessedIndex(i);
+            updateDashboardStatus({
+              status: 'running',
+              currentStep: 'parse-input',
+              lastProcessedIndex: i
+            });
+            continue;
+          }
+
+          const updateProductStep = step => {
+            currentProductStep = step;
+            updateDashboardStatus({
+              status: 'running',
+              currentStep: step,
+              lastProcessedIndex: state.getLastProcessedIndex()
+            });
+          };
+
+          const result = await processProduct(page, product, manual, audit, updateProductStep);
           const storedResult = buildStateResult(product, result);
-          state.addProductResult(product.index, storedResult);
-          state.setLastProcessedIndex(i);
+          state.recordProductResult(product.index, storedResult, i);
           state.set('lastError', null);
           consecutiveErrors = 0;
+          updateDashboardStatus({
+            status: 'running',
+            lastProcessedIndex: i
+          });
 
           if (result.status === 'approved') {
             log.info(`  [APROVADO] margem=${result.margin}% roi=${result.roi}% lucro=$${result.profit}`);
@@ -969,26 +1182,33 @@ async function run() {
             screenshotPath
           });
 
-          state.addProductResult(product.index, errorResult);
           recordAudit(audit, 'product:error', {
             productIndex: product.index,
             productName: product.name,
             message: err.message,
             screenshotPath
           });
-          state.setLastProcessedIndex(i);
-          state.set('lastError', {
+          const lastError = {
             productIndex: product.index,
             productName: product.name,
             at: new Date().toISOString(),
             message: err.message,
             screenshotPath
+          };
+          state.recordProductResult(product.index, errorResult, i);
+          state.set('lastError', lastError);
+          updateDashboardStatus({
+            status: 'running',
+            currentStep: currentProductStep || 'supplier',
+            lastProcessedIndex: i,
+            lastError
           });
 
           log.error(`  ERRO processando produto [${product.index}] ${product.name}:`, err.message);
 
           if (consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS) {
             log.error(`${MAX_ERRORS_CONSECUTIVOS} erros consecutivos. Pausando agente; use --resume para continuar.`);
+            pausedByErrors = true;
             break;
           }
 
@@ -1005,28 +1225,65 @@ async function run() {
       }
     }
 
-    generateReport();
-    const finalStats = state.getStats();
-    recordAudit(audit, 'session:end', {
-      status: stopRequested ? 'interrupted-manual' : 'completed',
-      stats: finalStats,
-      statePath: state.filePath
+    const finalStatus = stopRequested ? 'interrupted' : pausedByErrors ? 'stopped' : 'completed';
+    await finalizeSession({
+      products,
+      audit,
+      finalStatus,
+      auditStatus: stopRequested ? 'interrupted-manual' : pausedByErrors ? 'stopped-errors' : 'completed'
     });
 
     if (stopRequested) {
       log.warn('Agente FBA finalizado com interrupção manual. Use --resume para continuar.');
+    } else if (pausedByErrors) {
+      log.warn('Agente FBA pausado por erros consecutivos. Use --resume para continuar.');
     } else {
       log.info('=== Agente FBA Finalizado ===');
     }
+  } catch (err) {
+    const errorPayload = {
+      step: dashboardStatus?.getSnapshot()?.currentStep || 'parse-input',
+      at: new Date().toISOString(),
+      message: err.message
+    };
+    state.set('lastError', errorPayload);
+    updateDashboardStatus({
+      status: 'error',
+      lastError: errorPayload
+    });
+    recordAudit(audit, 'session:error', errorPayload);
+    throw err;
   } finally {
-    manual.close();
+    manual?.close();
     if (audit) {
       log.info(`Auditoria finalizada: ${audit.dir}`);
-      state.set('auditTrailDir', audit.dir);
-      state.set('auditTrailSessionId', audit.sessionId);
+      state.setMany({
+        auditTrailDir: audit.dir,
+        auditTrailSessionId: audit.sessionId
+      });
     }
     await closeBrowser(browser);
   }
+}
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => {
+    const payload = {
+      step: dashboardStatus?.getSnapshot()?.currentStep || 'parse-input',
+      at: new Date().toISOString(),
+      message: `Processo interrompido por ${signal}`
+    };
+    try {
+      state.set('lastError', payload);
+      updateDashboardStatus({
+        status: 'interrupted',
+        lastError: payload
+      });
+    } catch {
+      // processo esta encerrando
+    }
+    process.exit(signal === 'SIGINT' ? 130 : 143);
+  });
 }
 
 run().catch(err => {
