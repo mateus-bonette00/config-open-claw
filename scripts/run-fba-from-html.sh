@@ -18,7 +18,7 @@ Opcoes:
   --help                 Mostra esta ajuda
 
 Exemplos:
-  bash run-fba-from-html.sh --html "/home/bonette/openclaw-agents/amazon-fba/produtos-fornecedores-html/Produtos.html" --mode auto
+  bash run-fba-from-html.sh --html "/home/bonette/Documentos/fornecedores-produtos/Produtos.html" --mode auto
   bash run-fba-from-html.sh --html "Produtos.html" --mode dry-run
   bash run-fba-from-html.sh --mode resume
 EOF
@@ -43,17 +43,18 @@ fi
 
 WORKSPACE_DIR="/home/bonette/.openclaw/workspace"
 ENV_FILE="$PROJECT_DIR/.env"
-INPUT_DIR="$PROJECT_DIR/amazon-fba/produtos-fornecedores-html"
-OUTPUT_DIR="$PROJECT_DIR/amazon-fba/produtos-encontrados"
+INPUT_DIR="/home/bonette/Documentos/fornecedores-produtos"
+OUTPUT_DIR="/home/bonette/Documentos/produtos-amazon-lucros"
 INBOX_DIR="$INPUT_DIR"
+DONE_DIR="$INPUT_DIR/feitos"
 STATE_FILE="$PROJECT_DIR/storage/state/fba.json"
 
 MODE="auto"
 HTML_INPUT=""
 BATCH_SIZE="${FBA_BATCH_SIZE:-120}"
 NO_PARSE=0
-AUDIT=0
-AUDIT_SCREENSHOTS=0
+AUDIT=""
+AUDIT_SCREENSHOTS=""
 AUTO_VPN="${FBA_AUTO_VPN:-1}"
 VPN_PROFILE="${FBA_VPN_PROFILE:-usa-newyork-udp}"
 VPN_WAIT_SECONDS="${FBA_VPN_WAIT_SECONDS:-25}"
@@ -125,6 +126,7 @@ fi
 INPUT_DIR="${FBA_INPUT_DIR:-$INPUT_DIR}"
 OUTPUT_DIR="${FBA_OUTPUT_DIR:-$OUTPUT_DIR}"
 INBOX_DIR="$INPUT_DIR"
+DONE_DIR="${FBA_DONE_DIR:-$DONE_DIR}"
 AUTO_VPN="${FBA_AUTO_VPN:-$AUTO_VPN}"
 VPN_PROFILE="${FBA_VPN_PROFILE:-$VPN_PROFILE}"
 VPN_WAIT_SECONDS="${FBA_VPN_WAIT_SECONDS:-$VPN_WAIT_SECONDS}"
@@ -138,6 +140,31 @@ is_true() {
     *) return 1 ;;
   esac
 }
+
+resolve_flag_to_int() {
+  local raw_value="${1:-}"
+  local fallback="${2:-0}"
+
+  if [[ -z "$raw_value" ]]; then
+    echo "$fallback"
+    return 0
+  fi
+
+  if is_true "$raw_value"; then
+    echo 1
+    return 0
+  fi
+
+  echo 0
+}
+
+if [[ -z "$AUDIT" ]]; then
+  AUDIT="$(resolve_flag_to_int "${FBA_AUDIT:-true}" 1)"
+fi
+
+if [[ -z "$AUDIT_SCREENSHOTS" ]]; then
+  AUDIT_SCREENSHOTS="$(resolve_flag_to_int "${FBA_AUDIT_SCREENSHOTS:-true}" 1)"
+fi
 
 country_allowed() {
   local detected="${1^^}"
@@ -312,6 +339,23 @@ resolve_node_bin() {
 NODE_BIN="$(resolve_node_bin)"
 [[ -x "$NODE_BIN" ]] || die "Node invalido: $NODE_BIN"
 
+list_html_search_dirs() {
+  local seen=""
+  local dir
+
+  for dir in \
+    "$INBOX_DIR" \
+    "$INPUT_DIR" \
+    "$WORKSPACE_DIR/inbox/fba-html" \
+    "$WORKSPACE_DIR/inbox"
+  do
+    [[ -n "$dir" ]] || continue
+    [[ "$seen" == *"|$dir|"* ]] && continue
+    seen="${seen}|${dir}|"
+    echo "$dir"
+  done
+}
+
 resolve_html_path() {
   local input="$1"
   [[ -n "$input" ]] || return 0
@@ -326,14 +370,8 @@ resolve_html_path() {
     return
   fi
 
-  local candidate
-  for base in \
-    "$INPUT_DIR" \
-    "$PROJECT_DIR" \
-    "$WORKSPACE_DIR" \
-    "$INBOX_DIR" \
-    "$PROJECT_DIR/storage" \
-    "$WORKSPACE_DIR/inbox"
+  local candidate base
+  for base in $(list_html_search_dirs)
   do
     candidate="$base/$input"
     if [[ -f "$candidate" ]]; then
@@ -348,16 +386,14 @@ resolve_html_path() {
 find_latest_html() {
   local latest
   latest="$(
-    for dir in \
-      "$INBOX_DIR" \
-      "$INPUT_DIR" \
-      "$WORKSPACE_DIR/inbox/fba-html" \
-      "$PROJECT_DIR" \
-      "$WORKSPACE_DIR"
+    local dir
+    for dir in $(list_html_search_dirs)
     do
       [[ -d "$dir" ]] || continue
-      find "$dir" -maxdepth 3 -type f -name '*.html' -printf '%T@ %p\n' 2>/dev/null
-    done | sort -nr | head -n1 | cut -d' ' -f2-
+      find "$dir" -maxdepth 3 -type f -name '*.html' \
+        -not -path "$DONE_DIR/*" \
+        -printf '%T@|%p\n' 2>/dev/null
+    done | sort -nr | head -n1 | cut -d'|' -f2-
   )"
   [[ -n "$latest" ]] && echo "$latest"
 }
@@ -445,6 +481,18 @@ cd "$PROJECT_DIR"
 
 if [[ "$MODE" != "dry-run" ]]; then
   ensure_vpn_us_before_fba
+
+  if is_true "${FBA_REQUIRE_DISPLAY:-true}"; then
+    if [[ ! -x "$SCRIPT_DIR/ensure-xvfb.sh" ]]; then
+      die "Script de display visual nao encontrado em $SCRIPT_DIR/ensure-xvfb.sh"
+    fi
+
+    log "Garantindo display visual para o Chrome..."
+    DISPLAY_EXPORTS="$("$SCRIPT_DIR/ensure-xvfb.sh")" || die "Falha ao preparar display visual para o Chrome."
+    eval "$DISPLAY_EXPORTS"
+  else
+    export FBA_HEADLESS="${FBA_HEADLESS:-1}"
+  fi
 fi
 
 if [[ "$MODE" != "resume" && "$NO_PARSE" -ne 1 ]]; then

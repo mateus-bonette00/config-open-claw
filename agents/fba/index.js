@@ -2,14 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'node:readline/promises';
 import { fileURLToPath } from 'url';
-import { createLogger, StateManager } from '../../core/index.js';
+import { createLogger, StateManager, config } from '../../core/index.js';
 import { parseProductsHTML, groupBySupplier, analyzeParsedProducts } from './parser.js';
 import {
   launchBrowser,
+  preparePage,
   closeBrowser,
   searchAmazon,
   extractAmazonSearchResults,
   goToProductPage,
+  extractAmazonProductIdentity,
   waitForMarketplaceExtensions,
   openSupplierPage,
   extractSupplierData,
@@ -18,7 +20,6 @@ import {
   extractAZInsightData,
   inputBuyCostInAZInsight,
   checkAmazonSells,
-  humanDelay,
   saveScreenshot,
   verifyVpnConnection
 } from './browser.js';
@@ -30,18 +31,49 @@ const log = createLogger('fba-agent');
 const state = new StateManager('fba');
 
 const PROJECT_DIR = path.join(__dirname, '..', '..');
-const INPUT_DIR = process.env.FBA_INPUT_DIR || path.join(PROJECT_DIR, 'amazon-fba', 'produtos-fornecedores-html');
-const OUTPUT_DIR = process.env.FBA_OUTPUT_DIR || path.join(PROJECT_DIR, 'amazon-fba', 'produtos-encontrados');
-const HTML_PATH = process.env.FBA_HTML_PATH || path.join(INPUT_DIR, 'Produtos_Mateus_22_02_2026_141622.html');
+const INPUT_DIR = process.env.FBA_INPUT_DIR || '/home/bonette/Documentos/fornecedores-produtos';
+const OUTPUT_DIR = process.env.FBA_OUTPUT_DIR || '/home/bonette/Documentos/produtos-amazon-lucros';
+
+function findLatestHtmlInDir(dirPath) {
+  try {
+    if (!fs.existsSync(dirPath)) return null;
+
+    const htmlFiles = fs.readdirSync(dirPath)
+      .filter(file => file.toLowerCase().endsWith('.html'))
+      .map(file => {
+        const fullPath = path.join(dirPath, file);
+        const stats = fs.statSync(fullPath);
+        return { fullPath, mtimeMs: stats.mtimeMs };
+      })
+      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+    return htmlFiles[0]?.fullPath || null;
+  } catch {
+    return null;
+  }
+}
+
+const HTML_PATH = process.env.FBA_HTML_PATH || findLatestHtmlInDir(INPUT_DIR) || '';
 const RESUME = process.argv.includes('--resume');
 const DRY_RUN = process.argv.includes('--dry-run');
 const MANUAL_MODE = process.argv.includes('--manual');
 const MAX_ERRORS_CONSECUTIVOS = 5;
 const BATCH_SIZE = parseInt(process.env.FBA_BATCH_SIZE || '200', 10);
 const REPORT_DIR = OUTPUT_DIR;
+const DONE_DIR = process.env.FBA_DONE_DIR || path.join(INPUT_DIR, 'feitos');
+const PROFIT_DIR = process.env.FBA_PROFIT_DIR || OUTPUT_DIR;
 const AUDIT_ENABLED = ['1', 'true', 'yes', 'on'].includes(String(process.env.FBA_AUDIT || '').toLowerCase());
 const AUDIT_SCREENSHOTS = ['1', 'true', 'yes', 'on'].includes(String(process.env.FBA_AUDIT_SCREENSHOTS || '').toLowerCase());
 const AUDIT_BASE_DIR = path.join(PROJECT_DIR, 'storage', 'audit', 'fba');
+const SUPPLIER_NOT_FOUND_PAUSE_THRESHOLD = 3;
+const SUPPLIER_NOT_FOUND_PAUSE_THRESHOLDS = {
+  'bossenimp.com': 2
+};
+const AMAZON_MATCH_STOPWORDS = new Set([
+  'the', 'and', 'with', 'for', 'from', 'farm', 'tractor', 'toy', 'toys',
+  'authentic', 'die', 'cast', 'model', 'set', 'scale', 'years', 'year',
+  'john', 'deere', 'ertl', 'big'
+]);
 
 class ManualAbortError extends Error {
   constructor() {
@@ -109,6 +141,461 @@ function describeSupplierPriceStatus(status) {
     default:
       return 'Preço ausente no DOM/JSON-LD';
   }
+}
+
+function parseBooleanEnv(value, fallback = null) {
+  if (value === undefined || value === null || value === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(String(value).trim().toLowerCase());
+}
+
+function determineBrowserMode() {
+  const explicit = parseBooleanEnv(process.env.FBA_HEADLESS ?? process.env.CHROME_HEADLESS);
+  if (explicit === true) return 'headless';
+  if (explicit === false) return 'visual';
+  return process.env.DISPLAY || process.env.WAYLAND_DISPLAY ? 'visual' : 'headless';
+}
+
+function buildCurrentProductSnapshot(product, extra = {}) {
+  if (!product) return null;
+
+  return {
+    index: product.index,
+    name: product.name,
+    upc: product.upc,
+    supplierDomain: product.supplierDomain,
+    supplierUrl: product.supplierUrl,
+    ...extra
+  };
+}
+
+function buildSupplierLabelCandidates(domain = '') {
+  const hostname = String(domain || '').toLowerCase().replace(/^www\./, '');
+  const base = hostname.replace(/\.(com|net|org|co|io|us|biz|store)$/i, '');
+  const compact = base.replace(/[^a-z0-9]+/g, '');
+  const spaced = base.replace(/[-_.]+/g, ' ').trim();
+
+  return [...new Set([hostname, base, compact, spaced].filter(Boolean))];
+}
+
+function stripTrailingSupplierSuffix(term, supplierDomain) {
+  let text = String(term || '').trim();
+  if (!text) return '';
+
+  const candidates = buildSupplierLabelCandidates(supplierDomain);
+  for (const candidate of candidates) {
+    const escaped = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const compactCandidate = candidate.replace(/\s+/g, '');
+
+    text = text
+      .replace(new RegExp(`\\s*[-|–]\\s*${escaped}$`, 'i'), '')
+      .replace(new RegExp(`\\s*[-|–]\\s*${compactCandidate}$`, 'i'), '')
+      .trim();
+  }
+
+  return text;
+}
+
+function buildSearchQueries(product) {
+  const queries = [];
+  const seen = new Set();
+
+  for (const term of product.upcVariants || []) {
+    if (!term || seen.has(`upc:${term}`)) continue;
+    seen.add(`upc:${term}`);
+    queries.push({ term, type: 'upc', label: `Buscar Amazon por UPC ${term}` });
+  }
+
+  const titleCandidates = [
+    stripTrailingSupplierSuffix(product.amazonSearchTermTitle, product.supplierDomain),
+    stripTrailingSupplierSuffix(product.name, product.supplierDomain)
+  ].filter(Boolean);
+
+  for (const term of titleCandidates) {
+    const normalized = term.trim();
+    if (!normalized || seen.has(`title:${normalized}`)) continue;
+    seen.add(`title:${normalized}`);
+    queries.push({ term: normalized, type: 'title', label: 'Buscar Amazon por título' });
+  }
+
+  return queries;
+}
+
+function normalizeAmazonMatchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function normalizeAmazonCompactText(value) {
+  return normalizeAmazonMatchText(value).replace(/\s+/g, '');
+}
+
+function tokenizeAmazonMatchText(value) {
+  return normalizeAmazonMatchText(value)
+    .split(' ')
+    .map(token => token.trim())
+    .filter(token => {
+      if (token.length < 2) return false;
+      if (AMAZON_MATCH_STOPWORDS.has(token)) return false;
+      if (/^\d{1,2}$/.test(token)) return false;
+      if (/^\d{8,}$/.test(token)) return false;
+      return true;
+    });
+}
+
+function uniqueNonEmptyStrings(values = []) {
+  return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))];
+}
+
+function extractAmazonScaleTokens(values = []) {
+  const tokens = [];
+
+  for (const value of values) {
+    const matches = String(value || '').match(/\b\d+\s*(?:\/|:)\s*\d+\b/g) || [];
+    for (const match of matches) {
+      const normalized = match.replace(/\s+/g, '').replace(/:/g, '/').toLowerCase();
+      if (normalized) tokens.push(normalized);
+    }
+  }
+
+  return uniqueNonEmptyStrings(tokens);
+}
+
+function extractAmazonModelTokens(values = []) {
+  const tokens = [];
+
+  for (const value of values) {
+    const prepared = String(value || '')
+      .replace(/([a-zA-Z])\s*-\s*(\d)/g, '$1$2')
+      .replace(/(\d)\s*-\s*([a-zA-Z])/g, '$1$2');
+    const matches = prepared.match(/\b[a-zA-Z]*\d+[a-zA-Z0-9]*\b/g) || [];
+
+    for (const match of matches) {
+      const normalized = normalizeAmazonCompactText(match);
+      if (!normalized) continue;
+      if (/^\d{12,}$/.test(normalized)) continue;
+      if (/^\d{1,2}$/.test(normalized)) continue;
+      tokens.push(normalized);
+    }
+  }
+
+  return uniqueNonEmptyStrings(tokens);
+}
+
+function extractAmazonProductCodes(values = []) {
+  const codes = [];
+
+  for (const value of values) {
+    const matches = String(value || '').match(/\b\d{12,14}\b/g) || [];
+    for (const match of matches) {
+      codes.push(match);
+    }
+  }
+
+  return uniqueNonEmptyStrings(codes);
+}
+
+function buildAmazonMatchTargets(product, supplierData = {}, searchTerm = '') {
+  return uniqueNonEmptyStrings([
+    stripTrailingSupplierSuffix(searchTerm, product.supplierDomain),
+    stripTrailingSupplierSuffix(supplierData.title, product.supplierDomain),
+    stripTrailingSupplierSuffix(product.amazonSearchTermTitle, product.supplierDomain),
+    stripTrailingSupplierSuffix(product.name, product.supplierDomain)
+  ]);
+}
+
+function buildAmazonIdentityProfile(product, supplierData = {}, searchTerm = '') {
+  const targets = buildAmazonMatchTargets(product, supplierData, searchTerm);
+  const brandTokens = uniqueNonEmptyStrings(
+    tokenizeAmazonMatchText(supplierData.brand || '')
+      .filter(token => token.length >= 3)
+  );
+  const skuTokens = extractAmazonModelTokens([supplierData.sku]);
+  const modelTokens = uniqueNonEmptyStrings([
+    ...extractAmazonModelTokens(targets),
+    ...extractAmazonModelTokens([supplierData.sku])
+  ]);
+  const scaleTokens = extractAmazonScaleTokens([
+    ...targets,
+    supplierData.category
+  ]);
+  const productCodes = uniqueNonEmptyStrings([
+    ...extractAmazonProductCodes([product.upc, ...(product.upcVariants || [])])
+  ]);
+  const targetTokens = uniqueNonEmptyStrings(targets.flatMap(tokenizeAmazonMatchText));
+
+  return {
+    targets,
+    targetTokens,
+    brandTokens,
+    skuTokens,
+    modelTokens,
+    scaleTokens,
+    productCodes
+  };
+}
+
+function buildAmazonComparisonBundle(values = [], options = {}) {
+  const codeValues = options.codes || [];
+  const normalizedValues = uniqueNonEmptyStrings(values.map(normalizeAmazonMatchText));
+  const combinedText = normalizedValues.join(' ').trim();
+  const compactText = normalizeAmazonCompactText(combinedText);
+  const tokenSet = new Set(normalizedValues.flatMap(tokenizeAmazonMatchText));
+  const modelTokenSet = new Set(extractAmazonModelTokens(values));
+  const scaleTokenSet = new Set(extractAmazonScaleTokens(values));
+  const codeSet = new Set([
+    ...extractAmazonProductCodes(values),
+    ...extractAmazonProductCodes(codeValues)
+  ]);
+
+  return {
+    combinedText,
+    compactText,
+    tokenSet,
+    modelTokenSet,
+    scaleTokenSet,
+    codeSet
+  };
+}
+
+function summarizeAmazonReasons(reasons = [], max = 4) {
+  return uniqueNonEmptyStrings(reasons).slice(0, max);
+}
+
+function deriveAmazonMatchConfidence(score, hardMisses = [], matchedCodes = []) {
+  if (matchedCodes.length > 0) return 'high';
+  if (score >= 58 && hardMisses.length === 0) return 'high';
+  if (score >= 40) return 'medium';
+  return 'low';
+}
+
+function compareAmazonProfile(profile, bundle) {
+  const reasons = [];
+  let score = 0;
+
+  for (const target of profile.targets) {
+    const normalizedTarget = normalizeAmazonMatchText(target);
+    if (!normalizedTarget) continue;
+
+    if (bundle.combinedText === normalizedTarget) {
+      score += 30;
+      reasons.push('titulo-identico');
+      continue;
+    }
+
+    if (bundle.combinedText.includes(normalizedTarget)) {
+      score += 20;
+      reasons.push('titulo-contido');
+      continue;
+    }
+
+    if (normalizedTarget.includes(bundle.combinedText) && bundle.combinedText) {
+      score += 8;
+      reasons.push('titulo-parcial');
+    }
+  }
+
+  const matchedTokens = profile.targetTokens.filter(token => bundle.tokenSet.has(token));
+  const tokenCoverage = profile.targetTokens.length
+    ? matchedTokens.length / profile.targetTokens.length
+    : 0;
+  score += Math.round(tokenCoverage * 20);
+  if (matchedTokens.length > 0) {
+    reasons.push(`tokens:${matchedTokens.slice(0, 5).join(',')}`);
+  }
+
+  const matchedBrandTokens = profile.brandTokens.filter(token => (
+    bundle.tokenSet.has(token) || bundle.compactText.includes(normalizeAmazonCompactText(token))
+  ));
+  if (matchedBrandTokens.length > 0) {
+    score += matchedBrandTokens.length * 5;
+    reasons.push(`marca:${matchedBrandTokens.join(',')}`);
+  }
+
+  const matchedSkuTokens = profile.skuTokens.filter(token => (
+    bundle.modelTokenSet.has(token) || bundle.compactText.includes(token)
+  ));
+  if (matchedSkuTokens.length > 0) {
+    score += matchedSkuTokens.length * 14;
+    reasons.push(`sku:${matchedSkuTokens.join(',')}`);
+  }
+
+  const matchedModelTokens = profile.modelTokens.filter(token => (
+    bundle.modelTokenSet.has(token) || bundle.compactText.includes(token)
+  ));
+  if (matchedModelTokens.length > 0) {
+    score += matchedModelTokens.length * 11;
+    reasons.push(`modelo:${matchedModelTokens.slice(0, 5).join(',')}`);
+  } else if (profile.modelTokens.length > 0) {
+    score -= 12;
+  }
+
+  const missingModelTokens = profile.modelTokens.filter(token => !matchedModelTokens.includes(token));
+  const matchedScaleTokens = profile.scaleTokens.filter(token => (
+    bundle.scaleTokenSet.has(token) || bundle.compactText.includes(token.replace('/', ''))
+  ));
+  if (matchedScaleTokens.length > 0) {
+    score += matchedScaleTokens.length * 14;
+    reasons.push(`escala:${matchedScaleTokens.join(',')}`);
+  } else if (profile.scaleTokens.length > 0) {
+    score -= 12;
+  }
+
+  const matchedCodes = profile.productCodes.filter(code => (
+    bundle.codeSet.has(code) || bundle.compactText.includes(code)
+  ));
+  if (matchedCodes.length > 0) {
+    score += 40;
+    reasons.push(`codigo:${matchedCodes.join(',')}`);
+  }
+
+  const hardMisses = [];
+  if (profile.scaleTokens.length > 0 && matchedScaleTokens.length === 0) {
+    hardMisses.push('escala');
+  }
+  if (profile.modelTokens.length >= 2 && matchedModelTokens.length === 0) {
+    hardMisses.push('modelo');
+  }
+
+  return {
+    score,
+    confidence: deriveAmazonMatchConfidence(score, hardMisses, matchedCodes),
+    reasons: summarizeAmazonReasons(reasons),
+    matchedTokens,
+    matchedBrandTokens,
+    matchedSkuTokens,
+    matchedModelTokens,
+    missingModelTokens,
+    matchedScaleTokens,
+    matchedCodes,
+    hardMisses
+  };
+}
+
+function rankAmazonResults(product, supplierData = {}, results, searchTerm) {
+  const profile = buildAmazonIdentityProfile(product, supplierData, searchTerm);
+
+  return (results || [])
+    .map(result => {
+      const comparison = compareAmazonProfile(
+        profile,
+        buildAmazonComparisonBundle([result.title, result.url])
+      );
+      let matchScore = comparison.score;
+
+      if (result.price !== null && result.price !== undefined) matchScore += 1;
+      if (result.url?.includes('/dp/')) matchScore += 1;
+
+      return {
+        ...result,
+        matchScore,
+        matchConfidence: deriveAmazonMatchConfidence(matchScore, comparison.hardMisses, comparison.matchedCodes),
+        matchReasons: comparison.reasons,
+        matchedModelTokens: comparison.matchedModelTokens,
+        matchedScaleTokens: comparison.matchedScaleTokens,
+        matchedCodes: comparison.matchedCodes,
+        hardMisses: comparison.hardMisses
+      };
+    })
+    .sort((a, b) => {
+      if ((b.matchScore || 0) !== (a.matchScore || 0)) {
+        return (b.matchScore || 0) - (a.matchScore || 0);
+      }
+      return 0;
+    });
+}
+
+function validateAmazonProductIdentity(product, supplierData = {}, result, identity, searchTerm, searchMeta = {}) {
+  const profile = buildAmazonIdentityProfile(product, supplierData, searchTerm);
+  const bundle = buildAmazonComparisonBundle([
+    result?.title,
+    result?.url,
+    identity?.title,
+    identity?.brand,
+    ...(identity?.modelNumbers || []),
+    ...(identity?.bullets || [])
+  ], {
+    codes: identity?.productCodes || []
+  });
+  const comparison = compareAmazonProfile(profile, bundle);
+  let score = comparison.score + (identity?.asin ? 2 : 0);
+  const reasons = [...(comparison.reasons || [])];
+
+  if (searchMeta.matchedBy === 'upc') {
+    const resultCount = searchMeta.resultCount || 0;
+    if (resultCount === 1) {
+      score += 28;
+      reasons.push('upc-unico');
+    } else if (resultCount > 0 && resultCount <= 3) {
+      score += 18;
+      reasons.push('upc-forte');
+    }
+  }
+
+  const accepted = comparison.matchedCodes.length > 0 ||
+    (score >= 58 && comparison.hardMisses.length === 0) ||
+    score >= 74;
+
+  return {
+    ...comparison,
+    score,
+    reasons: summarizeAmazonReasons(reasons),
+    confidence: deriveAmazonMatchConfidence(score, comparison.hardMisses, comparison.matchedCodes),
+    accepted
+  };
+}
+
+function describeSearchFailure(attempts = []) {
+  const triedUpc = attempts.some(item => item.type === 'upc');
+  const triedTitle = attempts.some(item => item.type === 'title');
+
+  if (triedUpc && triedTitle) return 'Sem resultado na Amazon por UPC nem por título';
+  if (triedUpc) return 'Sem resultado na Amazon por UPC';
+  return 'Sem resultado na Amazon por título';
+}
+
+function markRuntimeState(patch) {
+  state.setMany({
+    ...patch,
+    runtimeUpdatedAt: new Date().toISOString()
+  });
+}
+
+function buildExtensionRuntimeState(extensionState = {}, keepaData = null, azInsightData = null) {
+  const keepaLoaded = extensionState.keepaLoaded === true
+    ? true
+    : (extensionState.keepaLoaded === false ? false : null);
+  const azInsightLoaded = extensionState.azInsightLoaded === true
+    ? true
+    : (extensionState.azInsightLoaded === false ? false : null);
+  const keepaAvailable = keepaData?.available === true
+    ? true
+    : (keepaData?.available === false ? false : null);
+  const azInsightAvailable = azInsightData?.available === true
+    ? true
+    : (azInsightData?.available === false ? false : null);
+  const azInsightAuthIssue = azInsightData?.authIssue || null;
+
+  return {
+    keepaLoaded,
+    keepaAvailable,
+    keepaSummary: keepaLoaded === true
+      ? (keepaAvailable === true ? 'Keepa carregou e foi lido.' : 'Keepa carregou, mas os dados não apareceram.')
+      : (keepaLoaded === false ? 'Keepa não carregou na página.' : 'Keepa ainda não foi testado nesta sessão.'),
+    azInsightLoaded,
+    azInsightAvailable,
+    azInsightSummary: azInsightLoaded === true
+      ? (
+        azInsightAuthIssue
+          ? 'AZInsight pediu login (não está logado no servidor).'
+          : (azInsightAvailable === true ? 'AZInsight carregou e foi lido.' : 'AZInsight carregou, mas os dados não apareceram.')
+      )
+      : (azInsightLoaded === false ? 'AZInsight não carregou na página.' : 'AZInsight ainda não foi testado nesta sessão.'),
+    checkedAt: new Date().toISOString()
+  };
 }
 
 function createAuditTrail() {
@@ -250,18 +737,125 @@ async function safeCaptureScreenshot(page, label) {
   }
 }
 
+async function ensureIssueScreenshot(page, issue, label) {
+  if (issue?.screenshotPath) return issue.screenshotPath;
+
+  const screenshotPath = await safeCaptureScreenshot(page, label);
+  if (issue && screenshotPath) {
+    issue.screenshotPath = screenshotPath;
+  }
+
+  return screenshotPath;
+}
+
+function getBlockedSupplierDomain(runtime, domain) {
+  return runtime?.blockedSupplierDomains?.get(domain) || null;
+}
+
+function blockSupplierDomain(runtime, product, issue, screenshotPath, options = {}) {
+  const force = options.force === true;
+  if (!runtime?.blockedSupplierDomains || !product?.supplierDomain || !issue?.type) return;
+  if (!force && !['captcha', 'challenge', 'blocked', 'navigation'].includes(issue.type)) return;
+
+  runtime.blockedSupplierDomains.set(product.supplierDomain, {
+    type: issue.type,
+    reason: issue.reason || 'Bloqueio detectado no fornecedor',
+    screenshotPath: screenshotPath || issue.screenshotPath || null,
+    productIndex: product.index,
+    productName: product.name,
+    at: new Date().toISOString()
+  });
+}
+
+function describePausedSupplierDomain(domain, domainBlock) {
+  if (!domainBlock) {
+    return `Domínio ${domain} em pausa.`;
+  }
+
+  if (domainBlock.type === 'not_found') {
+    return `Domínio ${domain} em pausa por URLs antigas ou inexistentes detectadas no produto #${domainBlock.productIndex} (${domainBlock.reason})`;
+  }
+
+  return `Domínio ${domain} em pausa por bloqueio detectado no produto #${domainBlock.productIndex} (${domainBlock.reason})`;
+}
+
+function resetSupplierNotFound(runtime, domain) {
+  if (!runtime?.supplierNotFoundCounts || !domain) return;
+  runtime.supplierNotFoundCounts.delete(domain);
+}
+
+function getSupplierNotFoundPauseThreshold(domain) {
+  return SUPPLIER_NOT_FOUND_PAUSE_THRESHOLDS[domain] || SUPPLIER_NOT_FOUND_PAUSE_THRESHOLD;
+}
+
+function buildSupplierNotFoundPauseReason(domain, count) {
+  if (domain === 'bossenimp.com') {
+    return `Foram encontradas ${count} URLs antigas ou inexistentes no Bossen. O catálogo atual do site não bate com os links do HTML importado.`;
+  }
+
+  return `Foram encontradas ${count} URLs inexistentes neste domínio. O catálogo importado parece antigo ou inválido.`;
+}
+
+function registerSupplierNotFound(runtime, product, issue, screenshotPath) {
+  if (!runtime?.supplierNotFoundCounts || !product?.supplierDomain) {
+    return { count: 1, paused: false, reason: issue?.reason || 'Página do fornecedor não encontrada' };
+  }
+
+  const current = runtime.supplierNotFoundCounts.get(product.supplierDomain) || { count: 0 };
+  const next = {
+    count: current.count + 1,
+    lastProductIndex: product.index,
+    lastProductName: product.name,
+    reason: issue?.reason || 'Página do fornecedor não encontrada',
+    screenshotPath: screenshotPath || issue?.screenshotPath || null,
+    at: new Date().toISOString()
+  };
+  runtime.supplierNotFoundCounts.set(product.supplierDomain, next);
+
+  const pauseThreshold = getSupplierNotFoundPauseThreshold(product.supplierDomain);
+  if (next.count >= pauseThreshold) {
+    const pauseIssue = {
+      ...issue,
+      type: 'not_found',
+      reason: buildSupplierNotFoundPauseReason(product.supplierDomain, next.count)
+    };
+    blockSupplierDomain(runtime, product, pauseIssue, screenshotPath, { force: true });
+    return { ...next, paused: true, reason: pauseIssue.reason };
+  }
+
+  return { ...next, paused: false };
+}
+
+async function interruptibleDelay(runtime, min = 2000, max = 5000) {
+  const delay = Math.floor(Math.random() * (max - min) + min);
+  let elapsed = 0;
+
+  while (elapsed < delay) {
+    if (runtime?.stopRequested) return false;
+    const step = Math.min(250, delay - elapsed);
+    await new Promise(resolve => setTimeout(resolve, step));
+    elapsed += step;
+  }
+
+  return true;
+}
+
 async function resolveCurrentAccessIssue({ page, manual, label, issue, retry }) {
   if (!issue) {
     return { status: 'ok', result: await retry() };
   }
 
-  if (!manual.enabled || issue.type === 'navigation') {
+  if (issue.type === 'navigation') {
     return { status: 'error', issue };
+  }
+
+  if (!manual.enabled) {
+    return { status: 'skip', issue, automatic: true };
   }
 
   const decision = await manual.resolveChallenge(label, issue);
   if (decision === 'skip') {
-    return { status: 'skip', issue };
+    return { status: 'skip', issue, automatic: false };
   }
 
   const retried = await retry();
@@ -292,9 +886,32 @@ async function extractCurrentAmazonSearchState(page, type) {
   return { error: null, accessIssue: null, results: extracted.results };
 }
 
-async function ensureSupplierData(page, product, manual, audit) {
+async function ensureSupplierData(page, product, manual, audit, runtime) {
+  const domainBlock = getBlockedSupplierDomain(runtime, product.supplierDomain);
+  if (domainBlock) {
+    return {
+      status: 'skipped',
+      step: 'supplier-domain-blocked',
+      reasons: [
+        describePausedSupplierDomain(product.supplierDomain, domainBlock)
+      ],
+      accessIssue: {
+        type: domainBlock.type,
+        reason: domainBlock.reason
+      },
+      screenshotPath: null
+    };
+  }
+
+  markRuntimeState({
+    currentStep: 'abrindo-fornecedor',
+    currentProduct: buildCurrentProductSnapshot(product),
+    searchAttempts: []
+  });
+
   recordAudit(audit, 'supplier:start', {
     productIndex: product.index,
+    productName: product.name,
     supplierUrl: product.supplierUrl,
     supplierDomain: product.supplierDomain
   });
@@ -310,11 +927,32 @@ async function ensureSupplierData(page, product, manual, audit) {
     };
   }
 
-  let supplierResult = await openSupplierPage(page, product.supplierUrl);
+  let supplierResult = await openSupplierPage(page, product.supplierUrl, {
+    productName: product.name,
+    productCodeVariants: product.upcVariants || []
+  });
   if (supplierResult.error) {
+    const screenshotPath = await ensureIssueScreenshot(
+      page,
+      supplierResult.accessIssue,
+      `supplier-issue-${product.index}`
+    );
+    let notFoundSummary = null;
+    if (supplierResult.accessIssue?.type === 'not_found') {
+      notFoundSummary = registerSupplierNotFound(runtime, product, supplierResult.accessIssue, screenshotPath);
+      if (notFoundSummary?.paused) {
+        supplierResult.accessIssue.reason = notFoundSummary.reason;
+      }
+    } else {
+      blockSupplierDomain(runtime, product, supplierResult.accessIssue, screenshotPath);
+    }
+
     recordAudit(audit, 'supplier:error', {
       productIndex: product.index,
-      reason: supplierResult.accessIssue?.reason || supplierResult.error
+      productName: product.name,
+      supplierDomain: product.supplierDomain,
+      reason: supplierResult.accessIssue?.reason || supplierResult.error,
+      screenshot: screenshotPath
     });
 
     const resolved = await resolveCurrentAccessIssue({
@@ -326,21 +964,39 @@ async function ensureSupplierData(page, product, manual, audit) {
     });
 
     if (resolved.status === 'skip') {
+      const resolvedScreenshot = await ensureIssueScreenshot(
+        page,
+        resolved.issue,
+        `supplier-skip-${product.index}`
+      );
+      blockSupplierDomain(runtime, product, resolved.issue, resolvedScreenshot);
       return {
         status: 'skipped',
         step: 'supplier',
-        reasons: ['Produto pulado manualmente após bloqueio no fornecedor'],
-        accessIssue: resolved.issue
+        reasons: [resolved.automatic
+          ? (resolved.issue?.type === 'not_found'
+            ? resolved.issue?.reason || 'Página do fornecedor não encontrada'
+            : `Fornecedor bloqueado automaticamente: ${resolved.issue?.reason || 'bloqueio detectado'}`)
+          : 'Produto pulado manualmente após bloqueio no fornecedor'],
+        accessIssue: resolved.issue,
+        screenshotPath: resolvedScreenshot
       };
     }
 
     if (resolved.status === 'error') {
+      const resolvedScreenshot = await ensureIssueScreenshot(
+        page,
+        resolved.issue,
+        `supplier-error-${product.index}`
+      );
+      blockSupplierDomain(runtime, product, resolved.issue, resolvedScreenshot);
       return {
         status: 'error',
         step: 'supplier',
         error: resolved.issue.reason,
         reasons: [resolved.issue.reason],
-        accessIssue: resolved.issue
+        accessIssue: resolved.issue,
+        screenshotPath: resolvedScreenshot
       };
     }
 
@@ -348,14 +1004,22 @@ async function ensureSupplierData(page, product, manual, audit) {
   }
 
   let supplierData = supplierResult.supplier || {};
+  const supplierPageUrl = supplierResult.pageUrl || supplierData.url || page.url();
+  const supplierAccessMode = supplierResult.fetchedVia || 'browser';
+  resetSupplierNotFound(runtime, product.supplierDomain);
   let supplierScreenshot = null;
-  if (AUDIT_SCREENSHOTS) {
+  if (AUDIT_SCREENSHOTS && supplierAccessMode === 'browser') {
     supplierScreenshot = await safeCaptureScreenshot(page, `audit-supplier-${product.index}`);
   }
 
   recordAudit(audit, 'supplier:data', {
     productIndex: product.index,
-    pageUrl: page.url(),
+    productName: product.name,
+    pageUrl: supplierPageUrl,
+    accessMode: supplierAccessMode,
+    recoveredFromUrl: supplierResult.recoveryMeta?.fromUrl || null,
+    recoverySearchUrl: supplierResult.recoveryMeta?.searchUrl || null,
+    recoveryQuery: supplierResult.recoveryMeta?.query || null,
     title: supplierData.title || null,
     price: supplierData.price ?? null,
     pricePrevious: supplierData.pricePrevious ?? null,
@@ -369,6 +1033,15 @@ async function ensureSupplierData(page, product, manual, audit) {
     available: supplierData.available !== false,
     availabilityStatus: supplierData.availabilityStatus || null,
     screenshot: supplierScreenshot
+  });
+
+  markRuntimeState({
+    currentStep: 'fornecedor-carregado',
+    currentProduct: buildCurrentProductSnapshot(product, {
+      supplierPrice: supplierData.price ?? null,
+      supplierPriceStatus: supplierData.priceStatus || null,
+      pageUrl: supplierPageUrl
+    })
   });
 
   if (supplierData.available === false) {
@@ -423,16 +1096,23 @@ async function ensureSupplierData(page, product, manual, audit) {
   return { status: 'ok', supplierData };
 }
 
-async function searchAmazonForProduct(page, product, manual, audit) {
-  const queries = [];
-  if (product.hasValidUPC) {
-    queries.push({ term: product.upc, type: 'upc', label: `Buscar Amazon por UPC ${product.upc}` });
-  }
-  queries.push({ term: product.name, type: 'title', label: `Buscar Amazon por título` });
+async function searchAmazonForProduct(page, product, supplierData, manual, audit, runtime) {
+  const queries = buildSearchQueries(product);
+  const attempts = [];
 
   for (const query of queries) {
+    markRuntimeState({
+      currentStep: query.type === 'upc' ? 'buscando-amazon-upc' : 'buscando-amazon-titulo',
+      currentProduct: buildCurrentProductSnapshot(product, {
+        searchType: query.type,
+        searchTerm: query.term
+      }),
+      searchAttempts: attempts
+    });
+
     recordAudit(audit, 'amazon-search:start', {
       productIndex: product.index,
+      productName: product.name,
       type: query.type,
       term: query.term
     });
@@ -442,16 +1122,24 @@ async function searchAmazonForProduct(page, product, manual, audit) {
       return {
         status: 'skipped',
         step: `amazon-${query.type}`,
-        reasons: [`Produto pulado manualmente antes da busca Amazon por ${query.type}`]
+        reasons: [`Produto pulado manualmente antes da busca Amazon por ${query.type}`],
+        searchAttempts: attempts
       };
     }
 
     let searchResult = await searchAmazon(page, query.term, query.type);
     if (searchResult.error) {
+      const screenshotPath = await ensureIssueScreenshot(
+        page,
+        searchResult.accessIssue,
+        `amazon-search-${query.type}-issue-${product.index}`
+      );
       recordAudit(audit, 'amazon-search:error', {
         productIndex: product.index,
+        productName: product.name,
         type: query.type,
-        reason: searchResult.accessIssue?.reason || searchResult.error
+        reason: searchResult.accessIssue?.reason || searchResult.error,
+        screenshot: screenshotPath
       });
 
       const resolved = await resolveCurrentAccessIssue({
@@ -463,26 +1151,47 @@ async function searchAmazonForProduct(page, product, manual, audit) {
       });
 
       if (resolved.status === 'skip') {
+        const resolvedScreenshot = await ensureIssueScreenshot(
+          page,
+          resolved.issue,
+          `amazon-search-${query.type}-skip-${product.index}`
+        );
         return {
           status: 'skipped',
           step: `amazon-${query.type}`,
-          reasons: [`Produto pulado manualmente após bloqueio na busca Amazon por ${query.type}`],
-          accessIssue: resolved.issue
+          reasons: [resolved.automatic
+            ? `Busca Amazon por ${query.type} bloqueada automaticamente: ${resolved.issue?.reason || 'bloqueio detectado'}`
+            : `Produto pulado manualmente após bloqueio na busca Amazon por ${query.type}`],
+          accessIssue: resolved.issue,
+          searchAttempts: attempts,
+          screenshotPath: resolvedScreenshot
         };
       }
 
       if (resolved.status === 'error') {
+        const resolvedScreenshot = await ensureIssueScreenshot(
+          page,
+          resolved.issue,
+          `amazon-search-${query.type}-error-${product.index}`
+        );
         return {
           status: 'error',
           step: `amazon-${query.type}`,
           error: resolved.issue.reason,
           reasons: [resolved.issue.reason],
-          accessIssue: resolved.issue
+          accessIssue: resolved.issue,
+          searchAttempts: attempts,
+          screenshotPath: resolvedScreenshot
         };
       }
 
       searchResult = resolved.result;
     }
+
+    searchResult = {
+      ...searchResult,
+      results: rankAmazonResults(product, supplierData, searchResult.results || [], query.term)
+    };
 
     let searchScreenshot = null;
     if (AUDIT_SCREENSHOTS) {
@@ -493,10 +1202,22 @@ async function searchAmazonForProduct(page, product, manual, audit) {
       asin: r.asin,
       title: r.title,
       price: r.price ?? null,
-      url: r.url
+      url: r.url,
+      score: r.matchScore ?? null,
+      confidence: r.matchConfidence || null,
+      reasons: r.matchReasons || []
     }));
+    const attempt = {
+      type: query.type,
+      term: query.term,
+      resultCount: searchResult.results?.length || 0,
+      top
+    };
+    attempts.push(attempt);
+
     recordAudit(audit, 'amazon-search:result', {
       productIndex: product.index,
+      productName: product.name,
       type: query.type,
       term: query.term,
       resultCount: searchResult.results?.length || 0,
@@ -504,99 +1225,227 @@ async function searchAmazonForProduct(page, product, manual, audit) {
       screenshot: searchScreenshot
     });
 
+    markRuntimeState({
+      currentStep: query.type === 'upc' ? 'resultado-amazon-upc' : 'resultado-amazon-titulo',
+      currentProduct: buildCurrentProductSnapshot(product, {
+        searchType: query.type,
+        searchTerm: query.term,
+        resultCount: searchResult.results?.length || 0
+      }),
+      searchAttempts: attempts
+    });
+
     if (searchResult.results?.length) {
-      return { status: 'ok', searchResult };
+      return {
+        status: 'ok',
+        searchResult,
+        searchAttempts: attempts,
+        matchedBy: query.type,
+        matchedTerm: query.term
+      };
     }
 
-    await humanDelay(1500, 3000);
+    if (!await interruptibleDelay(runtime, 1500, 3000)) break;
   }
 
   return {
     status: 'skipped',
     step: 'amazon-search',
-    reasons: ['Sem resultados na Amazon por UPC nem por título']
+    reasons: [describeSearchFailure(attempts)],
+    searchAttempts: attempts
   };
 }
 
-async function openAmazonResultPage(page, product, bestMatch, manual, audit) {
-  recordAudit(audit, 'amazon-product:start', {
-    productIndex: product.index,
-    asin: bestMatch.asin,
-    url: bestMatch.url
-  });
+async function openAmazonResultPage(page, product, supplierData, searchOutcome, manual, audit, runtime) {
+  const candidates = (searchOutcome?.searchResult?.results || []).slice(0, 5);
+  const mismatches = [];
 
-  const decision = await manual.confirm(`Abrir produto Amazon ${bestMatch.asin}`);
-  if (decision === 'skip') {
-    return {
-      status: 'skipped',
-      step: 'amazon-product',
-      reasons: ['Produto pulado manualmente antes de abrir a página da Amazon']
-    };
-  }
+  for (const [candidateIndex, candidate] of candidates.entries()) {
+    markRuntimeState({
+      currentStep: 'abrindo-produto-amazon',
+      currentProduct: buildCurrentProductSnapshot(product, {
+        asin: candidate.asin,
+        amazonUrl: candidate.url,
+        candidateIndex: candidateIndex + 1
+      })
+    });
 
-  let pageResult = await goToProductPage(page, bestMatch.url);
-  if (pageResult.error) {
-    recordAudit(audit, 'amazon-product:error', {
+    recordAudit(audit, 'amazon-product:start', {
       productIndex: product.index,
-      asin: bestMatch.asin,
-      reason: pageResult.accessIssue?.reason || pageResult.error
+      productName: product.name,
+      asin: candidate.asin,
+      url: candidate.url,
+      candidateIndex: candidateIndex + 1,
+      matchScore: candidate.matchScore ?? null,
+      matchConfidence: candidate.matchConfidence || null,
+      matchReasons: candidate.matchReasons || []
     });
 
-    const resolved = await resolveCurrentAccessIssue({
-      page,
-      manual,
-      label: `Página Amazon ${bestMatch.asin}`,
-      issue: pageResult.accessIssue,
-      retry: async () => {
-        const accessIssue = await inspectPageAccess(page, 'amazon-product');
-        if (accessIssue) {
-          return { error: accessIssue.type, accessIssue };
-        }
-
-        await waitForMarketplaceExtensions(page);
-        return { error: null, accessIssue: null };
-      }
-    });
-
-    if (resolved.status === 'skip') {
+    const decision = await manual.confirm(`Abrir produto Amazon ${candidate.asin} (tentativa ${candidateIndex + 1})`);
+    if (decision === 'skip') {
       return {
         status: 'skipped',
         step: 'amazon-product',
-        reasons: ['Produto pulado manualmente após bloqueio na página da Amazon'],
-        accessIssue: resolved.issue
+        reasons: ['Produto pulado manualmente antes de abrir a página da Amazon']
       };
     }
 
-    if (resolved.status === 'error') {
+    let pageResult = await goToProductPage(page, candidate.url);
+    if (pageResult.error) {
+      const screenshotPath = await ensureIssueScreenshot(
+        page,
+        pageResult.accessIssue,
+        `amazon-product-issue-${product.index}`
+      );
+      recordAudit(audit, 'amazon-product:error', {
+        productIndex: product.index,
+        productName: product.name,
+        asin: candidate.asin,
+        reason: pageResult.accessIssue?.reason || pageResult.error,
+        screenshot: screenshotPath
+      });
+
+      const resolved = await resolveCurrentAccessIssue({
+        page,
+        manual,
+        label: `Página Amazon ${candidate.asin}`,
+        issue: pageResult.accessIssue,
+        retry: async () => {
+          const accessIssue = await inspectPageAccess(page, 'amazon-product');
+          if (accessIssue) {
+            return { error: accessIssue.type, accessIssue };
+          }
+
+          const extensionState = await waitForMarketplaceExtensions(page);
+          return { error: null, accessIssue: null, extensionState };
+        }
+      });
+
+      if (resolved.status === 'skip') {
+        const resolvedScreenshot = await ensureIssueScreenshot(
+          page,
+          resolved.issue,
+          `amazon-product-skip-${product.index}`
+        );
+        return {
+          status: 'skipped',
+          step: 'amazon-product',
+          reasons: [resolved.automatic
+            ? `Página Amazon bloqueada automaticamente: ${resolved.issue?.reason || 'bloqueio detectado'}`
+            : 'Produto pulado manualmente após bloqueio na página da Amazon'],
+          accessIssue: resolved.issue,
+          screenshotPath: resolvedScreenshot
+        };
+      }
+
+      if (resolved.status === 'error') {
+        const resolvedScreenshot = await ensureIssueScreenshot(
+          page,
+          resolved.issue,
+          `amazon-product-error-${product.index}`
+        );
+        return {
+          status: 'error',
+          step: 'amazon-product',
+          error: resolved.issue.reason,
+          reasons: [resolved.issue.reason],
+          accessIssue: resolved.issue,
+          screenshotPath: resolvedScreenshot
+        };
+      }
+
+      pageResult = resolved.result;
+    }
+
+    await interruptibleDelay(runtime, 3000, 5000);
+    const amazonIdentity = await extractAmazonProductIdentity(page);
+    const validation = validateAmazonProductIdentity(
+      product,
+      supplierData,
+      candidate,
+      amazonIdentity,
+      searchOutcome?.matchedTerm || '',
+      {
+        matchedBy: searchOutcome?.matchedBy || null,
+        resultCount: searchOutcome?.searchResult?.results?.length || 0
+      }
+    );
+
+    let productScreenshot = null;
+    if (AUDIT_SCREENSHOTS) {
+      productScreenshot = await safeCaptureScreenshot(page, `audit-amazon-product-${product.index}-c${candidateIndex + 1}`);
+    }
+
+    recordAudit(audit, 'amazon-product:validated', {
+      productIndex: product.index,
+      productName: product.name,
+      asin: candidate.asin,
+      candidateIndex: candidateIndex + 1,
+      finalUrl: page.url(),
+      amazonTitle: amazonIdentity?.title || null,
+      amazonBrand: amazonIdentity?.brand || null,
+      amazonCodes: amazonIdentity?.productCodes || [],
+      amazonModelNumbers: amazonIdentity?.modelNumbers || [],
+      validationScore: validation.score,
+      validationConfidence: validation.confidence,
+      validationAccepted: validation.accepted,
+      validationReasons: validation.reasons,
+      keepaLoaded: pageResult.extensionState?.keepaLoaded === true,
+      azInsightLoaded: pageResult.extensionState?.azInsightLoaded === true,
+      screenshot: productScreenshot
+    });
+
+    if (validation.accepted) {
+      markRuntimeState({
+        currentStep: 'produto-amazon-carregado',
+        currentProduct: buildCurrentProductSnapshot(product, {
+          asin: candidate.asin,
+          amazonUrl: page.url()
+        })
+      });
+
       return {
-        status: 'error',
-        step: 'amazon-product',
-        error: resolved.issue.reason,
-        reasons: [resolved.issue.reason],
-        accessIssue: resolved.issue
+        status: 'ok',
+        pageResult,
+        bestMatch: candidate,
+        amazonIdentity,
+        validation,
+        extensionState: pageResult.extensionState || null,
+        screenshotPath: productScreenshot
       };
     }
 
-    pageResult = resolved.result;
+    mismatches.push({
+      asin: candidate.asin,
+      title: amazonIdentity?.title || candidate.title,
+      score: validation.score,
+      confidence: validation.confidence,
+      reasons: validation.reasons
+    });
+
+    log.warn(
+      `Candidato Amazon rejeitado: ${candidate.asin} ` +
+      `(score=${validation.score}, motivos=${(validation.reasons || []).join(', ') || 'sem-detalhes'})`
+    );
+
+    if (!await interruptibleDelay(runtime, 800, 1500)) break;
   }
 
-  await humanDelay(3000, 5000);
-  let productScreenshot = null;
-  if (AUDIT_SCREENSHOTS) {
-    productScreenshot = await safeCaptureScreenshot(page, `audit-amazon-product-${product.index}`);
-  }
-
-  recordAudit(audit, 'amazon-product:opened', {
-    productIndex: product.index,
-    asin: bestMatch.asin,
-    finalUrl: page.url(),
-    screenshot: productScreenshot
-  });
-
-  return { status: 'ok', pageResult };
+  return {
+    status: 'needs_review',
+    step: 'amazon-product-match',
+    reasons: ['Resultados encontrados na Amazon, mas nenhum bateu com segurança com o produto do fornecedor'],
+    mismatches
+  };
 }
 
-async function processProduct(page, product, manual, audit) {
+async function processProduct(page, product, manual, audit, runtime) {
+  markRuntimeState({
+    currentStep: 'iniciando-produto',
+    currentProduct: buildCurrentProductSnapshot(product),
+    searchAttempts: []
+  });
+
   recordAudit(audit, 'product:start', {
     productIndex: product.index,
     productName: product.name,
@@ -605,13 +1454,15 @@ async function processProduct(page, product, manual, audit) {
     supplierDomain: product.supplierDomain
   });
 
-  const supplierOutcome = await ensureSupplierData(page, product, manual, audit);
+  const supplierOutcome = await ensureSupplierData(page, product, manual, audit, runtime);
   if (supplierOutcome.status !== 'ok') {
     recordAudit(audit, 'product:end', {
       productIndex: product.index,
+      productName: product.name,
       status: supplierOutcome.status,
       step: supplierOutcome.step || null,
-      reasons: supplierOutcome.reasons || []
+      reasons: supplierOutcome.reasons || [],
+      screenshot: supplierOutcome.screenshotPath || null
     });
     return supplierOutcome;
   }
@@ -620,57 +1471,84 @@ async function processProduct(page, product, manual, audit) {
   const supplierPrice = normalizeFiniteNumber(supplierData.price);
   const supplierPriceStatus = supplierData.priceStatus || (supplierPrice !== null ? 'ok' : 'missing');
 
-  const amazonSearchOutcome = await searchAmazonForProduct(page, product, manual, audit);
+  const amazonSearchOutcome = await searchAmazonForProduct(page, product, supplierData, manual, audit, runtime);
   if (amazonSearchOutcome.status !== 'ok') {
     recordAudit(audit, 'product:end', {
       productIndex: product.index,
+      productName: product.name,
       status: amazonSearchOutcome.status,
       step: amazonSearchOutcome.step || null,
-      reasons: amazonSearchOutcome.reasons || []
+      reasons: amazonSearchOutcome.reasons || [],
+      screenshot: amazonSearchOutcome.screenshotPath || null
     });
     return {
       ...amazonSearchOutcome,
       supplierTitle: supplierData.title || null,
       supplierPrice,
       supplierPriceSource: supplierData.priceSource || null,
-      supplierPriceStatus
+      supplierPriceStatus,
+      searchAttempts: amazonSearchOutcome.searchAttempts || []
     };
   }
 
-  const amazonResult = amazonSearchOutcome.searchResult;
-  const bestMatch = amazonResult.results[0];
-  const bestMatchPrice = normalizeFiniteNumber(bestMatch.price);
-  log.info(
-    `  Match Amazon: ${bestMatch.title} (ASIN: ${bestMatch.asin}) - ` +
-    `${bestMatchPrice !== null ? `$${bestMatchPrice.toFixed(2)}` : 'preço-não-detectado'}`
+  const amazonPageOutcome = await openAmazonResultPage(
+    page,
+    product,
+    supplierData,
+    amazonSearchOutcome,
+    manual,
+    audit,
+    runtime
   );
-
-  const amazonPageOutcome = await openAmazonResultPage(page, product, bestMatch, manual, audit);
   if (amazonPageOutcome.status !== 'ok') {
+    const fallbackBestMatch = amazonSearchOutcome.searchResult?.results?.[0] || null;
     recordAudit(audit, 'product:end', {
       productIndex: product.index,
+      productName: product.name,
       status: amazonPageOutcome.status,
       step: amazonPageOutcome.step || null,
-      asin: bestMatch.asin,
-      reasons: amazonPageOutcome.reasons || []
+      asin: fallbackBestMatch?.asin || null,
+      reasons: amazonPageOutcome.reasons || [],
+      screenshot: amazonPageOutcome.screenshotPath || null
     });
     return {
       ...amazonPageOutcome,
-      asin: bestMatch.asin,
-      amazonTitle: bestMatch.title,
-      amazonUrl: bestMatch.url,
+      asin: fallbackBestMatch?.asin || null,
+      amazonTitle: fallbackBestMatch?.title || null,
+      amazonUrl: fallbackBestMatch?.url || null,
       supplierTitle: supplierData.title || null,
       supplierPrice,
       supplierPriceSource: supplierData.priceSource || null,
-      supplierPriceStatus
+      supplierPriceStatus,
+      searchAttempts: amazonSearchOutcome.searchAttempts || [],
+      matchedBy: amazonSearchOutcome.matchedBy || null
     };
   }
+
+  const bestMatch = amazonPageOutcome.bestMatch;
+  const bestMatchPrice = normalizeFiniteNumber(bestMatch.price);
+  log.info(
+    `  Match Amazon validado: ${bestMatch.title} (ASIN: ${bestMatch.asin}, score: ${amazonPageOutcome.validation?.score ?? bestMatch.matchScore ?? 0}) - ` +
+    `${bestMatchPrice !== null ? `$${bestMatchPrice.toFixed(2)}` : 'preço-não-detectado'}`
+  );
+
+  markRuntimeState({
+    currentStep: 'analisando-lucro',
+    currentProduct: buildCurrentProductSnapshot(product, {
+      asin: bestMatch.asin,
+      amazonUrl: bestMatch.url
+    }),
+    searchAttempts: amazonSearchOutcome.searchAttempts || [],
+    extensionStatus: buildExtensionRuntimeState(amazonPageOutcome.extensionState || {})
+  });
 
   const keepaData = await extractKeepaData(page);
   const amazonSells = await checkAmazonSells(page);
   recordAudit(audit, 'marketplace:data', {
     productIndex: product.index,
+    productName: product.name,
     asin: bestMatch.asin,
+    keepaLoaded: amazonPageOutcome.extensionState?.keepaLoaded === true,
     keepaAvailable: keepaData.available || false,
     keepaDrops30d: keepaData.bsrDrops ?? null,
     amazonSells
@@ -686,7 +1564,7 @@ async function processProduct(page, product, manual, audit) {
 
     if (inputDecision === 'continue') {
       await inputBuyCostInAZInsight(page, buyCost);
-      await humanDelay(1000, 2000);
+      await interruptibleDelay(runtime, 1000, 2000);
     }
   }
 
@@ -704,8 +1582,12 @@ async function processProduct(page, product, manual, audit) {
 
   recordAudit(audit, 'azinsight:data', {
     productIndex: product.index,
+    productName: product.name,
     asin: bestMatch.asin,
+    azInsightLoaded: amazonPageOutcome.extensionState?.azInsightLoaded === true,
+    azInsightAvailable: azInsightData.available || false,
     available: azInsightData.available || false,
+    authIssue: azInsightData.authIssue || null,
     amazonPrice: azInsightData.amazonPrice ?? null,
     fbaFee: azInsightData.fbaFee ?? null,
     selectedAmazonPrice: amazonPrice,
@@ -715,6 +1597,14 @@ async function processProduct(page, product, manual, audit) {
     estimatedProfit: azInsightData.estimatedProfit ?? null,
     roi: azInsightData.roi ?? null,
     margin: azInsightData.margin ?? null
+  });
+
+  markRuntimeState({
+    extensionStatus: buildExtensionRuntimeState(
+      amazonPageOutcome.extensionState || {},
+      keepaData,
+      azInsightData
+    )
   });
 
   if (supplierPrice === null) {
@@ -756,15 +1646,22 @@ async function processProduct(page, product, manual, audit) {
     azInsightData
   });
 
+  const analysisScreenshot = AUDIT_SCREENSHOTS
+    ? await safeCaptureScreenshot(page, `audit-analysis-${product.index}`)
+    : null;
+
   recordAudit(audit, 'product:end', {
     productIndex: product.index,
+    productName: product.name,
     status: evaluation.status,
     step: 'completed',
     asin: bestMatch.asin,
     reasons: evaluation.reasons || [],
     profit: evaluation.profit ?? null,
     margin: evaluation.margin ?? null,
-    roi: evaluation.roi ?? null
+    roi: evaluation.roi ?? null,
+    matchedBy: amazonSearchOutcome.matchedBy || null,
+    screenshot: analysisScreenshot
   });
 
   return {
@@ -773,6 +1670,9 @@ async function processProduct(page, product, manual, audit) {
     asin: bestMatch.asin,
     amazonTitle: bestMatch.title,
     amazonUrl: bestMatch.url,
+    matchedBy: amazonSearchOutcome.matchedBy || null,
+    matchedTerm: amazonSearchOutcome.matchedTerm || null,
+    searchAttempts: amazonSearchOutcome.searchAttempts || [],
     supplierTitle: supplierData.title || null,
     supplierPrice,
     supplierPriceStatus,
@@ -788,7 +1688,8 @@ async function processProduct(page, product, manual, audit) {
     fbaFeesStatus,
     keepaDrops30d: keepaData.bsrDrops ?? null,
     keepaAvailable: keepaData.available || false,
-    azInsightAvailable: azInsightData.available || false
+    azInsightAvailable: azInsightData.available || false,
+    analysisScreenshot
   };
 }
 
@@ -809,7 +1710,21 @@ function runDryRun(products, startIndex) {
   log.info(`\nDry-run concluído: ${products.length - startIndex} produtos para revisão`);
 }
 
-function generateReport() {
+function moveProcessedHTML(htmlPath) {
+  try {
+    fs.mkdirSync(DONE_DIR, { recursive: true });
+    const filename = path.basename(htmlPath);
+    const destPath = path.join(DONE_DIR, filename);
+    fs.renameSync(htmlPath, destPath);
+    log.info(`HTML processado movido para: ${destPath}`);
+    return destPath;
+  } catch (err) {
+    log.error(`Falha ao mover HTML para feitos: ${err.message}`);
+    return null;
+  }
+}
+
+function generateReport({ moveInput = true } = {}) {
   const results = state.get('productResults', {});
   const approved = Object.entries(results)
     .filter(([, result]) => result.status === 'approved')
@@ -824,10 +1739,24 @@ function generateReport() {
   log.info(`Erros: ${stats.errors}`);
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const reportPath = path.join(REPORT_DIR, `fba-aprovados-${timestamp}.html`);
-  generateApprovedHTML(approved, reportPath);
 
-  log.info(`\nRelatório HTML: ${reportPath}`);
+  const mainReportPath = path.join(REPORT_DIR, `fba-aprovados-${timestamp}.html`);
+  generateApprovedHTML(approved, mainReportPath);
+  log.info(`\nRelatório HTML: ${mainReportPath}`);
+
+  if (approved.length > 0) {
+    fs.mkdirSync(PROFIT_DIR, { recursive: true });
+    const profitReportPath = path.join(PROFIT_DIR, `produtos-lucro-${timestamp}.html`);
+    generateApprovedHTML(approved, profitReportPath);
+    log.info(`Relatório lucrativos: ${profitReportPath}`);
+  }
+
+  if (moveInput) {
+    moveProcessedHTML(HTML_PATH);
+  } else {
+    log.info('HTML mantido na pasta de entrada para permitir retomada/novo processamento.');
+  }
+
   log.info(`Estado salvo em: ${state.filePath}`);
 }
 
@@ -835,14 +1764,55 @@ async function run() {
   const manual = createManualController(MANUAL_MODE);
   const audit = createAuditTrail();
   let browser = null;
-  let stopRequested = false;
+  const runtime = {
+    stopRequested: false,
+    stopReason: null,
+    blockedSupplierDomains: new Map(),
+    supplierNotFoundCounts: new Map()
+  };
+  const browserMode = determineBrowserMode();
+  const runSessionId = audit?.sessionId || `${Date.now()}-${process.pid}`;
+  const handleSignal = signal => {
+    runtime.stopRequested = true;
+    runtime.stopReason = signal;
+    log.warn(`Sinal ${signal} recebido. Encerrando de forma segura...`);
+    markRuntimeState({
+      runStatus: 'stopping',
+      stopSignal: signal,
+      stopRequestedAt: new Date().toISOString()
+    });
+  };
+
+  process.on('SIGTERM', handleSignal);
+  process.on('SIGINT', handleSignal);
 
   try {
+    markRuntimeState({
+      runSessionId,
+      runStatus: 'starting',
+      auditTrailDir: audit?.dir || null,
+      auditTrailSessionId: audit?.sessionId || null,
+      activeHtmlFile: HTML_PATH,
+      htmlFile: HTML_PATH,
+      currentStep: 'inicializando',
+      currentProduct: null,
+      searchAttempts: [],
+      mode: DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : RESUME ? 'resume' : 'auto',
+      browserMode,
+      browserDisplay: process.env.DISPLAY || process.env.WAYLAND_DISPLAY || null,
+      chromeExecutablePath: config.chrome.executablePath || null,
+      chromeProfileDir: config.chrome.userDataDir || null,
+      chromeProfileName: config.chrome.profile || null,
+      extensionStatus: buildExtensionRuntimeState(),
+      startedAt: new Date().toISOString()
+    });
+
     log.info('=== Agente FBA Iniciando ===');
     log.info(`HTML: ${HTML_PATH}`);
     log.info(`Modo: ${DRY_RUN ? 'DRY-RUN' : MANUAL_MODE ? 'MANUAL' : 'AUTOMÁTICO'}`);
     log.info(`Batch size: ${BATCH_SIZE}`);
     log.info(`Resume: ${RESUME}`);
+    log.info(`Browser mode: ${browserMode}`);
     if (audit) {
       log.info(`Auditoria: ON | trilha em ${audit.dir}`);
     }
@@ -853,8 +1823,8 @@ async function run() {
       batchSize: BATCH_SIZE
     });
 
-    if (!fs.existsSync(HTML_PATH)) {
-      throw new Error(`Arquivo HTML não encontrado: ${HTML_PATH}`);
+    if (!HTML_PATH || !fs.existsSync(HTML_PATH)) {
+      throw new Error(`Nenhum HTML válido encontrado em ${INPUT_DIR}. Coloque um arquivo .html na pasta de entrada.`);
     }
 
     const html = fs.readFileSync(HTML_PATH, 'utf-8');
@@ -898,26 +1868,55 @@ async function run() {
       log.info('Estado resetado; processando do início.');
     }
 
-    state.set('sessionStart', new Date().toISOString());
-    state.set('htmlFile', HTML_PATH);
-    state.set('totalProducts', products.length);
-    state.set('mode', DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : 'auto');
-    state.set('inputMetrics', parseAudit);
+    markRuntimeState({
+      runSessionId,
+      runStatus: 'starting',
+      sessionStart: new Date().toISOString(),
+      htmlFile: HTML_PATH,
+      activeHtmlFile: HTML_PATH,
+      totalProducts: products.length,
+      mode: DRY_RUN ? 'dry-run' : MANUAL_MODE ? 'manual' : RESUME ? 'resume' : 'auto',
+      inputMetrics: parseAudit,
+      auditTrailDir: audit?.dir || null,
+      auditTrailSessionId: audit?.sessionId || null,
+      browserMode,
+      browserDisplay: process.env.DISPLAY || process.env.WAYLAND_DISPLAY || null,
+      chromeExecutablePath: config.chrome.executablePath || null,
+      chromeProfileDir: config.chrome.userDataDir || null,
+      chromeProfileName: config.chrome.profile || null,
+      extensionStatus: buildExtensionRuntimeState()
+    });
 
     if (DRY_RUN) {
       runDryRun(products, startIndex);
+      markRuntimeState({ runStatus: 'completed', currentStep: 'dry-run-concluido' });
       generateReport();
       recordAudit(audit, 'session:end', { status: 'completed-dry-run' });
       return;
     }
 
+    if (products.length === 0) {
+      log.warn('Nenhum produto válido no HTML. Encerrando sem abrir browser.');
+      markRuntimeState({ runStatus: 'completed', currentStep: 'sem-produtos' });
+      generateReport();
+      recordAudit(audit, 'session:end', { status: 'completed-empty' });
+      return;
+    }
+
+    markRuntimeState({ currentStep: 'validando-vpn' });
     const vpn = await verifyVpnConnection();
     recordAudit(audit, 'vpn:validated', vpn || {});
 
+    markRuntimeState({ currentStep: 'abrindo-browser' });
     browser = await launchBrowser();
     const page = await browser.newPage();
+    await preparePage(page);
     page.setDefaultTimeout(45000);
     page.setDefaultNavigationTimeout(45000);
+    markRuntimeState({
+      runStatus: 'running',
+      currentStep: 'browser-pronto'
+    });
 
     let consecutiveErrors = 0;
     let currentIndex = startIndex;
@@ -932,11 +1931,19 @@ async function run() {
         log.info(`  UPC: ${product.upc} | Fornecedor: ${product.supplierDomain}`);
 
         try {
-          const result = await processProduct(page, product, manual, audit);
+          const result = await processProduct(page, product, manual, audit, runtime);
           const storedResult = buildStateResult(product, result);
           state.addProductResult(product.index, storedResult);
+          markRuntimeState({
+            currentStep: 'produto-processado',
+            currentProduct: buildCurrentProductSnapshot(product, {
+              status: result.status,
+              asin: result.asin || null
+            }),
+            searchAttempts: result.searchAttempts || [],
+            lastError: null
+          });
           state.setLastProcessedIndex(i);
-          state.set('lastError', null);
           consecutiveErrors = 0;
 
           if (result.status === 'approved') {
@@ -951,11 +1958,13 @@ async function run() {
             log.info(`  ${icon}${reasons ? ` ${reasons}` : ''}`);
           }
 
-          await humanDelay(3000, 7000);
+          if (!await interruptibleDelay(runtime, 3000, 7000)) break;
         } catch (err) {
           if (err instanceof ManualAbortError) {
-            stopRequested = true;
+            runtime.stopRequested = true;
+            runtime.stopReason = 'manual';
             log.warn('Execução interrompida pelo operador no modo manual.');
+            markRuntimeState({ runStatus: 'paused', currentStep: 'interrompido-manualmente' });
             break;
           }
 
@@ -974,62 +1983,103 @@ async function run() {
             productIndex: product.index,
             productName: product.name,
             message: err.message,
-            screenshotPath
+            screenshot: screenshotPath
           });
           state.setLastProcessedIndex(i);
-          state.set('lastError', {
-            productIndex: product.index,
-            productName: product.name,
-            at: new Date().toISOString(),
-            message: err.message,
-            screenshotPath
+          markRuntimeState({
+            currentStep: 'erro-produto',
+            currentProduct: buildCurrentProductSnapshot(product),
+            searchAttempts: [],
+            lastError: {
+              productIndex: product.index,
+              productName: product.name,
+              at: new Date().toISOString(),
+              message: err.message,
+              screenshotPath
+            }
           });
-
           log.error(`  ERRO processando produto [${product.index}] ${product.name}:`, err.message);
 
           if (consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS) {
+            markRuntimeState({ runStatus: 'failed', currentStep: 'falha-consecutiva' });
             log.error(`${MAX_ERRORS_CONSECUTIVOS} erros consecutivos. Pausando agente; use --resume para continuar.`);
             break;
           }
 
-          await humanDelay(10000, 20000);
+          if (!await interruptibleDelay(runtime, 10000, 20000)) break;
         }
+
+        if (runtime.stopRequested) break;
       }
 
-      if (stopRequested || consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS) break;
+      if (runtime.stopRequested || consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS) break;
 
       currentIndex = batchEnd;
       if (currentIndex < products.length) {
         log.info('\nIntervalo entre batches (30s)...');
-        await humanDelay(25000, 35000);
+        markRuntimeState({ currentStep: 'intervalo-entre-batches' });
+        if (!await interruptibleDelay(runtime, 25000, 35000)) break;
       }
     }
 
-    generateReport();
+    const finishedAllProducts = !runtime.stopRequested && consecutiveErrors < MAX_ERRORS_CONSECUTIVOS && currentIndex >= products.length;
+    const finalRunStatus = runtime.stopRequested
+      ? 'paused'
+      : consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS
+        ? 'failed'
+        : 'completed';
+    markRuntimeState({
+      runStatus: finalRunStatus,
+      currentStep: finalRunStatus === 'completed' ? 'concluido' : finalRunStatus === 'paused' ? 'pausado' : 'falhou'
+    });
+
+    generateReport({ moveInput: finishedAllProducts });
     const finalStats = state.getStats();
     recordAudit(audit, 'session:end', {
-      status: stopRequested ? 'interrupted-manual' : 'completed',
+      status: runtime.stopRequested
+        ? 'paused'
+        : consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS
+          ? 'failed'
+          : 'completed',
       stats: finalStats,
       statePath: state.filePath
     });
 
-    if (stopRequested) {
-      log.warn('Agente FBA finalizado com interrupção manual. Use --resume para continuar.');
+    if (runtime.stopRequested) {
+      log.warn('Agente FBA finalizado em modo de pausa. Use --resume para continuar.');
+    } else if (consecutiveErrors >= MAX_ERRORS_CONSECUTIVOS) {
+      log.error('Agente FBA finalizado com falhas consecutivas. Corrija o erro e use --resume.');
     } else {
       log.info('=== Agente FBA Finalizado ===');
     }
   } finally {
+    process.off('SIGTERM', handleSignal);
+    process.off('SIGINT', handleSignal);
     manual.close();
     if (audit) {
       log.info(`Auditoria finalizada: ${audit.dir}`);
-      state.set('auditTrailDir', audit.dir);
-      state.set('auditTrailSessionId', audit.sessionId);
+      markRuntimeState({
+        auditTrailDir: audit.dir,
+        auditTrailSessionId: audit.sessionId
+      });
     }
+    markRuntimeState({
+      finishedAt: new Date().toISOString(),
+      currentProduct: runtime.stopRequested ? state.get('currentProduct', null) : null
+    });
     await closeBrowser(browser);
   }
 }
 
 run().catch(err => {
+  markRuntimeState({
+    runStatus: 'failed',
+    currentStep: 'erro-fatal',
+    lastError: {
+      at: new Date().toISOString(),
+      message: err.message
+    }
+  });
   log.error('Erro fatal no agente FBA:', err);
   process.exit(1);
 });

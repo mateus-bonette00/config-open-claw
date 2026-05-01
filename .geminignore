@@ -6,11 +6,13 @@
 node_modules/
 venv/
 .venv/
-env/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.venv-pdf
+bower_components/
+vendor/
 
 # --- Arquivos de Lock (Enormes e sem lógica útil para IA) ---
 package-lock.json
@@ -57,17 +59,21 @@ secrets.json
 *.jpg
 *.jpeg
 *.gif
+*.avi
 *.svg
 *.ico
 *.pdf
 *.zip
 *.tar.gz
 *.exe
+*.msi
+*.dmg
+*.jar
 *.bin
-*.mp3
-*.mp4
 *.wav
 *.txt
+*.webp
+*.tmp
 
 # Pastas Pesadas
 data/

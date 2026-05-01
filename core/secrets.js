@@ -43,6 +43,7 @@ export const config = {
     token: getSecret('OPENCLAW_TOKEN'),
   },
   chrome: {
+    executablePath: getSecret('CHROME_EXECUTABLE_PATH') || '/usr/bin/google-chrome-stable',
     userDataDir: getSecret('CHROME_USER_DATA_DIR') || '/home/bonette/.config/google-chrome',
     profile: getSecret('CHROME_PROFILE') || 'Default',
   },

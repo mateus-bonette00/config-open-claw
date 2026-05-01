@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUCAS1 - Radar FBA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Space+Grotesk:wght@500;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #04101b;
+      --bg-soft: #081a2c;
+      --panel: rgba(10, 29, 48, 0.92);
+      --panel-strong: rgba(14, 39, 64, 0.98);
+      --panel-soft: rgba(255, 255, 255, 0.04);
+      --line: rgba(122, 170, 219, 0.24);
+      --line-strong: rgba(122, 170, 219, 0.46);
+      --text: #f4f8ff;
+      --muted: #acc3df;
+      --muted-2: #7f9bb9;
+      --accent: #ff8b2c;
+      --accent-2: #4fc3ff;
+      --accent-soft: rgba(255, 139, 44, 0.16);
+      --ok: #29d391;
+      --warn: #ffd36e;
+      --bad: #ff7373;
+      --focus: #9ad7ff;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --font-scale: 1.26;
+      --body-size: calc(15px * var(--font-scale));
+      --title-size: calc(42px * var(--font-scale));
+      --h2-size: calc(24px * var(--font-scale));
+      --h3-size: calc(18px * var(--font-scale));
+      --stat-size: calc(44px * var(--font-scale));
+      --touch-h: 54px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+      font-size: var(--body-size);
+      line-height: 1.6;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(79, 195, 255, 0.08), transparent 28%),
+        radial-gradient(circle at 0% 0%, rgba(79, 195, 255, 0.18), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(255, 139, 44, 0.14), transparent 32%),
+        linear-gradient(180deg, #030a13 0%, #04101b 42%, #071625 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(180deg, rgba(255,255,255,0.22), transparent 82%);
+      opacity: 0.32;
+    }
+
+    a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      border: 0;
+      background: none;
+    }
+
+    code {
+      font-family: "Fira Code", monospace;
+      font-size: 0.92em;
+      color: #e4f3ff;
+      padding: 3px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -48px;
+      left: 16px;
+      z-index: 2000;
+      background: #102740;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line-strong);
+    }
+
+    .skip-link:focus-visible {
+      top: 16px;
+    }
+
+    .app-shell {
+      max-width: 1880px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) 340px;
+      gap: 18px;
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 139, 44, 0.12), transparent 30%),
+        linear-gradient(225deg, rgba(79, 195, 255, 0.12), transparent 36%),
+        var(--panel);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -12% -38% auto;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(255, 139, 44, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(79, 195, 255, 0.24);
+      color: #c9e8ff;
+      background: rgba(79, 195, 255, 0.08);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: calc(11px * var(--font-scale));
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: var(--title-size);
+      line-height: 1.02;
+      color: #fff4ea;
+      margin-bottom: 10px;
+      max-width: 12ch;
+    }
+
+    .hero p {
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: calc(16px * var(--font-scale));
+    }
+
+    .hero-chips {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-chip {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #deebfb;
+      font-size: calc(13px * var(--font-scale));
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      justify-items: stretch;
+    }
+
+    .status-panel,
+    .font-panel {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(10px);
+    }
+
+    .status-label {
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-size: calc(13px * var(--font-scale));
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-pill {
+      min-height: 60px;
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 18px;
+      font-weight: 700;
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: calc(20px * var(--font-scale));
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .running {
+      color: var(--ok);
+      border-color: rgba(41, 211, 145, 0.48);
+      background: rgba(41, 211, 145, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(41, 211, 145, 0.16);
+    }
+
+    .paused {
+      color: var(--warn);
+      border-color: rgba(255, 211, 110, 0.5);
+      background: rgba(255, 211, 110, 0.12);
+    }
+
+    .failed {
+      color: var(--bad);
+      border-color: rgba(255, 115, 115, 0.48);
+      background: rgba(255, 115, 115, 0.12);
+    }
+
+    .completed {
+      color: var(--accent-2);
+      border-color: rgba(79, 195, 255, 0.48);
+      background: rgba(79, 195, 255, 0.12);
+    }
+
+    .idle {
+      color: var(--muted);
+    }
+
+    .font-controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .font-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .font-actions {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .font-btn {
+      min-height: 44px;
+      min-width: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #0c1c2f;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .font-btn:hover {
+      background: #11253d;
+      border-color: var(--line-strong);
+    }
+
+    .main-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-nav {
+      position: sticky;
+      top: 12px;
+      z-index: 50;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(4, 16, 27, 0.9);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+    }
+
+    .section-link {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: #e9f5ff;
+      font-weight: 700;
+      font-size: calc(14px * var(--font-scale));
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .section-link:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+      background: rgba(79, 195, 255, 0.12);
+      border-color: var(--line-strong);
+    }
+
+    .section-link strong {
+      color: #ffc998;
+      margin-right: 6px;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    :where(section[id]) {
+      scroll-margin-top: 110px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%),
+        var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .card-head h2 {
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: var(--h2-size);
+      letter-spacing: 0.01em;
+    }
+
+    .card-head-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    .mini {
+      color: var(--muted-2);
+      font-size: calc(13px * var(--font-scale));
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: var(--touch-h);
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #10253b;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: calc(16px * var(--font-scale));
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: #14314f;
+      border-color: var(--line-strong);
+    }
+
+    .btn-primary {
+      color: #09131f;
+      background: linear-gradient(135deg, #ff8b2c 0%, #ffbb79 100%);
+      border-color: rgba(255, 139, 44, 0.88);
+    }
+
+    .btn-danger {
+      color: #ffdada;
+      background: linear-gradient(135deg, rgba(151, 31, 31, 0.4), rgba(110, 22, 22, 0.9));
+      border-color: rgba(255, 115, 115, 0.4);
+    }
+
+    .btn-mini {
+      min-height: 42px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: calc(13px * var(--font-scale));
+    }
+
+    .btn-mini:hover {
+      color: #eaf5ff;
+      border-color: var(--line-strong);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .action-result {
+      min-height: 30px;
+      color: var(--muted);
+      padding-top: 10px;
+    }
+
+    .process-list,
+    .guide-list,
+    .domain-list,
+    .queue-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .process-item,
+    .guide-item,
+    .domain-item,
+    .queue-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .guide-item {
+      background: linear-gradient(180deg, rgba(79, 195, 255, 0.08), rgba(255,255,255,0.03));
+    }
+
+    .guide-item strong,
+    .process-item strong,
+    .domain-item strong,
+    .queue-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: calc(16px * var(--font-scale));
+    }
+
+    .guide-step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      margin-right: 10px;
+      background: rgba(255, 139, 44, 0.18);
+      color: #ffd3ab;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+    }
+
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, rgba(79, 195, 255, 0.1), transparent 46%),
+        var(--panel-strong);
+      min-height: 136px;
+    }
+
+    .stat-number {
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: var(--stat-size);
+      line-height: 1;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .progress-line {
+      width: 100%;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #071423;
+      overflow: hidden;
+      margin: 16px 0 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff8b2c 0%, #ffd9aa 100%);
+      transition: width 0.35s ease;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .focus-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .focus-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 22%),
+        var(--panel);
+      min-height: 220px;
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .focus-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .focus-card h2 {
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: calc(26px * var(--font-scale));
+      line-height: 1.08;
+    }
+
+    .focus-card p {
+      color: var(--muted);
+    }
+
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stage-column,
+    .side-column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .stage-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 0;
+      min-height: 500px;
+    }
+
+    .stage-media {
+      min-height: 500px;
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(79, 195, 255, 0.06), transparent 28%),
+        #05111d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .stage-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .stage-empty {
+      max-width: 34ch;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .stage-hint {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(4, 11, 20, 0.84);
+      color: #eaf6ff;
+      font-size: calc(12px * var(--font-scale));
+      pointer-events: none;
+    }
+
+    .stage-details {
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stage-title {
+      font-family: "Space Grotesk", "Atkinson Hyperlegible", sans-serif;
+      font-size: calc(28px * var(--font-scale));
+      line-height: 1.08;
+    }
+
+    .stage-product {
+      color: #f5f9ff;
+      font-size: calc(18px * var(--font-scale));
+    }
+
+    .stage-url {
+      word-break: break-word;
+      color: var(--muted);
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .fact {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: calc(13px * var(--font-scale));
+      color: #e8f2ff;
+    }
+
+    .timeline-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(290px, 42%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .timeline-info {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .timeline-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .badge-status-approved {
+      color: var(--ok);
+    }
+
+    .badge-status-rejected,
+    .badge-status-error {
+      color: var(--bad);
+    }
+
+    .badge-status-needs_review,
+    .badge-status-skipped {
+      color: var(--warn);
+    }
+
+    .timeline-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: calc(24px * var(--font-scale));
+      line-height: 1.1;
+    }
+
+    .timeline-product {
+      color: #eef5ff;
+      font-size: calc(18px * var(--font-scale));
+    }
+
+    .timeline-url {
+      color: var(--muted);
+      word-break: break-word;
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    .timeline-shot {
+      min-height: 280px;
+      border: 0;
+      border-left: 1px solid var(--line);
+      background: #05111d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .timeline-shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .empty-shot {
+      color: var(--muted);
+      text-align: center;
+      padding: 24px;
+      max-width: 26ch;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .gallery-item {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+      text-align: left;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      display: block;
+      background: #05111d;
+    }
+
+    .gallery-info {
+      padding: 10px;
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    .gallery-time {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .domain-item {
+      display: grid;
+      gap: 8px;
+    }
+
+    .domain-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .domain-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .metric-pill {
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .tone-ok {
+      color: var(--ok);
+      border-color: rgba(41, 211, 145, 0.36);
+      background: rgba(41, 211, 145, 0.1);
+    }
+
+    .tone-warn {
+      color: var(--warn);
+      border-color: rgba(255, 211, 110, 0.34);
+      background: rgba(255, 211, 110, 0.1);
+    }
+
+    .tone-bad {
+      color: var(--bad);
+      border-color: rgba(255, 115, 115, 0.34);
+      background: rgba(255, 115, 115, 0.1);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 14px;
+    }
+
+    .summary-label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-size: calc(12px * var(--font-scale));
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      color: #eef5ff;
+      font-size: calc(17px * var(--font-scale));
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .scroll-x {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    th {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: calc(12px * var(--font-scale));
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      min-height: 42px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    .filter-btn.active {
+      color: #fff1e3;
+      border-color: rgba(255, 139, 44, 0.62);
+      background: rgba(255, 139, 44, 0.16);
+    }
+
+    .logs {
+      min-height: 260px;
+      max-height: 520px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #030d18;
+      white-space: pre-wrap;
+      color: #d6e8ff;
+      font-family: "Fira Code", monospace;
+      font-size: calc(13px * var(--font-scale));
+      line-height: 1.72;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.92);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal img {
+      max-width: 96vw;
+      max-height: 92vh;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: #000;
+    }
+
+    .modal-close {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      min-height: 48px;
+      min-width: 48px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      background: rgba(9, 15, 24, 0.9);
+      cursor: pointer;
+      color: #fff;
+      font-size: calc(24px * var(--font-scale));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @media (max-width: 1500px) {
+      .stats-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .focus-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1280px) {
+      .hero,
+      .control-grid,
+      .monitor-grid,
+      .results-grid,
+      .stage-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-media {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app-shell {
+        padding: 12px;
+      }
+
+      .hero {
+        padding: 16px;
+      }
+
+      .hero h1 {
+        font-size: calc(32px * var(--font-scale));
+      }
+
+      .stats-strip,
+      .focus-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions .btn {
+        width: 100%;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-shot {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Ir para o conteúdo principal</a>
+
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Controle Visual do LUCAS1</div>
+        <h1>LUCAS1 Radar FBA</h1>
+        <p>O painel foi reorganizado para você olhar na ordem certa: status da execução, print principal, produto atual, timeline e resultado final. Tudo com texto maior e mais claro.</p>
+        <div class="hero-chips" id="heroChips">
+          <span class="hero-chip">Carregando resumo da sessão...</span>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="status-panel">
+          <div class="status-label">Estado atual</div>
+          <div id="statusPill" class="status-pill idle">Carregando...</div>
+        </div>
+
+        <div class="font-panel">
+          <div class="status-label">Tamanho visual</div>
+          <div class="font-controls">
+            <div class="font-row">
+              <span id="fontScaleValue">126%</span>
+              <div class="font-actions">
+                <button id="decreaseFontBtn" class="font-btn" type="button" aria-label="Diminuir tamanho do texto">A-</button>
+                <button id="increaseFontBtn" class="font-btn" type="button" aria-label="Aumentar tamanho do texto">A+</button>
+              </div>
+            </div>
+            <div class="mini">Use esses botões se quiser tudo maior ou menor sem mexer no navegador.</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="mainContent" class="main-grid">
+      <nav class="section-nav" aria-label="Atalhos do painel">
+        <a class="section-link" href="#painel-controle"><strong>1.</strong> Controle</a>
+        <a class="section-link" href="#resumo-geral"><strong>2.</strong> Resumo</a>
+        <a class="section-link" href="#mapa-agora"><strong>3.</strong> Agora</a>
+        <a class="section-link" href="#monitor-visual"><strong>4.</strong> Prints e Timeline</a>
+        <a class="section-link" href="#lucro-e-resumo"><strong>5.</strong> Lucro e Sessão</a>
+        <a class="section-link" href="#todos-produtos"><strong>6.</strong> Todos os Produtos</a>
+        <a class="section-link" href="#logs-sistema"><strong>7.</strong> Logs</a>
+      </nav>
+
+      <section id="painel-controle" class="control-grid">
+        <div class="card">
+          <div class="card-head">
+            <h2>1. Controle Rápido</h2>
+            <span class="mini">Start, resume, pause e limpeza no mesmo lugar</span>
+          </div>
+          <div class="card-body">
+            <div class="actions">
+              <button class="btn btn-primary" onclick="sendControl('start')">Iniciar</button>
+              <button class="btn" onclick="sendControl('resume')">Retomar</button>
+              <button class="btn btn-danger" onclick="sendControl('stop')">Parar / Pausar</button>
+              <button class="btn" onclick="sendControl('reset')">Limpar Execução</button>
+              <button class="btn" onclick="sendControl('restart')">Reiniciar do Zero</button>
+            </div>
+            <div id="actionResult" class="action-result" role="status" aria-live="polite">Pronto para monitorar.</div>
+            <div style="margin-top:16px" class="process-list" id="liveProcessList">
+              <div class="process-item muted">Carregando processos ativos...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>2. Como Ler o Painel</h2>
+            <span class="mini">Sem se perder</span>
+          </div>
+          <div class="card-body guide-list">
+            <div class="guide-item">
+              <strong><span class="guide-step">1</span>Olhe o print principal</strong>
+              É a imagem maior do sistema. Ali você vê o que o robô está fazendo agora ou o último print salvo.
+            </div>
+            <div class="guide-item">
+              <strong><span class="guide-step">2</span>Confirme a etapa atual</strong>
+              Veja os blocos “Agora”, “Produto Atual” e “Ponto de Atenção”. Eles resumem a execução sem você precisar ler log.
+            </div>
+            <div class="guide-item">
+              <strong><span class="guide-step">3</span>Desça para a timeline</strong>
+              A timeline mostra a ordem da execução. A galeria mostra só os prints. Os arquivos ficam no servidor em <code>storage/audit/fba/&lt;sessao&gt;</code>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="resumo-geral" class="stats-strip">
+        <div class="stat-card">
+          <div id="statProcessed" class="stat-number">0</div>
+          <div class="stat-label">Processados</div>
+        </div>
+        <div class="stat-card">
+          <div id="statApproved" class="stat-number" style="color:var(--ok)">0</div>
+          <div class="stat-label">Aprovados</div>
+        </div>
+        <div class="stat-card">
+          <div id="statRejected" class="stat-number" style="color:var(--bad)">0</div>
+          <div class="stat-label">Rejeitados</div>
+        </div>
+        <div class="stat-card">
+          <div id="statReview" class="stat-number" style="color:var(--warn)">0</div>
+          <div class="stat-label">Revisão</div>
+        </div>
+        <div class="stat-card">
+          <div id="statSkipped" class="stat-number" style="color:var(--muted)">0</div>
+          <div class="stat-label">Pulados</div>
+        </div>
+        <div class="stat-card">
+          <div id="statErrors" class="stat-number" style="color:var(--bad)">0</div>
+          <div class="stat-label">Erros</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Progresso Geral</h2>
+          <span class="mini" id="progressLabel">0%</span>
+        </div>
+        <div class="card-body">
+          <div class="progress-line">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <div class="progress-row mini">
+            <span id="progressText">Aguardando execução...</span>
+            <span id="lastRefresh">Sem atualização ainda</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="mapa-agora" class="focus-grid">
+        <article class="focus-card">
+          <div class="focus-label">Agora</div>
+          <h2 id="focusStepTitle">Aguardando início</h2>
+          <p id="focusStepBody">Quando a execução começar, esta área vai mostrar a etapa atual em linguagem simples.</p>
+        </article>
+
+        <article class="focus-card">
+          <div class="focus-label">Produto Atual</div>
+          <h2 id="focusProductTitle">Nenhum produto em andamento</h2>
+          <p id="focusProductBody">O nome do produto, o fornecedor, o ASIN e a busca atual aparecem aqui.</p>
+        </article>
+
+        <article class="focus-card">
+          <div class="focus-label">Ponto de Atenção</div>
+          <h2 id="focusAttentionTitle">Sem alerta crítico</h2>
+          <p id="focusAttentionBody">Se houver erro, bloqueio, URL quebrada ou decisão importante, ela aparece aqui primeiro.</p>
+        </article>
+
+        <article class="focus-card">
+          <div class="focus-label">Sessão e Ambiente</div>
+          <h2 id="focusSessionTitle">Sessão não iniciada</h2>
+          <p id="focusSessionBody">Modelo, navegador, HTML ativo e status da sessão aparecem resumidos aqui.</p>
+        </article>
+      </section>
+
+      <section id="monitor-visual" class="monitor-grid">
+        <div class="stage-column">
+          <div class="card">
+            <div class="card-head">
+              <h2>3. Print Principal da Execução</h2>
+              <span class="mini" id="featuredMeta">Sem print principal ainda</span>
+            </div>
+            <div class="stage-wrap">
+              <div id="featuredShot" class="stage-media">
+                <div class="stage-empty">
+                  O print principal aparece aqui assim que a automação salvar a primeira imagem.
+                </div>
+              </div>
+              <div class="stage-details">
+                <div id="featuredTitle" class="stage-title">Aguardando print principal</div>
+                <div id="featuredProduct" class="stage-product">Nenhuma etapa visual disponível ainda.</div>
+                <div id="featuredUrl" class="stage-url">Assim que houver uma captura, o link da página aparece aqui.</div>
+                <div id="featuredFacts" class="facts">
+                  <span class="fact">Esta área mostra o print mais importante do momento.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>4. Timeline Detalhada</h2>
+              <div class="card-head-actions">
+                <span class="mini" id="timelineMeta">Sem sessão ativa</span>
+                <button class="btn-mini" type="button" onclick="clearPrints()">Limpar prints</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="timelineList" class="timeline-list">
+                <div class="muted">Nenhum evento visual disponível ainda.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side-column">
+          <div class="card">
+            <div class="card-head">
+              <h2>Galeria de Prints</h2>
+              <div class="card-head-actions">
+                <span class="mini" id="printGalleryMeta">0 print(s)</span>
+                <button class="btn-mini" type="button" onclick="clearPrints()">Limpar prints</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="printGallery" class="gallery-grid">
+                <div class="muted">Os prints da automação aparecem aqui assim que a execução começar.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Saúde dos Fornecedores</h2>
+              <span class="mini">Resumo por domínio</span>
+            </div>
+            <div class="card-body">
+              <div id="domainHealthList" class="domain-list">
+                <div class="domain-item muted">Carregando domínios processados...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Arquivo na Fila</h2>
+              <span class="mini" id="queueMeta">-</span>
+            </div>
+            <div class="card-body">
+              <div id="queueList" class="queue-list">
+                <div class="queue-item muted">Carregando fila...</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section id="lucro-e-resumo" class="results-grid">
+        <div class="card">
+          <div class="card-head">
+            <h2>Produtos Lucrativos</h2>
+            <span class="mini" id="approvedSummary">-</span>
+          </div>
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Produto</th>
+                  <th>ASIN</th>
+                  <th>Fornecedor</th>
+                  <th>Lucro</th>
+                </tr>
+              </thead>
+              <tbody id="approvedBody">
+                <tr><td colspan="5" class="muted">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Resumo Técnico</h2>
+            <span class="mini">Configuração e sessão atual</span>
+          </div>
+          <div class="card-body">
+            <div class="summary-grid">
+              <div class="summary-box"><div class="summary-label">Modelo LUCAS1</div><div class="summary-value" id="metaLucas1Model">-</div></div>
+              <div class="summary-box"><div class="summary-label">Fallback da Zoe</div><div class="summary-value" id="metaMainFallback">-</div></div>
+              <div class="summary-box"><div class="summary-label">Modo do navegador</div><div class="summary-value" id="metaBrowser">-</div></div>
+              <div class="summary-box"><div class="summary-label">Chrome usado</div><div class="summary-value" id="metaChromeProfile">-</div></div>
+              <div class="summary-box"><div class="summary-label">Keepa</div><div class="summary-value" id="metaKeepaStatus">-</div></div>
+              <div class="summary-box"><div class="summary-label">AZInsight</div><div class="summary-value" id="metaAzInsightStatus">-</div></div>
+              <div class="summary-box"><div class="summary-label">HTML ativo</div><div class="summary-value" id="metaHtml">-</div></div>
+              <div class="summary-box"><div class="summary-label">Sessão atual</div><div class="summary-value" id="metaSession">-</div></div>
+              <div class="summary-box"><div class="summary-label">Etapa atual</div><div class="summary-value" id="metaStep">-</div></div>
+              <div class="summary-box"><div class="summary-label">Último produto</div><div class="summary-value" id="metaProduct">-</div></div>
+              <div class="summary-box"><div class="summary-label">Último erro</div><div class="summary-value" id="metaError">-</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="todos-produtos" class="card">
+        <div class="card-head">
+          <h2>Todos os Produtos</h2>
+          <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="approved">Aprovados</button>
+            <button class="filter-btn" data-filter="rejected">Rejeitados</button>
+            <button class="filter-btn" data-filter="needs_review">Revisão</button>
+            <button class="filter-btn" data-filter="skipped">Pulados</button>
+            <button class="filter-btn" data-filter="error">Erros</button>
+          </div>
+        </div>
+        <div class="scroll-x">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Produto</th>
+                <th>Status</th>
+                <th>Fornecedor</th>
+                <th>ASIN</th>
+                <th>Margem</th>
+                <th>Motivos</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody">
+              <tr><td colspan="7" class="muted">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="logs-sistema" class="card">
+        <div class="card-head">
+          <h2>Log Consolidado</h2>
+          <span class="mini">fba-trigger + fba-agent + fba-browser + fba-parser</span>
+        </div>
+        <div class="card-body">
+          <div id="logsBox" class="logs">Carregando logs...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <button class="modal-close" type="button" onclick="closeImageModal()" aria-label="Fechar imagem">×</button>
+    <img id="imageModalTag" src="" alt="Print da execução">
+  </div>
+
+  <script>
+    let currentFilter = 'all';
+    let refreshHandle = null;
+
+    const FONT_SCALE_KEY = 'lucas1_font_scale';
+    const MIN_FONT_SCALE = 1.0;
+    const MAX_FONT_SCALE = 1.7;
+
+    const STEP_TEXT = {
+      idle: ['Parado', 'O agente ainda não está rodando. Clique em Iniciar para começar uma nova sessão.'],
+      inicializando: ['Preparando sessão', 'O sistema está carregando o HTML, o estado e os dados iniciais.'],
+      'validando-vpn': ['Validando ambiente', 'O agente está conferindo se o ambiente está pronto antes de abrir o navegador.'],
+      'abrindo-browser': ['Abrindo navegador', 'O Chrome está sendo preparado com perfil real e extensões.'],
+      'browser-pronto': ['Navegador pronto', 'O navegador abriu e a sessão já pode começar a navegar.'],
+      'iniciando-produto': ['Preparando produto', 'O agente iniciou o próximo item da fila.'],
+      'abrindo-fornecedor': ['Abrindo fornecedor', 'O robô está tentando abrir a página do fornecedor e ler o preço real.'],
+      'fornecedor-carregado': ['Fornecedor carregado', 'A página do fornecedor abriu e os dados principais foram lidos.'],
+      'buscando-amazon-upc': ['Buscando na Amazon por UPC', 'O agente está pesquisando o código do produto na Amazon.'],
+      'resultado-amazon-upc': ['Resultado da busca por UPC', 'O sistema terminou a busca por UPC e está avaliando o que encontrou.'],
+      'buscando-amazon-titulo': ['Buscando na Amazon por título', 'O agente está pesquisando pelo nome do produto na Amazon.'],
+      'resultado-amazon-titulo': ['Resultado da busca por título', 'A busca por título terminou e o sistema está analisando o retorno.'],
+      'abrindo-produto-amazon': ['Abrindo produto Amazon', 'O robô está entrando na página do item encontrado na Amazon.'],
+      'produto-amazon-carregado': ['Produto Amazon carregado', 'A página do item abriu e as extensões estão sendo lidas.'],
+      'analisando-lucro': ['Calculando lucro', 'O agente está juntando preço, taxas, ROI e margem para decidir.'],
+      'produto-processado': ['Produto finalizado', 'Esse item acabou de ser processado e o sistema vai para o próximo.'],
+      'erro-produto': ['Erro no produto', 'O item atual encontrou um problema e precisa de atenção.'],
+      'intervalo-entre-batches': ['Intervalo entre lotes', 'O agente está aguardando antes de continuar o próximo lote de produtos.'],
+      concluido: ['Sessão concluída', 'A execução terminou e o relatório final já foi salvo.'],
+      pausado: ['Sessão pausada', 'A execução foi interrompida e pode ser retomada depois.'],
+      falhou: ['Sessão com falha', 'A execução parou porque houve erro demais na sequência.'],
+      'sem-produtos': ['Sem produtos válidos', 'O HTML não gerou nenhum produto útil para processar.'],
+      'dry-run-concluido': ['Dry-run concluído', 'O teste sem navegação terminou.'],
+      'aguardando-novo-inicio': ['Aguardando novo início', 'O painel está limpo e esperando uma nova execução.']
+    };
+
+    function esc(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function truncate(value, max = 90) {
+      const text = String(value ?? '');
+      return text.length > max ? `${text.slice(0, max)}...` : text;
+    }
+
+    function formatCount(value) {
+      const numeric = Number(value || 0);
+      return Number.isFinite(numeric) ? new Intl.NumberFormat('pt-BR').format(numeric) : '0';
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function getStoredFontScale() {
+      const fromStorage = Number(localStorage.getItem(FONT_SCALE_KEY));
+      if (Number.isFinite(fromStorage)) return clamp(fromStorage, MIN_FONT_SCALE, MAX_FONT_SCALE);
+      return 1.26;
+    }
+
+    function setFontScale(scale) {
+      const value = clamp(scale, MIN_FONT_SCALE, MAX_FONT_SCALE);
+      document.documentElement.style.setProperty('--font-scale', value.toFixed(2));
+      localStorage.setItem(FONT_SCALE_KEY, value.toFixed(2));
+      document.getElementById('fontScaleValue').textContent = `${Math.round(value * 100)}%`;
+    }
+
+    function formatMoney(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? `$${numeric.toFixed(2)}` : '-';
+    }
+
+    function formatPercent(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? `${numeric.toFixed(1)}%` : '-';
+    }
+
+    function basenamePath(filePath) {
+      if (!filePath) return '-';
+      const parts = String(filePath).split('/');
+      return parts.at(-1) || filePath;
+    }
+
+    function humanizeStep(step) {
+      if (!step) return STEP_TEXT.idle;
+      return STEP_TEXT[step] || [String(step).replace(/-/g, ' '), 'A execução continua normalmente nesta etapa.'];
+    }
+
+    function statusPillClass(status, running) {
+      if (running) return 'running';
+      if (status === 'failed') return 'failed';
+      if (status === 'completed') return 'completed';
+      if (status === 'paused' || status === 'stopping') return 'paused';
+      return 'idle';
+    }
+
+    function statusLabel(status, running) {
+      if (running) return 'Executando';
+      if (status === 'completed') return 'Concluído';
+      if (status === 'paused') return 'Pausado';
+      if (status === 'failed') return 'Falhou';
+      if (status === 'stopping') return 'Parando';
+      return 'Ocioso';
+    }
+
+    function describeExtensionStatus(status, diagnostics, label) {
+      const runtime = status || {};
+      const installed = diagnostics?.installedInProfile === true;
+      const localSettings = diagnostics?.localSettingsPresent === true;
+
+      if (runtime.loaded === true && runtime.available === true) {
+        return `${label}: carregou e foi lido.`;
+      }
+
+      if (runtime.loaded === true && runtime.available === false) {
+        return `${label}: apareceu na página, mas os dados não foram lidos.`;
+      }
+
+      if (runtime.loaded === false) {
+        if (installed) return `${label}: está no perfil, mas não carregou na página.`;
+        if (localSettings) return `${label}: há sinal salvo no perfil, mas a extensão não está instalada de verdade.`;
+        return `${label}: não aparece no perfil atual do Chrome.`;
+      }
+
+      if (installed) return `${label}: instalado no perfil. Aguardando abrir um produto Amazon para testar.`;
+      if (localSettings) return `${label}: há sinal salvo no perfil, mas a extensão não está instalada de verdade.`;
+      return `${label}: não aparece no perfil atual do Chrome.`;
+    }
+
+    async function getJSON(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Falha na requisição.');
+      return data;
+    }
+
+    function setActionMessage(message, isError = false) {
+      const el = document.getElementById('actionResult');
+      el.textContent = message;
+      el.style.color = isError ? 'var(--bad)' : 'var(--muted)';
+      el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+    }
+
+    async function clearPrints() {
+      setActionMessage('Limpando prints e timeline...');
+      try {
+        const data = await getJSON('/api/audit/clear', { method: 'POST' });
+        setActionMessage(data.message || 'Timeline e prints limpos.');
+        await refreshAll();
+      } catch (error) {
+        setActionMessage(error.message, true);
+      }
+    }
+
+    async function sendControl(action) {
+      const map = {
+        start: 'Iniciando...',
+        resume: 'Retomando...',
+        stop: 'Parando...',
+        reset: 'Limpando execução...',
+        restart: 'Reiniciando do zero...'
+      };
+
+      setActionMessage(map[action] || 'Executando comando...');
+      try {
+        const data = await getJSON(`/api/control/${action}`, { method: 'POST' });
+        setActionMessage(data.message || 'Comando executado.');
+        await refreshAll();
+      } catch (error) {
+        setActionMessage(error.message, true);
+      }
+    }
+
+    function renderHero(status) {
+      const keepaLoaded = status.extensionStatus?.keepaLoaded;
+      const azInsightLoaded = status.extensionStatus?.azInsightLoaded;
+      const keepaChip = keepaLoaded === true
+        ? 'Keepa: na página'
+        : (keepaLoaded === false ? 'Keepa: não carregou' : 'Keepa: aguardando');
+      const azInsightChip = azInsightLoaded === true
+        ? 'AZInsight: na página'
+        : (azInsightLoaded === false ? 'AZInsight: não carregou' : 'AZInsight: aguardando');
+
+      const chips = [
+        `Sessão: ${status.runSessionId || 'sem sessão ativa'}`,
+        `HTML: ${basenamePath(status.htmlFile)}`,
+        `Modo: ${status.mode || 'auto'}`,
+        `Processos: ${status.liveProcesses?.length || 0}`,
+        `Chrome: ${status.chromeProfileName || 'Default'}`,
+        keepaChip,
+        azInsightChip
+      ];
+
+      document.getElementById('heroChips').innerHTML = chips
+        .map(chip => `<span class="hero-chip">${esc(chip)}</span>`)
+        .join('');
+    }
+
+    function renderLiveProcesses(processes) {
+      const box = document.getElementById('liveProcessList');
+      if (!processes?.length) {
+        box.innerHTML = '<div class="process-item muted">Nenhum processo FBA ativo agora.</div>';
+        return;
+      }
+
+      box.innerHTML = processes.map(item => `
+        <div class="process-item">
+          <strong>Processo ativo</strong>
+          <div class="mini">${esc(item)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderStatus(data) {
+      document.getElementById('statProcessed').textContent = formatCount(data.stats?.processed);
+      document.getElementById('statApproved').textContent = formatCount(data.stats?.approved);
+      document.getElementById('statRejected').textContent = formatCount(data.stats?.rejected);
+      document.getElementById('statReview').textContent = formatCount(data.stats?.needsReview);
+      document.getElementById('statSkipped').textContent = formatCount(data.stats?.skipped);
+      document.getElementById('statErrors').textContent = formatCount(data.stats?.errors);
+
+      const pill = document.getElementById('statusPill');
+      pill.className = `status-pill ${statusPillClass(data.runStatus, data.running)}`;
+      pill.textContent = statusLabel(data.runStatus, data.running);
+
+      const progress = Number(data.progress || 0);
+      document.getElementById('progressFill').style.width = `${progress}%`;
+      document.getElementById('progressLabel').textContent = `${progress.toFixed(1)}%`;
+      document.getElementById('progressText').textContent = `${formatCount(Math.max((data.lastProcessedIndex ?? -1) + 1, 0))} de ${formatCount(data.totalProducts || 0)} produtos`;
+      document.getElementById('lastRefresh').textContent = `Atualizado em ${new Date().toLocaleTimeString('pt-BR')}`;
+
+      const lucas1Primary = data.models?.lucas1?.primary || '-';
+      const lucas1Fallbacks = (data.models?.lucas1?.fallbacks || []).join(' | ');
+      document.getElementById('metaLucas1Model').textContent = lucas1Fallbacks ? `${lucas1Primary} | fallback: ${lucas1Fallbacks}` : lucas1Primary;
+
+      const mainPrimary = data.models?.main?.primary || '-';
+      const mainFallbacks = (data.models?.main?.fallbacks || []).join(' | ');
+      document.getElementById('metaMainFallback').textContent = mainFallbacks ? `${mainPrimary} -> ${mainFallbacks}` : mainPrimary;
+
+      const browser = data.browserMode ? `${data.browserMode}${data.browserDisplay ? ` (${data.browserDisplay})` : ''}` : '-';
+      const chromeProfile = data.chromeProfileDir
+        ? `${data.chromeProfileDir}${data.chromeProfileName ? ` (${data.chromeProfileName})` : ''}${data.chromeExecutablePath ? ` | ${data.chromeExecutablePath}` : ''}`
+        : '-';
+      const keepaStatus = describeExtensionStatus(
+        {
+          loaded: data.extensionStatus?.keepaLoaded,
+          available: data.extensionStatus?.keepaAvailable
+        },
+        data.chromeDiagnostics?.keepa,
+        'Keepa'
+      );
+      const azInsightStatus = describeExtensionStatus(
+        {
+          loaded: data.extensionStatus?.azInsightLoaded,
+          available: data.extensionStatus?.azInsightAvailable
+        },
+        data.chromeDiagnostics?.azInsight,
+        'AZInsight'
+      );
+      document.getElementById('metaBrowser').textContent = browser;
+      document.getElementById('metaChromeProfile').textContent = chromeProfile;
+      document.getElementById('metaKeepaStatus').textContent = keepaStatus;
+      document.getElementById('metaAzInsightStatus').textContent = azInsightStatus;
+      document.getElementById('metaHtml').textContent = data.htmlFile || '-';
+      document.getElementById('metaSession').textContent = data.runSessionId || '-';
+      document.getElementById('metaStep').textContent = data.currentStep || '-';
+      document.getElementById('metaProduct').textContent = data.currentProduct?.name || data.lastProcessedProduct?.name || '-';
+      document.getElementById('metaError').textContent = data.lastError?.message || '-';
+
+      renderHero(data);
+      renderLiveProcesses(data.liveProcesses || []);
+      renderFocusCards(data);
+    }
+
+    function renderFocusCards(status) {
+      const [stepTitle, stepBody] = humanizeStep(status.currentStep || status.runStatus || 'idle');
+      document.getElementById('focusStepTitle').textContent = stepTitle;
+
+      const currentProduct = status.currentProduct || status.lastProcessedProduct || null;
+      const stepBits = [];
+      if (currentProduct?.supplierDomain) stepBits.push(`Fornecedor: ${currentProduct.supplierDomain}`);
+      if (currentProduct?.asin) stepBits.push(`ASIN: ${currentProduct.asin}`);
+      if (currentProduct?.searchType) stepBits.push(`Busca atual: ${currentProduct.searchType}`);
+      if (currentProduct?.searchTerm) stepBits.push(`Termo: ${currentProduct.searchTerm}`);
+      if (currentProduct?.supplierPrice != null) stepBits.push(`Preço fornecedor: ${formatMoney(currentProduct.supplierPrice)}`);
+      document.getElementById('focusStepBody').textContent = stepBits.length ? `${stepBody} ${stepBits.join(' | ')}` : stepBody;
+
+      if (currentProduct?.name) {
+        document.getElementById('focusProductTitle').textContent = currentProduct.name;
+        const productBits = [];
+        if (currentProduct.supplierDomain) productBits.push(`Fornecedor: ${currentProduct.supplierDomain}`);
+        if (currentProduct.asin) productBits.push(`ASIN: ${currentProduct.asin}`);
+        if (currentProduct.pageUrl) productBits.push(`Página: ${currentProduct.pageUrl}`);
+        document.getElementById('focusProductBody').textContent = productBits.join(' | ') || 'Produto carregado sem detalhes extras.';
+      } else {
+        document.getElementById('focusProductTitle').textContent = 'Nenhum produto em andamento';
+        document.getElementById('focusProductBody').textContent = 'Quando a execução abrir um item, o resumo aparece aqui.';
+      }
+
+      if (status.lastError?.message) {
+        document.getElementById('focusAttentionTitle').textContent = 'Erro recente';
+        document.getElementById('focusAttentionBody').textContent = status.lastError.message;
+      } else if (status.extensionStatus?.keepaLoaded === false || status.extensionStatus?.azInsightLoaded === false) {
+        document.getElementById('focusAttentionTitle').textContent = 'Extensão não carregou';
+        document.getElementById('focusAttentionBody').textContent = [
+          status.extensionStatus?.keepaLoaded === false ? 'Keepa não carregou.' : null,
+          status.extensionStatus?.azInsightLoaded === false ? 'AZInsight não carregou.' : null,
+          'Sem elas, o cálculo final pode ir para revisão.'
+        ].filter(Boolean).join(' ');
+      } else if (status.running) {
+        document.getElementById('focusAttentionTitle').textContent = 'Sem erro crítico';
+        document.getElementById('focusAttentionBody').textContent = 'A execução está rodando e o painel segue atualizando automaticamente.';
+      } else {
+        document.getElementById('focusAttentionTitle').textContent = 'Sem alerta crítico';
+        document.getElementById('focusAttentionBody').textContent = 'Se surgir URL quebrada, bloqueio, captcha ou falha, o aviso aparece aqui.';
+      }
+
+      document.getElementById('focusSessionTitle').textContent = status.runSessionId || 'Sessão não iniciada';
+      const sessionBits = [
+        `Status: ${statusLabel(status.runStatus, status.running)}`,
+        `HTML: ${basenamePath(status.htmlFile)}`,
+        `Navegador: ${status.browserMode || '-'}`,
+        `Keepa: ${status.extensionStatus?.keepaLoaded ? 'ok' : 'pendente'}`,
+        `AZInsight: ${status.extensionStatus?.azInsightLoaded ? 'ok' : 'pendente'}`
+      ];
+      document.getElementById('focusSessionBody').textContent = sessionBits.join(' | ');
+    }
+
+    function renderApproved(data) {
+      const summary = document.getElementById('approvedSummary');
+      const tbody = document.getElementById('approvedBody');
+
+      if (!data.products?.length) {
+        summary.textContent = 'Nenhum aprovado ainda';
+        tbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum produto lucrativo até agora.</td></tr>';
+        return;
+      }
+
+      summary.textContent = `Lucro total ${formatMoney(data.totalProfit)} | Margem média ${formatPercent(data.avgMargin)}`;
+      tbody.innerHTML = data.products.map(item => `
+        <tr>
+          <td>${item.index}</td>
+          <td title="${esc(item.name)}">${esc(truncate(item.name, 46))}</td>
+          <td>${item.asin ? `<a href="https://www.amazon.com/dp/${encodeURIComponent(item.asin)}" target="_blank">${esc(item.asin)}</a>` : '-'}</td>
+          <td>${esc(item.supplierDomain || '-')}</td>
+          <td>${formatMoney(item.profit)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProducts(products) {
+      const tbody = document.getElementById('productsBody');
+      if (!products?.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">Nenhum produto encontrado para esse filtro.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = products.slice(0, 250).map(item => {
+        const reasons = Array.isArray(item.reasons) ? item.reasons.join(' | ') : '-';
+        return `
+          <tr>
+            <td>${item.index}</td>
+            <td title="${esc(item.name)}">${esc(truncate(item.name, 44))}</td>
+            <td><span class="badge badge-status-${esc(item.status)}">${esc(item.status || '-')}</span></td>
+            <td>${esc(item.supplierDomain || '-')}</td>
+            <td>${item.asin ? `<a href="https://www.amazon.com/dp/${encodeURIComponent(item.asin)}" target="_blank">${esc(item.asin)}</a>` : '-'}</td>
+            <td>${item.margin != null ? formatPercent(item.margin) : '-'}</td>
+            <td title="${esc(reasons)}">${esc(truncate(reasons, 88))}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderQueue(data) {
+      const meta = document.getElementById('queueMeta');
+      const box = document.getElementById('queueList');
+      const pending = data.pending || [];
+      const done = data.done || [];
+
+      meta.textContent = `${pending.length} pendente(s) | ${done.length} feito(s)`;
+
+      if (!pending.length && !done.length) {
+        box.innerHTML = '<div class="queue-item muted">Nenhum arquivo HTML encontrado.</div>';
+        return;
+      }
+
+      const parts = [];
+      pending.forEach(file => {
+        parts.push(`
+          <div class="queue-item">
+            <strong>${esc(file.name)}</strong>
+            <div class="mini">${Math.round((file.size || 0) / 1024)} KB</div>
+            <div class="mini">Modificado em ${new Date(file.modifiedAt).toLocaleString('pt-BR')}</div>
+          </div>
+        `);
+      });
+
+      done.slice(0, 6).forEach(name => {
+        parts.push(`
+          <div class="queue-item">
+            <strong>${esc(name)}</strong>
+            <div class="mini">Arquivo já movido para a pasta de feitos.</div>
+          </div>
+        `);
+      });
+
+      box.innerHTML = parts.join('');
+    }
+
+    function renderLogs(log) {
+      document.getElementById('logsBox').textContent = log || 'Sem logs disponíveis.';
+    }
+
+    function renderTimeline(data) {
+      const meta = document.getElementById('timelineMeta');
+      const box = document.getElementById('timelineList');
+      const items = data.items || [];
+      const printCount = items.filter(item => Boolean(item.screenshotUrl)).length;
+
+      meta.textContent = data.sessionId
+        ? `Sessão ${data.sessionId} | ${items.length} evento(s) | ${printCount} print(s)`
+        : 'Sem sessão visual ativa';
+
+      if (!items.length) {
+        box.innerHTML = '<div class="muted">Nenhum evento visual disponível ainda.</div>';
+        return;
+      }
+
+      box.innerHTML = items.map(item => {
+        const facts = (item.facts || []).map(fact => `<span class="fact">${esc(fact)}</span>`).join('');
+        const urlPart = item.url
+          ? `<div class="timeline-url"><a href="${esc(item.url)}" target="_blank">${esc(truncate(item.url, 120))}</a></div>`
+          : '';
+        const imagePart = item.screenshotUrl
+          ? `<button class="timeline-shot" type="button" data-image-url="${esc(item.screenshotUrl)}" aria-label="Abrir print da etapa ${esc(item.label)}"><img src="${item.screenshotUrl}" alt="Print da etapa ${esc(item.label)}" loading="lazy"><span class="stage-hint">Clique para ampliar</span></button>`
+          : '<div class="timeline-shot"><div class="empty-shot">Sem print salvo nesta etapa.</div></div>';
+
+        return `
+          <article class="timeline-item">
+            <div class="timeline-info">
+              <div class="timeline-top">
+                <span class="badge">${esc(item.ts ? new Date(item.ts).toLocaleString('pt-BR') : '-')}</span>
+                ${item.productIndex != null ? `<span class="badge">Produto #${item.productIndex}</span>` : ''}
+                ${item.status ? `<span class="badge badge-status-${esc(item.status)}">${esc(item.status)}</span>` : ''}
+                ${item.searchType ? `<span class="badge">${esc(item.searchType)}</span>` : ''}
+              </div>
+              <div class="timeline-title">${esc(item.label)}</div>
+              <div class="timeline-product">${esc(item.productName || 'Evento da sessão')}</div>
+              ${urlPart}
+              <div class="facts">${facts || '<span class="fact">Sem dados extras nesta etapa.</span>'}</div>
+            </div>
+            ${imagePart}
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderPrintGallery(data) {
+      const meta = document.getElementById('printGalleryMeta');
+      const box = document.getElementById('printGallery');
+      const items = (data.items || []).filter(item => item.screenshotUrl);
+
+      meta.textContent = `${items.length} print(s)`;
+
+      if (!items.length) {
+        box.innerHTML = '<div class="muted">Os prints da automação aparecem aqui assim que a execução começar.</div>';
+        return;
+      }
+
+      const latest = items.slice(-24).reverse();
+      box.innerHTML = latest.map(item => `
+        <button class="gallery-item" type="button" data-image-url="${esc(item.screenshotUrl)}" aria-label="Abrir print ${esc(item.label)}">
+          <img src="${item.screenshotUrl}" alt="Print da etapa ${esc(item.label)}" loading="lazy">
+          <div class="gallery-info">
+            ${esc(item.label || 'Etapa da execução')}
+            <div class="gallery-time">${esc(item.ts ? new Date(item.ts).toLocaleString('pt-BR') : '')}</div>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function renderFeaturedStage(audit, status) {
+      const items = audit.items || [];
+      const featured = items.find(item => item.screenshotUrl) || items[0] || null;
+      const meta = document.getElementById('featuredMeta');
+      const shot = document.getElementById('featuredShot');
+      const title = document.getElementById('featuredTitle');
+      const product = document.getElementById('featuredProduct');
+      const url = document.getElementById('featuredUrl');
+      const facts = document.getElementById('featuredFacts');
+
+      if (!featured) {
+        meta.textContent = 'Sem print principal ainda';
+        shot.innerHTML = '<div class="stage-empty">O print principal aparece aqui assim que a automação salvar a primeira imagem.</div>';
+        title.textContent = 'Aguardando print principal';
+        product.textContent = status.currentProduct?.name || 'Nenhuma etapa visual disponível ainda.';
+        url.textContent = 'O link da página aparece aqui quando houver uma captura.';
+        facts.innerHTML = '<span class="fact">Esta área mostra o print mais importante do momento.</span>';
+        return;
+      }
+
+      meta.textContent = featured.ts ? `Última captura em ${new Date(featured.ts).toLocaleString('pt-BR')}` : 'Última captura';
+      if (featured.screenshotUrl) {
+        shot.setAttribute('data-image-url', featured.screenshotUrl);
+        shot.innerHTML = `<img src="${featured.screenshotUrl}" alt="Print principal da etapa ${esc(featured.label)}" loading="lazy"><span class="stage-hint">Clique para ampliar</span>`;
+      } else {
+        shot.removeAttribute('data-image-url');
+        shot.innerHTML = '<div class="stage-empty">A etapa atual ainda não tem print salvo.</div>';
+      }
+
+      title.textContent = featured.label || 'Etapa da execução';
+      product.textContent = featured.productName || status.currentProduct?.name || 'Evento da sessão';
+      url.innerHTML = featured.url
+        ? `<a href="${esc(featured.url)}" target="_blank">${esc(truncate(featured.url, 120))}</a>`
+        : 'Sem URL registrada nesta etapa.';
+      facts.innerHTML = (featured.facts || []).length
+        ? featured.facts.map(item => `<span class="fact">${esc(item)}</span>`).join('')
+        : '<span class="fact">Sem dados extras nesta etapa.</span>';
+    }
+
+    function deriveDomainState(entry) {
+      const reason = String(entry.latestReason || '').toLowerCase();
+
+      if (reason.includes('não encontrada') || reason.includes('url antiga') || reason.includes('inválido')) {
+        return { label: 'URL antiga / inexistente', tone: 'tone-warn' };
+      }
+
+      if (reason.includes('captcha') || reason.includes('bloqueio') || reason.includes('challenge')) {
+        return { label: 'Bloqueio do site', tone: 'tone-bad' };
+      }
+
+      if (entry.approved > 0) {
+        return { label: 'Tem aprovado', tone: 'tone-ok' };
+      }
+
+      if (entry.errors > 0) {
+        return { label: 'Com erro', tone: 'tone-bad' };
+      }
+
+      if (entry.processed > 0) {
+        return { label: 'Processado', tone: 'tone-ok' };
+      }
+
+      return { label: 'Sem dados', tone: '' };
+    }
+
+    function renderDomainHealth(products) {
+      const box = document.getElementById('domainHealthList');
+      const groups = new Map();
+
+      for (const item of products || []) {
+        const domain = item.supplierDomain || 'desconhecido';
+        if (!groups.has(domain)) {
+          groups.set(domain, {
+            domain,
+            processed: 0,
+            approved: 0,
+            skipped: 0,
+            errors: 0,
+            latestReason: ''
+          });
+        }
+
+        const entry = groups.get(domain);
+        entry.processed += 1;
+        if (item.status === 'approved') entry.approved += 1;
+        if (item.status === 'skipped') entry.skipped += 1;
+        if (item.status === 'error') entry.errors += 1;
+        if (Array.isArray(item.reasons) && item.reasons.length) {
+          entry.latestReason = item.reasons.join(' | ');
+        }
+      }
+
+      const rows = [...groups.values()]
+        .sort((a, b) => b.processed - a.processed)
+        .slice(0, 12);
+
+      if (!rows.length) {
+        box.innerHTML = '<div class="domain-item muted">Nenhum domínio processado ainda.</div>';
+        return;
+      }
+
+      box.innerHTML = rows.map(entry => {
+        const state = deriveDomainState(entry);
+        return `
+          <div class="domain-item">
+            <div class="domain-top">
+              <strong>${esc(entry.domain)}</strong>
+              <span class="metric-pill ${state.tone}">${esc(state.label)}</span>
+            </div>
+            <div class="domain-metrics">
+              <span class="metric-pill">Processados: ${entry.processed}</span>
+              <span class="metric-pill">Aprovados: ${entry.approved}</span>
+              <span class="metric-pill">Pulados: ${entry.skipped}</span>
+              <span class="metric-pill">Erros: ${entry.errors}</span>
+            </div>
+            <div class="mini">${esc(entry.latestReason || 'Sem motivo recente registrado.')}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openImageModal(url) {
+      if (!url) return;
+      document.getElementById('imageModalTag').src = url;
+      document.getElementById('imageModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      document.getElementById('imageModal').classList.remove('open');
+      document.getElementById('imageModalTag').src = '';
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeImageModal();
+    });
+
+    document.addEventListener('click', event => {
+      const targetWithImage = event.target.closest('[data-image-url]');
+      if (targetWithImage) openImageModal(targetWithImage.dataset.imageUrl);
+    });
+
+    document.getElementById('imageModal').addEventListener('click', event => {
+      if (event.target.id === 'imageModal') closeImageModal();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        document.querySelectorAll('.filter-btn').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        currentFilter = button.dataset.filter;
+        await refreshProductsOnly();
+      });
+    });
+
+    async function refreshProductsOnly() {
+      try {
+        const data = await getJSON(`/api/products?filter=${encodeURIComponent(currentFilter)}`);
+        renderProducts(data.products || []);
+      } catch (error) {
+        setActionMessage(error.message, true);
+      }
+    }
+
+    async function refreshAll() {
+      try {
+        const [status, approved, filteredProducts, allProducts, queue, logs, audit] = await Promise.all([
+          getJSON('/api/status'),
+          getJSON('/api/approved'),
+          getJSON(`/api/products?filter=${encodeURIComponent(currentFilter)}`),
+          getJSON('/api/products?filter=all'),
+          getJSON('/api/queue'),
+          getJSON('/api/logs?lines=180'),
+          getJSON('/api/audit/current')
+        ]);
+
+        renderStatus(status);
+        renderApproved(approved);
+        renderProducts(filteredProducts.products || []);
+        renderQueue(queue);
+        renderLogs(logs.log || '');
+        renderTimeline(audit);
+        renderPrintGallery(audit);
+        renderFeaturedStage(audit, status);
+        renderDomainHealth(allProducts.products || []);
+      } catch (error) {
+        setActionMessage(error.message, true);
+      }
+    }
+
+    document.getElementById('increaseFontBtn').addEventListener('click', () => {
+      const current = getStoredFontScale();
+      setFontScale(current + 0.05);
+    });
+
+    document.getElementById('decreaseFontBtn').addEventListener('click', () => {
+      const current = getStoredFontScale();
+      setFontScale(current - 0.05);
+    });
+
+    setFontScale(getStoredFontScale());
+    refreshAll();
+    refreshHandle = setInterval(refreshAll, 2500);
+  </script>
+</body>
+</html>

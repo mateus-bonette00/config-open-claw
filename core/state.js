@@ -31,6 +31,25 @@ export class StateManager {
     return {};
   }
 
+  /**
+   * Recarrega o estado do disco.
+   * Importante quando existem multiplos processos lendo/escrevendo o mesmo arquivo de estado.
+   */
+  reload({ preserveOnError = true } = {}) {
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const content = fs.readFileSync(this.filePath, 'utf-8');
+        this.data = JSON.parse(content);
+      } else {
+        this.data = {};
+      }
+    } catch (err) {
+      console.error(`[StateManager] Erro ao recarregar estado de ${this.agentName}:`, err.message);
+      if (!preserveOnError) this.data = {};
+    }
+    return this;
+  }
+
   save() {
     this._ensureDir();
     // Backup antes de salvar
@@ -45,8 +64,29 @@ export class StateManager {
   }
 
   set(key, value) {
+    // Recarrega antes de escrever para evitar sobrescrever mudancas feitas por outro processo.
+    this.reload();
     this.data[key] = value;
     this.save();
+    return this;
+  }
+
+  setMany(patch) {
+    if (!patch || typeof patch !== 'object') return this;
+    // Recarrega antes de escrever para evitar sobrescrever mudancas feitas por outro processo.
+    this.reload();
+    Object.assign(this.data, patch);
+    this.save();
+    return this;
+  }
+
+  delete(key) {
+    // Recarrega antes de escrever para evitar sobrescrever mudancas feitas por outro processo.
+    this.reload();
+    if (Object.prototype.hasOwnProperty.call(this.data, key)) {
+      delete this.data[key];
+      this.save();
+    }
     return this;
   }
 
@@ -87,8 +127,8 @@ export class StateManager {
     };
   }
 
-  reset() {
-    this.data = {};
+  reset(nextState = {}) {
+    this.data = { ...nextState };
     this.save();
   }
 }

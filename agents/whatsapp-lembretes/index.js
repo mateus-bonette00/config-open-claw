@@ -2,6 +2,8 @@ import { createLogger, StateManager, schedule } from '../../core/index.js';
 import { config } from '../../core/secrets.js';
 import fs from 'fs';
 import path from 'path';
+import { exec } from 'child_process';
+import { startScheduler as startAfazeresScheduler } from '../zoe-tarefas-prioridade/index.js';
 
 const log = createLogger('whatsapp-lembretes');
 const state = new StateManager('whatsapp-lembretes');
@@ -37,12 +39,44 @@ const DEFAULT_DAILY_CHECKLIST = [
   { name: 'Planejar proximo dia (fim do expediente)', done: false }
 ];
 const COMMANDS_REGISTRY_PATH = process.env.WHATSAPP_COMMANDS_MD_PATH || path.join(path.dirname(state.filePath), 'COMMANDS.md');
+const COMMANDS_REGISTRY_CACHE_TTL_MS = Number(process.env.WHATSAPP_COMMANDS_CACHE_TTL_MS || 3000);
 const LEGACY_COMMANDS_MD_CANDIDATES = [
   process.env.WHATSAPP_COMMANDS_MD_LEGACY_PATH,
   path.resolve('COMMANDS.md'),
   path.join(path.dirname(state.filePath), '..', 'COMMANDS.md'),
   '/home/bonette/.openclaw/workspace/COMMANDS.md'
 ].filter(Boolean);
+let commandsRegistryCache = null;
+let commandsRegistryCacheAt = 0;
+let commandsRegistryCacheMtime = 0;
+
+function getFileMtimeMs(filePath) {
+  try {
+    return fs.statSync(filePath).mtimeMs || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function setCommandsRegistryCache(registry) {
+  commandsRegistryCache = registry;
+  commandsRegistryCacheAt = Date.now();
+  commandsRegistryCacheMtime = getFileMtimeMs(COMMANDS_REGISTRY_PATH);
+}
+
+function canUseCommandsRegistryCache() {
+  if (!commandsRegistryCache) return false;
+  if (COMMANDS_REGISTRY_CACHE_TTL_MS <= 0) return false;
+  const age = Date.now() - commandsRegistryCacheAt;
+  if (age < COMMANDS_REGISTRY_CACHE_TTL_MS) return true;
+
+  const currentMtime = getFileMtimeMs(COMMANDS_REGISTRY_PATH);
+  if (currentMtime && currentMtime === commandsRegistryCacheMtime) {
+    commandsRegistryCacheAt = Date.now();
+    return true;
+  }
+  return false;
+}
 
 // Estrutura de lembrete
 function createReminder({ message, sendAt, phone, recurring = null, category = 'geral', priority = 'normal' }) {
@@ -566,6 +600,7 @@ function readCommandsRegistryFile(filePath) {
 function writeCommandsRegistryFile(registry) {
   fs.mkdirSync(path.dirname(COMMANDS_REGISTRY_PATH), { recursive: true });
   fs.writeFileSync(COMMANDS_REGISTRY_PATH, renderCommandsRegistryMarkdown(registry), 'utf-8');
+  setCommandsRegistryCache(registry);
 }
 
 function clearLegacyCommandState() {
@@ -589,12 +624,19 @@ function clearLegacyCommandState() {
 }
 
 function ensureCommandsRegistry() {
+  if (canUseCommandsRegistryCache()) return commandsRegistryCache;
+
+  const registryExists = fs.existsSync(COMMANDS_REGISTRY_PATH);
+  const alreadyMigrated = Boolean(state.get(COMMANDS_REGISTRY_MIGRATION_FLAG));
+  const shouldReadLegacySources = !alreadyMigrated || !registryExists;
   const currentRegistry = readCommandsRegistryFile(COMMANDS_REGISTRY_PATH);
-  const legacyFiles = LEGACY_COMMANDS_MD_CANDIDATES
-    .map(filePath => path.resolve(filePath))
-    .filter(filePath => filePath !== path.resolve(COMMANDS_REGISTRY_PATH) && fs.existsSync(filePath));
-  const legacyStateCommands = state.get('commands', []);
-  const legacyStateSnippets = state.get('snippets', []);
+  const legacyFiles = shouldReadLegacySources
+    ? LEGACY_COMMANDS_MD_CANDIDATES
+      .map(filePath => path.resolve(filePath))
+      .filter(filePath => filePath !== path.resolve(COMMANDS_REGISTRY_PATH) && fs.existsSync(filePath))
+    : [];
+  const legacyStateCommands = shouldReadLegacySources ? state.get('commands', []) : [];
+  const legacyStateSnippets = shouldReadLegacySources ? state.get('snippets', []) : [];
 
   const mergedRegistry = {
     commands: mergeRegistryEntries([
@@ -610,11 +652,11 @@ function ensureCommandsRegistry() {
   };
 
   const shouldWrite =
-    !fs.existsSync(COMMANDS_REGISTRY_PATH) ||
+    !registryExists ||
+    !alreadyMigrated ||
     legacyFiles.length > 0 ||
     legacyStateCommands.length > 0 ||
-    legacyStateSnippets.length > 0 ||
-    !state.get(COMMANDS_REGISTRY_MIGRATION_FLAG);
+    legacyStateSnippets.length > 0;
 
   if (shouldWrite) {
     writeCommandsRegistryFile(mergedRegistry);
@@ -622,6 +664,7 @@ function ensureCommandsRegistry() {
     log.info(`Registro unico COMMANDS.md sincronizado em ${COMMANDS_REGISTRY_PATH}`);
   }
 
+  setCommandsRegistryCache(mergedRegistry);
   return mergedRegistry;
 }
 
@@ -758,6 +801,42 @@ export function handleSlashCommand({ text, phone }) {
   ensureOwnerPhone(phone || getDefaultReminderPhone(), 'phone');
   const input = String(text || '').trim();
   if (!input.startsWith('/')) return null;
+
+  if (input === '/fba' || input.startsWith('/fba ')) {
+    const args = input.replace('/fba', '').trim();
+    const projectDir = process.env.OPENCLAW_PROJECT_DIR || path.resolve(path.join(__dirname, '..', '..'));
+    const logPath = path.join(projectDir, 'storage', 'logs', 'fba-run.log');
+
+    if (args === 'status') {
+      try {
+        const statePath = path.join(projectDir, 'storage', 'state', 'fba.json');
+        if (!fs.existsSync(statePath)) return 'Nenhuma execucao FBA registrada ainda.';
+        const fbaState = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+        const stats = fbaState.productResults ? Object.values(fbaState.productResults) : [];
+        const approved = stats.filter(r => r.status === 'approved').length;
+        const rejected = stats.filter(r => r.status === 'rejected').length;
+        const errors = stats.filter(r => r.status === 'error').length;
+        const total = stats.length;
+        const mode = fbaState.mode || 'desconhecido';
+        return [
+          `FBA Status (${mode}):`,
+          `Total: ${total} | Aprovados: ${approved}`,
+          `Rejeitados: ${rejected} | Erros: ${errors}`,
+          fbaState.sessionStart ? `Inicio: ${fbaState.sessionStart}` : '',
+          fbaState.lastError ? `Ultimo erro: ${fbaState.lastError.message}` : ''
+        ].filter(Boolean).join('\n');
+      } catch (err) {
+        return `Erro ao ler status FBA: ${err.message}`;
+      }
+    }
+
+    const modeFlag = args === 'manual' ? ' --manual' : args === 'resume' ? ' --resume' : '';
+    const cmd = `cd ${projectDir} && nohup node agents/fba/index.js${modeFlag} > ${logPath} 2>&1 &`;
+    exec(cmd, (error) => {
+      if (error) log.error(`Falha ao iniciar FBA: ${error.message}`);
+    });
+    return `Bot FBA iniciado${modeFlag ? ` (${args})` : ' (auto)'}. Use /fba status para acompanhar.`;
+  }
 
   if (input === '/comandos') {
     const commands = listCommands();
@@ -977,6 +1056,7 @@ export function startScheduler() {
   schedule('whatsapp-reminders', '* * * * *', processReminders);
   schedule('productivity-followups', '* * * * *', processTaskFollowUps);
   schedule('productivity-daily-checklist', '0 8 * * *', sendDailyChecklistSummary);
+  startAfazeresScheduler();
   log.info('Scheduler unificado iniciado: lembretes + tarefas + follow-ups.');
 }
 

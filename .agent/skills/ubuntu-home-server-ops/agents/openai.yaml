@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ubuntu Server Suporte"
+  short_description: "Diagnostico e recuperacao segura do servidor Ubuntu 24"
+  default_prompt: "Diagnostique e resolva com seguranca um problema no meu servidor Ubuntu 24 rodando em desktop."

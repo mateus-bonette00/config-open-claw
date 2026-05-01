@@ -8,7 +8,7 @@ const log = createLogger('fba-rules');
  * Constantes configuráveis:
  */
 const RULES = {
-  PREP_FEE: 1.90,           // Taxa de preparo por unidade (USD)
+  PREP_FEE: 2.00,
   MIN_MARGIN_FBA: 0.10,     // Margem mínima FBA (10%)
   MIN_ROI: 0.15,            // ROI mínimo (15%)
   MIN_BSR_DROPS: 3,         // Mínimo de quedas de BSR no Keepa (= vendas nos últimos 30 dias)

@@ -12,11 +12,12 @@
     "fba:analyze": "node agents/fba/analyzer.js",
     "fba:manual": "node agents/fba/index.js --manual",
     "fba:resume": "node agents/fba/index.js --resume",
-    "supplier-sweep": "node agents/varredor-fornecedores/index.js",
     "wa:cmd": "node scripts/whatsapp-lembretes-command.js",
+    "tarefas:cmd": "node scripts/zoe-tarefas-command.js",
     "deploy": "bash scripts/deploy.sh",
     "deploy:live": "bash scripts/deploy-live.sh",
     "autodeploy:disable": "bash scripts/remote-disable-autodeploy.sh",
+    "dashboard": "node dashboard/server.js",
     "tunnel": "bash scripts/ssh-tunnel.sh"
   },
   "dependencies": {
@@ -27,7 +28,8 @@
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "winston": "^3.17.0",
     "cron": "^3.3.1",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^9.0.0"

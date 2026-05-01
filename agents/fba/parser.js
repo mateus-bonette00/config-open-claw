@@ -13,6 +13,17 @@ const SKIP_PATTERNS = [
   /^all products/i,
   /^page \d+/i,
   /^all products\s*[–-]\s*page/i,
+  /^news$/i,
+  /^search$/i,
+  /^about(?:[-\s]|$)/i,
+  /^contact(?:[-\s]|$)/i,
+  /^our reviews/i,
+  /^privacy policy$/i,
+  /^refund policy$/i,
+  /^shipping policy$/i,
+  /^terms(?:[-\s]|$)/i,
+  /^shop premium .* collectors/i,
+  /^.*\bcatalog\b.*$/i,
   /^sem t[ií]tulo$/i,
   /^your connection needs to be verified/i,
   /^\s*$/
@@ -46,13 +57,43 @@ const DEDUPE_BY_SUPPLIER_URL = !['0', 'false', 'no', 'off'].includes(
   String(process.env.FBA_DEDUPE_BY_SUPPLIER_URL || 'true').toLowerCase()
 );
 
+function normalizeProductCode(rawValue) {
+  return String(rawValue || '').trim().replace(/\D/g, '');
+}
+
+function classifyProductCode(code) {
+  switch (code.length) {
+    case 12:
+      return 'upc-12';
+    case 13:
+      return 'ean-13';
+    case 14:
+      return 'gtin-14';
+    default:
+      return 'invalid';
+  }
+}
+
+function buildCodeSearchVariants(code) {
+  if (!code) return [];
+
+  const variants = new Set([code]);
+  const stripped = code.replace(/^0+/, '');
+  if (stripped) variants.add(stripped);
+
+  if (code.length > 12) variants.add(code.slice(-12));
+  if (code.length > 13) variants.add(code.slice(-13));
+  if (code.length > 14) variants.add(code.slice(-14));
+
+  return [...variants].filter(value => value.length >= 12 && value.length <= 14);
+}
+
 /**
- * Valida se um UPC é válido (12 ou 13 dígitos numéricos).
+ * Valida se um código de produto pode ser usado na busca (UPC/EAN/GTIN).
  */
 function isValidUPC(upc) {
-  if (!upc) return false;
-  const cleaned = upc.trim().replace(/\D/g, '');
-  return cleaned.length === 12 || cleaned.length === 13;
+  const cleaned = normalizeProductCode(upc);
+  return cleaned.length >= 12 && cleaned.length <= 14;
 }
 
 /**
@@ -99,6 +140,20 @@ function removeTrackingParams(urlObj) {
 function classifySupplierUrl(urlObj) {
   const pathname = urlObj.pathname.toLowerCase();
   const queryKeys = [...urlObj.searchParams.keys()].map(key => key.toLowerCase());
+  const isHomepage = pathname === '/' || pathname === '';
+  const hasContentPageHint = (
+    /\/about(\/|$|\.)/.test(pathname) ||
+    /\/contact(\/|$|\.)/.test(pathname) ||
+    /\/policies(\/|$|\.)/.test(pathname) ||
+    /\/privacy(\/|$|\.)/.test(pathname) ||
+    /\/policy(\/|$|\.)/.test(pathname) ||
+    /\/reviews?(\/|$|\.)/.test(pathname) ||
+    /\/faq(\/|$|\.)/.test(pathname) ||
+    /\/terms?(\/|$|\.)/.test(pathname) ||
+    /\/returns?(\/|$|\.)/.test(pathname) ||
+    /\/refunds?(\/|$|\.)/.test(pathname) ||
+    /\/shipping(\/|$|\.)/.test(pathname)
+  );
 
   const hasProductHint = (
     /\/products\//.test(pathname) ||
@@ -108,12 +163,16 @@ function classifySupplierUrl(urlObj) {
   );
 
   const hasListingHint = (
+    isHomepage ||
+    hasContentPageHint ||
     /\/collections(\/|$)/.test(pathname) ||
     /\/search(\/|$|\.)/.test(pathname) ||
     /\/catalogsearch(\/|$)/.test(pathname) ||
+    /\/catalog(\/|$|\.)/.test(pathname) ||
     /\/category(\/|$)/.test(pathname) ||
     /\/categories(\/|$)/.test(pathname) ||
     /\/shop(\/|$)/.test(pathname) ||
+    /catalog/.test(pathname) ||
     /\/all-products(\/|$)/.test(pathname) ||
     queryKeys.some(key => ['q', 'query', 'search', 'search_query', 'keyword', 'page', 'p'].includes(key))
   );
@@ -198,14 +257,17 @@ export function parseProductsHTML(htmlContent) {
 
     const index = parseInt($(cells[0]).text().trim(), 10) || fallbackIndex;
     const name = $(cells[1]).text().trim();
-    const upc = $(cells[2]).text().trim();
+    const rawUpc = $(cells[2]).text().trim();
     const supplierUrl = extractHref($(cells[3]));
     const amazonUpcSearchUrl = extractHref($(cells[4]));
     const amazonTitleSearchUrl = extractHref($(cells[5]));
 
     // Verificar se deve ser pulado
     const isSkippedByName = SKIP_PATTERNS.some(pattern => pattern.test(name));
+    const upc = normalizeProductCode(rawUpc);
     const hasValidUPC = isValidUPC(upc);
+    const productCodeType = classifyProductCode(upc);
+    const upcVariants = buildCodeSearchVariants(upc);
     const normalizedUrl = normalizeSupplierUrl(supplierUrl);
 
     if (isSkippedByName) {
@@ -253,7 +315,7 @@ export function parseProductsHTML(htmlContent) {
       addWarning({
         index,
         name,
-        upc,
+        upc: rawUpc,
         reason: 'upc-invalido-ou-ausente'
       });
     }
@@ -261,7 +323,10 @@ export function parseProductsHTML(htmlContent) {
     products.push({
       index,
       name,
-      upc: upc.replace(/\D/g, ''),
+      upc,
+      rawUpc,
+      productCodeType,
+      upcVariants,
       supplierUrl: normalizedUrl.canonical,
       supplierUrlOriginal: normalizedUrl.original,
       supplierDomain: normalizedUrl.domain,

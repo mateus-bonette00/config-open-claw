@@ -34,13 +34,23 @@ ssh -i "$SSH_KEY" "${SERVER_USER}@${SERVER_HOST}" "mkdir -p ${SERVER_DIR}"
 # 3. Sincronizar arquivos (excluindo node_modules, .env, storage)
 echo "[3/5] Sincronizando arquivos..."
 rsync -avz --delete \
+  --include 'dashboard/public/index.html' \
+  --include 'dashboard/public/' \
+  --include 'dashboard/public/***' \
   --exclude 'node_modules' \
   --exclude '.env' \
+  --exclude 'venv' \
+  --exclude '.venv' \
   --exclude 'storage/state' \
   --exclude 'storage/logs' \
+  --exclude 'storage/audit' \
+  --exclude 'storage/archive' \
   --exclude 'storage/screenshots' \
   --exclude 'storage/exports' \
+  --exclude 'storage/chrome-profile-runtime*' \
+  --exclude 'storage/prosaude-output' \
   --exclude 'amazon-fba/produtos-encontrados' \
+  --exclude 'amazon-fba/produtos-fornecedores-html' \
   --exclude '.git' \
   --exclude '*.png' \
   --exclude '*.html' \

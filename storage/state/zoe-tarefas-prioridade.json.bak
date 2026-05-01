@@ -1,0 +1,10 @@
+{
+  "tasks": [],
+  "completedTasks": [],
+  "settings": {
+    "ownerPhone": "553598183459",
+    "summaryCron": "*/10 * * * *",
+    "quietStartHour": 0,
+    "quietEndHour": 23
+  }
+}
