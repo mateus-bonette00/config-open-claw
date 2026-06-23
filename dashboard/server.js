@@ -3,9 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
+import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = path.resolve(__dirname, '..');
+dotenv.config({ path: path.join(PROJECT_DIR, '.env') });
 const STORAGE_DIR = path.join(PROJECT_DIR, 'storage');
 const STATE_DIR = path.join(STORAGE_DIR, 'state');
 const AUDIT_DIR = path.join(STORAGE_DIR, 'audit', 'fba');
@@ -170,6 +172,93 @@ function getStats(state) {
     needsReview: entries.filter(item => item.status === 'needs_review').length,
     errors: entries.filter(item => item.status === 'error').length
   };
+}
+
+function normalizeFeedEntry(entry) {
+  const status = String(entry.status || '').trim().toLowerCase() || 'unknown';
+  const profit = Number.isFinite(Number(entry.profit)) ? Number(entry.profit) : null;
+  const margin = Number.isFinite(Number(entry.margin)) ? Number(entry.margin) : null;
+  const keepaDrops = Number.isFinite(Number(entry.keepaDrops30d)) ? Number(entry.keepaDrops30d) : null;
+  const profitable = profit === null ? null : profit > 0;
+  const sellsWell = keepaDrops === null ? null : keepaDrops >= 3;
+  const reasons = Array.isArray(entry.reasons)
+    ? entry.reasons
+      .filter(Boolean)
+      .map(String)
+      .map(humanizeDashboardReason)
+    : [];
+
+  const verdictMap = {
+    approved: { label: 'Aprovado', icon: '✅' },
+    rejected: { label: 'Rejeitado', icon: '❌' },
+    needs_review: { label: 'Revisar', icon: '⚠️' },
+    skipped: { label: 'Pulado', icon: '⏭️' },
+    error: { label: 'Erro', icon: '🛑' },
+    unknown: { label: 'Sem status', icon: '❔' }
+  };
+
+  const verdict = verdictMap[status] || verdictMap.unknown;
+
+  return {
+    index: Number.isFinite(Number(entry.index)) ? Number(entry.index) : null,
+    name: entry.name || entry.productName || entry.amazonTitle || 'Produto sem nome',
+    status,
+    analyzed: ['approved', 'rejected', 'needs_review'].includes(status),
+    profitable,
+    sellsWell,
+    amazonSells: entry.amazonSells === true,
+    keepaAvailable: entry.keepaAvailable === true,
+    keepaDrops,
+    fbaFeesSource: entry.fbaFeesSource || null,
+    asin: entry.asin || null,
+    profit,
+    margin,
+    verdict: verdict.label,
+    verdictIcon: verdict.icon,
+    reasons
+  };
+}
+
+function humanizeDashboardReason(reason) {
+  const text = String(reason || '').trim();
+  if (!text) return '';
+  const lower = text.toLowerCase();
+
+  if (lower.includes('javascript:void(0)')) {
+    return 'A Amazon retornou um link inválido (javascript:void(0)). O sistema ignorou esse link e tentou seguir.';
+  }
+
+  if (lower.includes('falha ao abrir amazon-product')) {
+    if (lower.includes('javascript:void(0)')) {
+      return 'A Amazon devolveu um link quebrado (javascript:void(0)). O sistema tentou abrir o produto novamente pelo ASIN.';
+    }
+    return 'Não foi possível abrir a página final do produto na Amazon. Pode ser link inválido, bloqueio temporário ou redirecionamento quebrado.';
+  }
+
+  if (lower.includes('net::err_aborted')) {
+    if (lower.includes('javascript:void(0)')) {
+      return 'A Amazon devolveu um link quebrado (javascript:void(0)) e a navegação foi cancelada.';
+    }
+    return 'A navegação da Amazon foi abortada antes de carregar o produto. Tente novamente em outra execução.';
+  }
+
+  if (lower.includes('attempted to use detached frame')) {
+    return 'A execução foi interrompida no meio da navegação (parada/reinício), por isso este produto perdeu o frame da página e precisa ser reaberto.';
+  }
+
+  if (lower.includes('sem taxa fba da sp-api')) {
+    return 'A SP-API não retornou taxa FBA para este item. O sistema usou estimativa interna para não parar a análise.';
+  }
+
+  if (lower.includes('taxas fba ausentes') || lower.includes('taxas fba retornaram 0.00')) {
+    return 'A taxa FBA não foi confirmada com segurança. Resultado foi para revisão/rejeição automática.';
+  }
+
+  if (lower.includes('amazon e vendedora direta')) {
+    return 'A própria Amazon vende esse produto. Regra do sistema rejeita esse caso.';
+  }
+
+  return text;
 }
 
 function resolveArtifactUrl(filePath) {
@@ -383,8 +472,8 @@ function humanizeEvent(event, payload) {
       return payload.validationAccepted ? 'Produto Amazon confirmado' : 'Produto Amazon rejeitado';
     case 'marketplace:data':
       return 'Keepa e Amazon lidos';
-    case 'azinsight:data':
-      return 'AZInsight e análise carregados';
+    case 'fees:resolved':
+      return 'Taxas FBA calculadas (SP-API)';
     case 'product:end':
       return 'Resultado final do produto';
     case 'product:error':
@@ -425,6 +514,23 @@ function buildFacts(payload) {
   if (payload.price !== undefined && payload.price !== null) facts.push(`Preço fornecedor: ${formatMoney(payload.price)}`);
   if (payload.selectedAmazonPrice !== undefined && payload.selectedAmazonPrice !== null) facts.push(`Preço Amazon: ${formatMoney(payload.selectedAmazonPrice)}`);
   if (payload.selectedFbaFees !== undefined && payload.selectedFbaFees !== null) facts.push(`Taxas FBA: ${formatMoney(payload.selectedFbaFees)}`);
+  if (payload.fbaFeesSource) {
+    const sourceLabel = payload.fbaFeesSource === 'sp-api'
+      ? 'SP-API'
+      : payload.fbaFeesSource === 'estimativa-interna'
+        ? 'Estimativa interna'
+        : payload.fbaFeesSource;
+    facts.push(`Fonte da taxa: ${sourceLabel}`);
+  }
+  if (payload.spApi?.totalFees !== undefined && payload.spApi?.totalFees !== null) {
+    facts.push(`SP-API total: ${formatMoney(payload.spApi.totalFees)}`);
+  }
+  if (payload.spApi?.fbaFee !== undefined && payload.spApi?.fbaFee !== null) {
+    facts.push(`SP-API FBA: ${formatMoney(payload.spApi.fbaFee)}`);
+  }
+  if (payload.spApi?.referralFee !== undefined && payload.spApi?.referralFee !== null) {
+    facts.push(`SP-API referral: ${formatMoney(payload.spApi.referralFee)}`);
+  }
   if (payload.amazonPrice !== undefined && payload.amazonPrice !== null && payload.selectedAmazonPrice === undefined) facts.push(`Preço Amazon: ${formatMoney(payload.amazonPrice)}`);
   if (payload.fbaFee !== undefined && payload.fbaFee !== null && payload.selectedFbaFees === undefined) facts.push(`Taxa FBA: ${formatMoney(payload.fbaFee)}`);
   if (payload.estimatedProfit !== undefined && payload.estimatedProfit !== null) facts.push(`Lucro estimado: ${formatMoney(payload.estimatedProfit)}`);
@@ -483,7 +589,7 @@ function shouldExposeTimelineEvent(event, payload) {
     'amazon-product:error',
     'amazon-product:opened',
     'marketplace:data',
-    'azinsight:data',
+    'fees:resolved',
     'product:end',
     'product:error',
     'session:end'
@@ -648,9 +754,17 @@ function readQueue() {
 }
 
 function runControl(action) {
+  const env = { ...process.env };
+  if (!String(env.DISPLAY || '').trim()) {
+    env.DISPLAY = String(env.LUCAS1_DISPLAY || ':0').trim() || ':0';
+  }
+  if (!String(env.XAUTHORITY || '').trim() && String(env.LUCAS1_XAUTHORITY || '').trim()) {
+    env.XAUTHORITY = String(env.LUCAS1_XAUTHORITY).trim();
+  }
   const result = spawnSync('bash', [CONTROL_SCRIPT, action], {
     cwd: PROJECT_DIR,
-    encoding: 'utf-8'
+    encoding: 'utf-8',
+    env
   });
 
   return {
@@ -709,6 +823,30 @@ app.get('/api/products', (req, res) => {
   const filter = String(req.query.filter || 'all');
   const products = getEntriesFromState(state).filter(product => filter === 'all' || product.status === filter);
   res.json({ products });
+});
+
+app.get('/api/products/feed', (req, res) => {
+  const state = getState();
+  const limitRaw = parseInt(String(req.query.limit || '50'), 10);
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(limitRaw, 500)) : 50;
+
+  const entries = getEntriesFromState(state);
+  const feed = entries
+    .slice(-limit)
+    .reverse()
+    .map(normalizeFeedEntry);
+
+  const stats = {
+    analyzed: feed.filter(item => item.analyzed).length,
+    profitable: feed.filter(item => item.profitable === true).length,
+    withErrors: feed.filter(item => item.status === 'error').length
+  };
+
+  res.json({
+    feed,
+    stats,
+    totalProducts: Number(state.totalProducts || entries.length || 0)
+  });
 });
 
 app.get('/api/approved', (req, res) => {

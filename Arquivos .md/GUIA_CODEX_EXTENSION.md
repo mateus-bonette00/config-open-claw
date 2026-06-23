@@ -514,23 +514,19 @@ Se nao houver uso continuo de navegador, recomendar desligar MCP para reduzir cu
 2. `openclaw-fba-pipeline-ops`
 3. `openclaw-whatsapp-lembretes-ops`
 4. `openclaw-varredor-fornecedores-ops`
-5. `openclaw-prosaude-social-ops`
-6. `openclaw-moontech-outreach-ops`
-7. `openclaw-deploy-live-ops`
-8. `openclaw-google-sheets-ops`
-9. `openclaw-gateway-tunnel-ops`
-10. `openclaw-state-log-troubleshoot`
-11. O que cada uma cobre, em 1 linha:
+5. `openclaw-deploy-live-ops`
+6. `openclaw-google-sheets-ops`
+7. `openclaw-gateway-tunnel-ops`
+8. `openclaw-state-log-troubleshoot`
+9. O que cada uma cobre, em 1 linha:
 12. `openclaw-fba-pipeline-ops`: parse, browser, regras, relatorio, resume/manual/dry-run do FBA.
 13. `openclaw-whatsapp-lembretes-ops`: comandos, tarefas, follow-up e telefone autorizado do agente WhatsApp.
 14. `openclaw-varredor-fornecedores-ops`: validacao de faixa/abas/perfil e disparo seguro da varredura.
-15. `openclaw-prosaude-social-ops`: remocao de fundo, composicao, aprovacao e publicacao Meta.
-16. `openclaw-moontech-outreach-ops`: leads, compliance e integracao HubSpot/WhatsApp.
-17. `openclaw-deploy-live-ops`: deploy remoto com validacao de Docker e gateway.
-18. `openclaw-google-sheets-ops`: credenciais, headers e append na planilha.
-19. `openclaw-gateway-tunnel-ops`: tunnel manual/persistente para acessar gateway localmente.
-20. `openclaw-state-log-troubleshoot`: diagnostico por logs e estado sem acao destrutiva.
-21. Exemplo rapido de uso no prompt:
+15. `openclaw-deploy-live-ops`: deploy remoto com validacao de Docker e gateway.
+16. `openclaw-google-sheets-ops`: credenciais, headers e append na planilha.
+17. `openclaw-gateway-tunnel-ops`: tunnel manual/persistente para acessar gateway localmente.
+18. `openclaw-state-log-troubleshoot`: diagnostico por logs e estado sem acao destrutiva.
+19. Exemplo rapido de uso no prompt:
 22. `Use $openclaw-fba-pipeline-ops para investigar falha no modo resume lendo apenas agents/fba/index.js e scripts/run-fba-from-html.sh.`
 23. `Use $openclaw-deploy-live-ops para revisar deploy-live e me dar checklist de validacao final.`
 24. Resultado esperado:
@@ -574,47 +570,33 @@ Se nao houver uso continuo de navegador, recomendar desligar MCP para reduzir cu
 31. Arquivos que ela costuma ler: `agents/varredor-fornecedores/index.js`.
 32. Exemplo: `Use $openclaw-varredor-fornecedores-ops. Validar dry-run de 1 a 50 com preco 0 a 85.`
 
-33. `openclaw-prosaude-social-ops`
-34. O que faz: remove fundo, compoe imagem e publica no Instagram/Facebook.
-35. Quando usar: erro no removebg, composicao, ou publicacao Meta.
-36. Quando nao usar: tarefas sem arte/social.
-37. Arquivos que ela costuma ler: `agents/prosaude-social/index.js` e `scripts/sync-prosaude-artes.sh`.
-38. Exemplo: `Use $openclaw-prosaude-social-ops. Corrigir falha no removeBackground com aprovacao manual.`
+33. `openclaw-deploy-live-ops`
+34. O que faz: deploy remoto, install, rebuild, restart e validacao final.
+35. Quando usar: deploy, falha de SSH, falha de Docker/gateway.
+36. Quando nao usar: tarefas sem deploy.
+37. Arquivos que ela costuma ler: `scripts/deploy.sh`, `scripts/deploy-live.sh`, `scripts/register-agents.sh`.
+38. Exemplo: `Use $openclaw-deploy-live-ops. Revisar deploy-live e montar checklist final.`
 
-39. `openclaw-moontech-outreach-ops`
-40. O que faz: prospeccao Moontech, compliance e integracoes HubSpot/WhatsApp/Email.
-41. Quando usar: erro no outreach, falha no HubSpot, ajuste de compliance.
-42. Quando nao usar: tarefas fora do Moontech.
-43. Arquivos que ela costuma ler: `agents/moontech-prospecting/index.js` e `scripts/moontech-outreach-hubspot.py`.
-44. Exemplo: `Use $openclaw-moontech-outreach-ops. Rodar dry-run para 3 contatos e revisar erros.`
+39. `openclaw-google-sheets-ops`
+40. O que faz: integra Google Sheets (credenciais, headers, append).
+41. Quando usar: erro de credencial, planilha vazia, append falhando.
+42. Quando nao usar: tarefas sem planilha.
+43. Arquivos que ela costuma ler: `integrations/google-sheets/index.js` e `core/secrets.js`.
+44. Exemplo: `Use $openclaw-google-sheets-ops. Investigar erro de credenciais na planilha.`
 
-45. `openclaw-deploy-live-ops`
-46. O que faz: deploy remoto, install, rebuild, restart e validacao final.
-47. Quando usar: deploy, falha de SSH, falha de Docker/gateway.
-48. Quando nao usar: tarefas sem deploy.
-49. Arquivos que ela costuma ler: `scripts/deploy.sh`, `scripts/deploy-live.sh`, `scripts/register-agents.sh`.
-50. Exemplo: `Use $openclaw-deploy-live-ops. Revisar deploy-live e montar checklist final.`
+45. `openclaw-gateway-tunnel-ops`
+46. O que faz: cria e conserta tunnel SSH para acessar o gateway localmente.
+47. Quando usar: tunnel cai, porta errada, service nao sobe.
+48. Quando nao usar: tarefas sem tunnel.
+49. Arquivos que ela costuma ler: `scripts/ssh-tunnel.sh` e `scripts/ssh-tunnel-service.sh`.
+50. Exemplo: `Use $openclaw-gateway-tunnel-ops. Diagnosticar por que o tunnel cai apos alguns minutos.`
 
-51. `openclaw-google-sheets-ops`
-52. O que faz: integra Google Sheets (credenciais, headers, append).
-53. Quando usar: erro de credencial, planilha vazia, append falhando.
-54. Quando nao usar: tarefas sem planilha.
-55. Arquivos que ela costuma ler: `integrations/google-sheets/index.js` e `core/secrets.js`.
-56. Exemplo: `Use $openclaw-google-sheets-ops. Investigar erro de credenciais na planilha.`
-
-57. `openclaw-gateway-tunnel-ops`
-58. O que faz: cria e conserta tunnel SSH para acessar o gateway localmente.
-59. Quando usar: tunnel cai, porta errada, service nao sobe.
-60. Quando nao usar: tarefas sem tunnel.
-61. Arquivos que ela costuma ler: `scripts/ssh-tunnel.sh` e `scripts/ssh-tunnel-service.sh`.
-62. Exemplo: `Use $openclaw-gateway-tunnel-ops. Diagnosticar por que o tunnel cai apos alguns minutos.`
-
-63. `openclaw-state-log-troubleshoot`
-64. O que faz: usa logs e estado para achar causa raiz e retomar execucao.
-65. Quando usar: agente travou, erros repetidos, resultado inconsistente.
-66. Quando nao usar: tarefas novas sem historico.
-67. Arquivos que ela costuma ler: `core/state.js`, `core/logger.js`, `storage/state/*`, `storage/logs/*`.
-68. Exemplo: `Use $openclaw-state-log-troubleshoot. Investigar por que o agente fba parou no meio.`
+51. `openclaw-state-log-troubleshoot`
+52. O que faz: usa logs e estado para achar causa raiz e retomar execucao.
+53. Quando usar: agente travou, erros repetidos, resultado inconsistente.
+54. Quando nao usar: tarefas novas sem historico.
+55. Arquivos que ela costuma ler: `core/state.js`, `core/logger.js`, `storage/state/*`, `storage/logs/*`.
+56. Exemplo: `Use $openclaw-state-log-troubleshoot. Investigar por que o agente fba parou no meio.`
 
 ### 17.5 Passo 5 - Usar Skills Corretamente No Dia A Dia
 1. Abra o painel do Codex.

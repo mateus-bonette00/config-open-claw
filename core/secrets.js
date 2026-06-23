@@ -71,6 +71,11 @@ export const config = {
     apiKey: getSecret('HUBSPOT_API_KEY'),
     portalId: getSecret('HUBSPOT_PORTAL_ID'),
   },
+  googleGenAI: {
+    apiKey: getSecret('GOOGLE_GENAI_API_KEY'),
+    embeddingModel: getSecret('ZOE_CONHECIMENTO_EMBEDDING_MODEL') || 'gemini-embedding-001',
+    chatModel: getSecret('ZOE_CONHECIMENTO_CHAT_MODEL') || 'gemini-2.5-flash',
+  },
   general: {
     logLevel: getSecret('LOG_LEVEL') || 'info',
     logDir: getSecret('LOG_DIR') || './storage/logs',

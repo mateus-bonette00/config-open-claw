@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central TDAH - ZoeBot</title>
+  <style>
+    :root {
+      --bg: #f2f6fb;
+      --card: #ffffff;
+      --text: #142334;
+      --muted: #5c6f84;
+      --line: #dbe7f4;
+      --primary: #0f6ec9;
+      --primary-2: #0b5aa4;
+      --shadow: 0 10px 24px rgba(16, 42, 67, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top right, #dff0ff, transparent 40%), var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 24px 16px 42px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f6ec9, #11a3d9);
+      color: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      opacity: 0.96;
+    }
+
+    .hero .hint {
+      margin-top: 10px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      padding: 9px 12px;
+      display: inline-block;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card h2 {
+      font-size: 19px;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 38px;
+    }
+
+    .command {
+      background: #edf4fc;
+      color: #0f355a;
+      border: 1px solid #d6e6f7;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+
+    .copy {
+      background: var(--primary);
+      color: #fff;
+      flex: 1;
+    }
+
+    .copy:hover {
+      background: var(--primary-2);
+    }
+
+    .run {
+      background: #eef6ff;
+      color: #0f4f8a;
+      border: 1px solid #d0e5fb;
+    }
+
+    .footer {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Central TDAH</h1>
+      <p>Escolha a tecnica e rode no WhatsApp da Zoe. Tudo curto, pratico e um passo por vez.</p>
+      <div class="hint">Comando base: <strong>/tdah</strong></div>
+    </header>
+
+    <main class="grid" id="cards"></main>
+
+    <section class="footer">
+      Dica: se estiver travado, comece por <strong>/tdah-travado</strong> ou <strong>/tdah-dopamina</strong>.
+      Evite redes sociais como pausa longa.
+    </section>
+  </div>
+
+  <script>
+    const techniques = [
+      {
+        title: "Estou travado",
+        desc: "Quebra a tarefa travada em micro-passos.",
+        command: "/tdah-travado"
+      },
+      {
+        title: "Organizar minha cabeca",
+        desc: "Organiza em Agora, Depois e Lixo.",
+        command: "/tdah-organizar"
+      },
+      {
+        title: "Foco de 30 minutos",
+        desc: "Sessao guiada com check-in durante o bloco.",
+        command: "/tdah-foco"
+      },
+      {
+        title: "Cardapio de Dopamina",
+        desc: "Menu de ativacao 15+20+10 por estado emocional.",
+        command: "/tdah-dopamina"
+      },
+      {
+        title: "Tarefa chata em jogo",
+        desc: "Transforma em missao com etapas e pontos.",
+        command: "/tdah-jogo"
+      },
+      {
+        title: "Trocar de tarefa",
+        desc: "Transicao de 3 minutos sem perder o ritmo.",
+        command: "/tdah-transicao"
+      },
+      {
+        title: "Estimar tempo real",
+        desc: "Mostra etapas escondidas e tempo mais realista.",
+        command: "/tdah-tempo"
+      },
+      {
+        title: "Limpeza mental rapida",
+        desc: "Classifica em resolver agora/depois/ignorar.",
+        command: "/tdah-limpeza"
+      },
+      {
+        title: "Afazeres com TDAH",
+        desc: "Reorganiza sua lista com micro-passo de inicio.",
+        command: "/tdah-afazeres"
+      }
+    ];
+
+    function createCard(item) {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.innerHTML = `
+        <h2>${item.title}</h2>
+        <p>${item.desc}</p>
+        <div class="command">${item.command}</div>
+        <div class="actions">
+          <button class="copy" data-command="${item.command}">Copiar prompt</button>
+          <button class="run" data-command="${item.command}">Ver comando</button>
+        </div>
+      `;
+      return card;
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function bindActions(root) {
+      root.addEventListener("click", async (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+
+        const command = button.getAttribute("data-command");
+        if (!command) return;
+
+        if (button.classList.contains("copy")) {
+          const ok = await copyText(command);
+          button.textContent = ok ? "Copiado!" : "Nao copiou";
+          setTimeout(() => { button.textContent = "Copiar prompt"; }, 1300);
+        }
+
+        if (button.classList.contains("run")) {
+          alert(`No WhatsApp, envie: ${command}`);
+        }
+      });
+    }
+
+    const root = document.getElementById("cards");
+    techniques.forEach(item => root.appendChild(createCard(item)));
+    bindActions(root);
+  </script>
+</body>
+</html>

@@ -1036,6 +1036,34 @@
       font-size: calc(24px * var(--font-scale));
     }
 
+    .feed-section { margin-bottom: 24px; }
+    .feed-section .card-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .feed-list { display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 4px; }
+    .feed-item { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 20px; background: rgba(255,255,255,0.025); display: grid; grid-template-columns: 50px 1fr auto; gap: 14px; align-items: start; transition: border-color 0.2s ease; }
+    .feed-item:hover { border-color: var(--line-strong); }
+    .feed-item.feed-approved { border-left: 4px solid var(--ok); }
+    .feed-item.feed-rejected { border-left: 4px solid var(--bad); }
+    .feed-item.feed-review { border-left: 4px solid var(--warn); }
+    .feed-item.feed-skipped { border-left: 4px solid var(--muted-2); }
+    .feed-item.feed-error { border-left: 4px solid #ff4444; }
+    .feed-icon { font-size: 28px; text-align: center; line-height: 1.2; }
+    .feed-body { min-width: 0; }
+    .feed-name { font-weight: 700; font-size: calc(16px * var(--font-scale)); color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .feed-verdict { font-size: calc(15px * var(--font-scale)); color: #dce8f7; margin-bottom: 6px; line-height: 1.4; }
+    .feed-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .feed-tag { font-size: calc(12px * var(--font-scale)); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: rgba(255,255,255,0.04); }
+    .feed-tag-ok { color: var(--ok); border-color: rgba(41,211,145,0.36); background: rgba(41,211,145,0.1); }
+    .feed-tag-bad { color: var(--bad); border-color: rgba(255,115,115,0.34); background: rgba(255,115,115,0.1); }
+    .feed-tag-warn { color: var(--warn); border-color: rgba(255,211,110,0.34); background: rgba(255,211,110,0.1); }
+    .feed-metrics { text-align: right; white-space: nowrap; }
+    .feed-profit { font-size: calc(20px * var(--font-scale)); font-weight: 700; }
+    .feed-profit.positive { color: var(--ok); }
+    .feed-profit.negative { color: var(--bad); }
+    .feed-profit.neutral { color: var(--muted); }
+    .feed-margin { font-size: calc(13px * var(--font-scale)); color: var(--muted); }
+    .feed-reasons { margin-top: 6px; font-size: calc(13px * var(--font-scale)); color: var(--muted-2); line-height: 1.5; }
+    .feed-empty { text-align: center; padding: 40px; color: var(--muted); font-size: calc(16px * var(--font-scale)); }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -1116,7 +1144,7 @@
       <div>
         <div class="eyebrow">Controle Visual do LUCAS1</div>
         <h1>LUCAS1 Radar FBA</h1>
-        <p>O painel foi reorganizado para você olhar na ordem certa: status da execução, print principal, produto atual, timeline e resultado final. Tudo com texto maior e mais claro.</p>
+        <p>O painel mostra o status da execução, o produto atual e o resultado final. Tudo com texto maior e mais claro.</p>
         <div class="hero-chips" id="heroChips">
           <span class="hero-chip">Carregando resumo da sessão...</span>
         </div>
@@ -1146,14 +1174,26 @@
 
     <main id="mainContent" class="main-grid">
       <nav class="section-nav" aria-label="Atalhos do painel">
+        <a class="section-link" href="#feed-analise"><strong>0.</strong> Análise</a>
         <a class="section-link" href="#painel-controle"><strong>1.</strong> Controle</a>
         <a class="section-link" href="#resumo-geral"><strong>2.</strong> Resumo</a>
         <a class="section-link" href="#mapa-agora"><strong>3.</strong> Agora</a>
-        <a class="section-link" href="#monitor-visual"><strong>4.</strong> Prints e Timeline</a>
-        <a class="section-link" href="#lucro-e-resumo"><strong>5.</strong> Lucro e Sessão</a>
-        <a class="section-link" href="#todos-produtos"><strong>6.</strong> Todos os Produtos</a>
-        <a class="section-link" href="#logs-sistema"><strong>7.</strong> Logs</a>
+        <a class="section-link" href="#lucro-e-resumo"><strong>4.</strong> Lucro</a>
+        <a class="section-link" href="#todos-produtos"><strong>5.</strong> Todos os Produtos</a>
+        <a class="section-link" href="#logs-sistema"><strong>6.</strong> Logs</a>
       </nav>
+
+      <section id="feed-analise" class="card feed-section">
+        <div class="card-head">
+          <h2>📊 Análise de Produtos em Tempo Real</h2>
+          <span class="mini" id="feedMeta">Aguardando dados...</span>
+        </div>
+        <div class="card-body">
+          <div id="feedList" class="feed-list">
+            <div class="feed-empty">Inicie a execução para ver a análise de cada produto aqui.</div>
+          </div>
+        </div>
+      </section>
 
       <section id="painel-controle" class="control-grid">
         <div class="card">
@@ -1183,16 +1223,16 @@
           </div>
           <div class="card-body guide-list">
             <div class="guide-item">
-              <strong><span class="guide-step">1</span>Olhe o print principal</strong>
-              É a imagem maior do sistema. Ali você vê o que o robô está fazendo agora ou o último print salvo.
+              <strong><span class="guide-step">1</span>Confira o status no topo</strong>
+              O chip de estado e o progresso mostram se a execução está rodando e quantos produtos já passaram.
             </div>
             <div class="guide-item">
-              <strong><span class="guide-step">2</span>Confirme a etapa atual</strong>
-              Veja os blocos “Agora”, “Produto Atual” e “Ponto de Atenção”. Eles resumem a execução sem você precisar ler log.
+              <strong><span class="guide-step">2</span>Veja a etapa atual</strong>
+              Use os blocos “Agora”, “Produto Atual” e “Ponto de Atenção”. Eles resumem a execução sem você precisar ler log.
             </div>
             <div class="guide-item">
-              <strong><span class="guide-step">3</span>Desça para a timeline</strong>
-              A timeline mostra a ordem da execução. A galeria mostra só os prints. Os arquivos ficam no servidor em <code>storage/audit/fba/&lt;sessao&gt;</code>.
+              <strong><span class="guide-step">3</span>Olhe “Produtos Lucrativos”</strong>
+              Ali aparecem os itens aprovados com lucro estimado. A lista completa fica em “Todos os Produtos”.
             </div>
           </div>
         </div>
@@ -1267,132 +1307,26 @@
         </article>
       </section>
 
-      <section id="monitor-visual" class="monitor-grid">
-        <div class="stage-column">
-          <div class="card">
-            <div class="card-head">
-              <h2>3. Print Principal da Execução</h2>
-              <span class="mini" id="featuredMeta">Sem print principal ainda</span>
-            </div>
-            <div class="stage-wrap">
-              <div id="featuredShot" class="stage-media">
-                <div class="stage-empty">
-                  O print principal aparece aqui assim que a automação salvar a primeira imagem.
-                </div>
-              </div>
-              <div class="stage-details">
-                <div id="featuredTitle" class="stage-title">Aguardando print principal</div>
-                <div id="featuredProduct" class="stage-product">Nenhuma etapa visual disponível ainda.</div>
-                <div id="featuredUrl" class="stage-url">Assim que houver uma captura, o link da página aparece aqui.</div>
-                <div id="featuredFacts" class="facts">
-                  <span class="fact">Esta área mostra o print mais importante do momento.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <h2>4. Timeline Detalhada</h2>
-              <div class="card-head-actions">
-                <span class="mini" id="timelineMeta">Sem sessão ativa</span>
-                <button class="btn-mini" type="button" onclick="clearPrints()">Limpar prints</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div id="timelineList" class="timeline-list">
-                <div class="muted">Nenhum evento visual disponível ainda.</div>
-              </div>
-            </div>
-          </div>
+      <section id="lucro-e-resumo" class="card">
+        <div class="card-head">
+          <h2>Produtos Lucrativos</h2>
+          <span class="mini" id="approvedSummary">-</span>
         </div>
-
-        <aside class="side-column">
-          <div class="card">
-            <div class="card-head">
-              <h2>Galeria de Prints</h2>
-              <div class="card-head-actions">
-                <span class="mini" id="printGalleryMeta">0 print(s)</span>
-                <button class="btn-mini" type="button" onclick="clearPrints()">Limpar prints</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div id="printGallery" class="gallery-grid">
-                <div class="muted">Os prints da automação aparecem aqui assim que a execução começar.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <h2>Saúde dos Fornecedores</h2>
-              <span class="mini">Resumo por domínio</span>
-            </div>
-            <div class="card-body">
-              <div id="domainHealthList" class="domain-list">
-                <div class="domain-item muted">Carregando domínios processados...</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <h2>Arquivo na Fila</h2>
-              <span class="mini" id="queueMeta">-</span>
-            </div>
-            <div class="card-body">
-              <div id="queueList" class="queue-list">
-                <div class="queue-item muted">Carregando fila...</div>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </section>
-
-      <section id="lucro-e-resumo" class="results-grid">
-        <div class="card">
-          <div class="card-head">
-            <h2>Produtos Lucrativos</h2>
-            <span class="mini" id="approvedSummary">-</span>
-          </div>
-          <div class="scroll-x">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Produto</th>
-                  <th>ASIN</th>
-                  <th>Fornecedor</th>
-                  <th>Lucro</th>
-                </tr>
-              </thead>
-              <tbody id="approvedBody">
-                <tr><td colspan="5" class="muted">Carregando...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <h2>Resumo Técnico</h2>
-            <span class="mini">Configuração e sessão atual</span>
-          </div>
-          <div class="card-body">
-            <div class="summary-grid">
-              <div class="summary-box"><div class="summary-label">Modelo LUCAS1</div><div class="summary-value" id="metaLucas1Model">-</div></div>
-              <div class="summary-box"><div class="summary-label">Fallback da Zoe</div><div class="summary-value" id="metaMainFallback">-</div></div>
-              <div class="summary-box"><div class="summary-label">Modo do navegador</div><div class="summary-value" id="metaBrowser">-</div></div>
-              <div class="summary-box"><div class="summary-label">Chrome usado</div><div class="summary-value" id="metaChromeProfile">-</div></div>
-              <div class="summary-box"><div class="summary-label">Keepa</div><div class="summary-value" id="metaKeepaStatus">-</div></div>
-              <div class="summary-box"><div class="summary-label">AZInsight</div><div class="summary-value" id="metaAzInsightStatus">-</div></div>
-              <div class="summary-box"><div class="summary-label">HTML ativo</div><div class="summary-value" id="metaHtml">-</div></div>
-              <div class="summary-box"><div class="summary-label">Sessão atual</div><div class="summary-value" id="metaSession">-</div></div>
-              <div class="summary-box"><div class="summary-label">Etapa atual</div><div class="summary-value" id="metaStep">-</div></div>
-              <div class="summary-box"><div class="summary-label">Último produto</div><div class="summary-value" id="metaProduct">-</div></div>
-              <div class="summary-box"><div class="summary-label">Último erro</div><div class="summary-value" id="metaError">-</div></div>
-            </div>
-          </div>
+        <div class="scroll-x">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Produto</th>
+                <th>ASIN</th>
+                <th>Fornecedor</th>
+                <th>Lucro</th>
+              </tr>
+            </thead>
+            <tbody id="approvedBody">
+              <tr><td colspan="5" class="muted">Carregando...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -1438,11 +1372,6 @@
         </div>
       </section>
     </main>
-  </div>
-
-  <div id="imageModal" class="modal">
-    <button class="modal-close" type="button" onclick="closeImageModal()" aria-label="Fechar imagem">×</button>
-    <img id="imageModalTag" src="" alt="Print da execução">
   </div>
 
   <script>
@@ -1553,30 +1482,6 @@
       return 'Ocioso';
     }
 
-    function describeExtensionStatus(status, diagnostics, label) {
-      const runtime = status || {};
-      const installed = diagnostics?.installedInProfile === true;
-      const localSettings = diagnostics?.localSettingsPresent === true;
-
-      if (runtime.loaded === true && runtime.available === true) {
-        return `${label}: carregou e foi lido.`;
-      }
-
-      if (runtime.loaded === true && runtime.available === false) {
-        return `${label}: apareceu na página, mas os dados não foram lidos.`;
-      }
-
-      if (runtime.loaded === false) {
-        if (installed) return `${label}: está no perfil, mas não carregou na página.`;
-        if (localSettings) return `${label}: há sinal salvo no perfil, mas a extensão não está instalada de verdade.`;
-        return `${label}: não aparece no perfil atual do Chrome.`;
-      }
-
-      if (installed) return `${label}: instalado no perfil. Aguardando abrir um produto Amazon para testar.`;
-      if (localSettings) return `${label}: há sinal salvo no perfil, mas a extensão não está instalada de verdade.`;
-      return `${label}: não aparece no perfil atual do Chrome.`;
-    }
-
     async function getJSON(url, options = {}) {
       const response = await fetch(url, options);
       const data = await response.json();
@@ -1589,17 +1494,6 @@
       el.textContent = message;
       el.style.color = isError ? 'var(--bad)' : 'var(--muted)';
       el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
-    }
-
-    async function clearPrints() {
-      setActionMessage('Limpando prints e timeline...');
-      try {
-        const data = await getJSON('/api/audit/clear', { method: 'POST' });
-        setActionMessage(data.message || 'Timeline e prints limpos.');
-        await refreshAll();
-      } catch (error) {
-        setActionMessage(error.message, true);
-      }
     }
 
     async function sendControl(action) {
@@ -1678,44 +1572,6 @@
       document.getElementById('progressLabel').textContent = `${progress.toFixed(1)}%`;
       document.getElementById('progressText').textContent = `${formatCount(Math.max((data.lastProcessedIndex ?? -1) + 1, 0))} de ${formatCount(data.totalProducts || 0)} produtos`;
       document.getElementById('lastRefresh').textContent = `Atualizado em ${new Date().toLocaleTimeString('pt-BR')}`;
-
-      const lucas1Primary = data.models?.lucas1?.primary || '-';
-      const lucas1Fallbacks = (data.models?.lucas1?.fallbacks || []).join(' | ');
-      document.getElementById('metaLucas1Model').textContent = lucas1Fallbacks ? `${lucas1Primary} | fallback: ${lucas1Fallbacks}` : lucas1Primary;
-
-      const mainPrimary = data.models?.main?.primary || '-';
-      const mainFallbacks = (data.models?.main?.fallbacks || []).join(' | ');
-      document.getElementById('metaMainFallback').textContent = mainFallbacks ? `${mainPrimary} -> ${mainFallbacks}` : mainPrimary;
-
-      const browser = data.browserMode ? `${data.browserMode}${data.browserDisplay ? ` (${data.browserDisplay})` : ''}` : '-';
-      const chromeProfile = data.chromeProfileDir
-        ? `${data.chromeProfileDir}${data.chromeProfileName ? ` (${data.chromeProfileName})` : ''}${data.chromeExecutablePath ? ` | ${data.chromeExecutablePath}` : ''}`
-        : '-';
-      const keepaStatus = describeExtensionStatus(
-        {
-          loaded: data.extensionStatus?.keepaLoaded,
-          available: data.extensionStatus?.keepaAvailable
-        },
-        data.chromeDiagnostics?.keepa,
-        'Keepa'
-      );
-      const azInsightStatus = describeExtensionStatus(
-        {
-          loaded: data.extensionStatus?.azInsightLoaded,
-          available: data.extensionStatus?.azInsightAvailable
-        },
-        data.chromeDiagnostics?.azInsight,
-        'AZInsight'
-      );
-      document.getElementById('metaBrowser').textContent = browser;
-      document.getElementById('metaChromeProfile').textContent = chromeProfile;
-      document.getElementById('metaKeepaStatus').textContent = keepaStatus;
-      document.getElementById('metaAzInsightStatus').textContent = azInsightStatus;
-      document.getElementById('metaHtml').textContent = data.htmlFile || '-';
-      document.getElementById('metaSession').textContent = data.runSessionId || '-';
-      document.getElementById('metaStep').textContent = data.currentStep || '-';
-      document.getElementById('metaProduct').textContent = data.currentProduct?.name || data.lastProcessedProduct?.name || '-';
-      document.getElementById('metaError').textContent = data.lastError?.message || '-';
 
       renderHero(data);
       renderLiveProcesses(data.liveProcesses || []);
@@ -1821,260 +1677,9 @@
       }).join('');
     }
 
-    function renderQueue(data) {
-      const meta = document.getElementById('queueMeta');
-      const box = document.getElementById('queueList');
-      const pending = data.pending || [];
-      const done = data.done || [];
-
-      meta.textContent = `${pending.length} pendente(s) | ${done.length} feito(s)`;
-
-      if (!pending.length && !done.length) {
-        box.innerHTML = '<div class="queue-item muted">Nenhum arquivo HTML encontrado.</div>';
-        return;
-      }
-
-      const parts = [];
-      pending.forEach(file => {
-        parts.push(`
-          <div class="queue-item">
-            <strong>${esc(file.name)}</strong>
-            <div class="mini">${Math.round((file.size || 0) / 1024)} KB</div>
-            <div class="mini">Modificado em ${new Date(file.modifiedAt).toLocaleString('pt-BR')}</div>
-          </div>
-        `);
-      });
-
-      done.slice(0, 6).forEach(name => {
-        parts.push(`
-          <div class="queue-item">
-            <strong>${esc(name)}</strong>
-            <div class="mini">Arquivo já movido para a pasta de feitos.</div>
-          </div>
-        `);
-      });
-
-      box.innerHTML = parts.join('');
-    }
-
     function renderLogs(log) {
       document.getElementById('logsBox').textContent = log || 'Sem logs disponíveis.';
     }
-
-    function renderTimeline(data) {
-      const meta = document.getElementById('timelineMeta');
-      const box = document.getElementById('timelineList');
-      const items = data.items || [];
-      const printCount = items.filter(item => Boolean(item.screenshotUrl)).length;
-
-      meta.textContent = data.sessionId
-        ? `Sessão ${data.sessionId} | ${items.length} evento(s) | ${printCount} print(s)`
-        : 'Sem sessão visual ativa';
-
-      if (!items.length) {
-        box.innerHTML = '<div class="muted">Nenhum evento visual disponível ainda.</div>';
-        return;
-      }
-
-      box.innerHTML = items.map(item => {
-        const facts = (item.facts || []).map(fact => `<span class="fact">${esc(fact)}</span>`).join('');
-        const urlPart = item.url
-          ? `<div class="timeline-url"><a href="${esc(item.url)}" target="_blank">${esc(truncate(item.url, 120))}</a></div>`
-          : '';
-        const imagePart = item.screenshotUrl
-          ? `<button class="timeline-shot" type="button" data-image-url="${esc(item.screenshotUrl)}" aria-label="Abrir print da etapa ${esc(item.label)}"><img src="${item.screenshotUrl}" alt="Print da etapa ${esc(item.label)}" loading="lazy"><span class="stage-hint">Clique para ampliar</span></button>`
-          : '<div class="timeline-shot"><div class="empty-shot">Sem print salvo nesta etapa.</div></div>';
-
-        return `
-          <article class="timeline-item">
-            <div class="timeline-info">
-              <div class="timeline-top">
-                <span class="badge">${esc(item.ts ? new Date(item.ts).toLocaleString('pt-BR') : '-')}</span>
-                ${item.productIndex != null ? `<span class="badge">Produto #${item.productIndex}</span>` : ''}
-                ${item.status ? `<span class="badge badge-status-${esc(item.status)}">${esc(item.status)}</span>` : ''}
-                ${item.searchType ? `<span class="badge">${esc(item.searchType)}</span>` : ''}
-              </div>
-              <div class="timeline-title">${esc(item.label)}</div>
-              <div class="timeline-product">${esc(item.productName || 'Evento da sessão')}</div>
-              ${urlPart}
-              <div class="facts">${facts || '<span class="fact">Sem dados extras nesta etapa.</span>'}</div>
-            </div>
-            ${imagePart}
-          </article>
-        `;
-      }).join('');
-    }
-
-    function renderPrintGallery(data) {
-      const meta = document.getElementById('printGalleryMeta');
-      const box = document.getElementById('printGallery');
-      const items = (data.items || []).filter(item => item.screenshotUrl);
-
-      meta.textContent = `${items.length} print(s)`;
-
-      if (!items.length) {
-        box.innerHTML = '<div class="muted">Os prints da automação aparecem aqui assim que a execução começar.</div>';
-        return;
-      }
-
-      const latest = items.slice(-24).reverse();
-      box.innerHTML = latest.map(item => `
-        <button class="gallery-item" type="button" data-image-url="${esc(item.screenshotUrl)}" aria-label="Abrir print ${esc(item.label)}">
-          <img src="${item.screenshotUrl}" alt="Print da etapa ${esc(item.label)}" loading="lazy">
-          <div class="gallery-info">
-            ${esc(item.label || 'Etapa da execução')}
-            <div class="gallery-time">${esc(item.ts ? new Date(item.ts).toLocaleString('pt-BR') : '')}</div>
-          </div>
-        </button>
-      `).join('');
-    }
-
-    function renderFeaturedStage(audit, status) {
-      const items = audit.items || [];
-      const featured = items.find(item => item.screenshotUrl) || items[0] || null;
-      const meta = document.getElementById('featuredMeta');
-      const shot = document.getElementById('featuredShot');
-      const title = document.getElementById('featuredTitle');
-      const product = document.getElementById('featuredProduct');
-      const url = document.getElementById('featuredUrl');
-      const facts = document.getElementById('featuredFacts');
-
-      if (!featured) {
-        meta.textContent = 'Sem print principal ainda';
-        shot.innerHTML = '<div class="stage-empty">O print principal aparece aqui assim que a automação salvar a primeira imagem.</div>';
-        title.textContent = 'Aguardando print principal';
-        product.textContent = status.currentProduct?.name || 'Nenhuma etapa visual disponível ainda.';
-        url.textContent = 'O link da página aparece aqui quando houver uma captura.';
-        facts.innerHTML = '<span class="fact">Esta área mostra o print mais importante do momento.</span>';
-        return;
-      }
-
-      meta.textContent = featured.ts ? `Última captura em ${new Date(featured.ts).toLocaleString('pt-BR')}` : 'Última captura';
-      if (featured.screenshotUrl) {
-        shot.setAttribute('data-image-url', featured.screenshotUrl);
-        shot.innerHTML = `<img src="${featured.screenshotUrl}" alt="Print principal da etapa ${esc(featured.label)}" loading="lazy"><span class="stage-hint">Clique para ampliar</span>`;
-      } else {
-        shot.removeAttribute('data-image-url');
-        shot.innerHTML = '<div class="stage-empty">A etapa atual ainda não tem print salvo.</div>';
-      }
-
-      title.textContent = featured.label || 'Etapa da execução';
-      product.textContent = featured.productName || status.currentProduct?.name || 'Evento da sessão';
-      url.innerHTML = featured.url
-        ? `<a href="${esc(featured.url)}" target="_blank">${esc(truncate(featured.url, 120))}</a>`
-        : 'Sem URL registrada nesta etapa.';
-      facts.innerHTML = (featured.facts || []).length
-        ? featured.facts.map(item => `<span class="fact">${esc(item)}</span>`).join('')
-        : '<span class="fact">Sem dados extras nesta etapa.</span>';
-    }
-
-    function deriveDomainState(entry) {
-      const reason = String(entry.latestReason || '').toLowerCase();
-
-      if (reason.includes('não encontrada') || reason.includes('url antiga') || reason.includes('inválido')) {
-        return { label: 'URL antiga / inexistente', tone: 'tone-warn' };
-      }
-
-      if (reason.includes('captcha') || reason.includes('bloqueio') || reason.includes('challenge')) {
-        return { label: 'Bloqueio do site', tone: 'tone-bad' };
-      }
-
-      if (entry.approved > 0) {
-        return { label: 'Tem aprovado', tone: 'tone-ok' };
-      }
-
-      if (entry.errors > 0) {
-        return { label: 'Com erro', tone: 'tone-bad' };
-      }
-
-      if (entry.processed > 0) {
-        return { label: 'Processado', tone: 'tone-ok' };
-      }
-
-      return { label: 'Sem dados', tone: '' };
-    }
-
-    function renderDomainHealth(products) {
-      const box = document.getElementById('domainHealthList');
-      const groups = new Map();
-
-      for (const item of products || []) {
-        const domain = item.supplierDomain || 'desconhecido';
-        if (!groups.has(domain)) {
-          groups.set(domain, {
-            domain,
-            processed: 0,
-            approved: 0,
-            skipped: 0,
-            errors: 0,
-            latestReason: ''
-          });
-        }
-
-        const entry = groups.get(domain);
-        entry.processed += 1;
-        if (item.status === 'approved') entry.approved += 1;
-        if (item.status === 'skipped') entry.skipped += 1;
-        if (item.status === 'error') entry.errors += 1;
-        if (Array.isArray(item.reasons) && item.reasons.length) {
-          entry.latestReason = item.reasons.join(' | ');
-        }
-      }
-
-      const rows = [...groups.values()]
-        .sort((a, b) => b.processed - a.processed)
-        .slice(0, 12);
-
-      if (!rows.length) {
-        box.innerHTML = '<div class="domain-item muted">Nenhum domínio processado ainda.</div>';
-        return;
-      }
-
-      box.innerHTML = rows.map(entry => {
-        const state = deriveDomainState(entry);
-        return `
-          <div class="domain-item">
-            <div class="domain-top">
-              <strong>${esc(entry.domain)}</strong>
-              <span class="metric-pill ${state.tone}">${esc(state.label)}</span>
-            </div>
-            <div class="domain-metrics">
-              <span class="metric-pill">Processados: ${entry.processed}</span>
-              <span class="metric-pill">Aprovados: ${entry.approved}</span>
-              <span class="metric-pill">Pulados: ${entry.skipped}</span>
-              <span class="metric-pill">Erros: ${entry.errors}</span>
-            </div>
-            <div class="mini">${esc(entry.latestReason || 'Sem motivo recente registrado.')}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openImageModal(url) {
-      if (!url) return;
-      document.getElementById('imageModalTag').src = url;
-      document.getElementById('imageModal').classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeImageModal() {
-      document.getElementById('imageModal').classList.remove('open');
-      document.getElementById('imageModalTag').src = '';
-      document.body.style.overflow = '';
-    }
-
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeImageModal();
-    });
-
-    document.addEventListener('click', event => {
-      const targetWithImage = event.target.closest('[data-image-url]');
-      if (targetWithImage) openImageModal(targetWithImage.dataset.imageUrl);
-    });
-
-    document.getElementById('imageModal').addEventListener('click', event => {
-      if (event.target.id === 'imageModal') closeImageModal();
-    });
 
     document.querySelectorAll('.filter-btn').forEach(button => {
       button.addEventListener('click', async () => {
@@ -2094,27 +1699,93 @@
       }
     }
 
+    function renderFeed(data) {
+      const feedList = document.getElementById('feedList');
+      const feedMeta = document.getElementById('feedMeta');
+      const feed = data.feed || [];
+      const stats = data.stats || {};
+      const total = data.totalProducts || 0;
+
+      feedMeta.textContent = feed.length
+        ? `${feed.length} produto(s) analisado(s) de ${total} total`
+        : 'Nenhum produto processado ainda';
+
+      if (!feed.length) {
+        feedList.innerHTML = '<div class="feed-empty">Inicie a execução para ver a análise de cada produto aqui.</div>';
+        return;
+      }
+
+      feedList.innerHTML = feed.map(item => {
+        const statusClass = item.status === 'approved' ? 'feed-approved'
+          : item.status === 'rejected' ? 'feed-rejected'
+          : item.status === 'needs_review' ? 'feed-review'
+          : item.status === 'skipped' ? 'feed-skipped'
+          : item.status === 'error' ? 'feed-error'
+          : '';
+
+        const profitClass = item.profit > 0 ? 'positive' : item.profit < 0 ? 'negative' : 'neutral';
+        const profitText = item.profit !== null ? formatMoney(item.profit) : '—';
+        const marginText = item.margin !== null ? formatPercent(item.margin) : '';
+
+        const tags = [];
+        if (item.analyzed) tags.push(`<span class="feed-tag feed-tag-ok">Analisado</span>`);
+        else tags.push(`<span class="feed-tag">Não analisado</span>`);
+
+        if (item.profitable === true) tags.push(`<span class="feed-tag feed-tag-ok">Dá lucro</span>`);
+        else if (item.profitable === false) tags.push(`<span class="feed-tag feed-tag-bad">Sem lucro</span>`);
+
+        if (item.sellsWell === true) tags.push(`<span class="feed-tag feed-tag-ok">Vende bem</span>`);
+        else if (item.sellsWell === false) tags.push(`<span class="feed-tag feed-tag-bad">Vende pouco</span>`);
+
+        if (item.amazonSells) tags.push(`<span class="feed-tag feed-tag-warn">Amazon vende</span>`);
+
+        if (item.keepaAvailable && item.keepaDrops !== null) {
+          tags.push(`<span class="feed-tag">Keepa: ${item.keepaDrops} vendas/mês</span>`);
+        }
+
+        if (item.fbaFeesSource === 'sp-api') {
+          tags.push(`<span class="feed-tag feed-tag-ok">Taxa oficial (SP-API)</span>`);
+        } else if (item.fbaFeesSource === 'estimativa-interna') {
+          tags.push(`<span class="feed-tag feed-tag-warn">Taxas estimadas (fallback)</span>`);
+        }
+
+        if (item.asin) tags.push(`<span class="feed-tag">ASIN: ${esc(item.asin)}</span>`);
+
+        const reasonsHtml = item.reasons.length
+          ? `<div class="feed-reasons">${item.reasons.map(r => esc(r)).join(' · ')}</div>`
+          : '';
+
+        return `<div class="feed-item ${statusClass}">
+          <div class="feed-icon">${item.verdictIcon}</div>
+          <div class="feed-body">
+            <div class="feed-name" title="${esc(item.name)}">#${item.index} — ${esc(item.name)}</div>
+            <div class="feed-verdict">${esc(item.verdict)}</div>
+            <div class="feed-tags">${tags.join('')}</div>
+            ${reasonsHtml}
+          </div>
+          <div class="feed-metrics">
+            <div class="feed-profit ${profitClass}">${profitText}</div>
+            ${marginText ? `<div class="feed-margin">Margem: ${marginText}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     async function refreshAll() {
       try {
-        const [status, approved, filteredProducts, allProducts, queue, logs, audit] = await Promise.all([
+        const [status, approved, filteredProducts, logs, feedData] = await Promise.all([
           getJSON('/api/status'),
           getJSON('/api/approved'),
           getJSON(`/api/products?filter=${encodeURIComponent(currentFilter)}`),
-          getJSON('/api/products?filter=all'),
-          getJSON('/api/queue'),
           getJSON('/api/logs?lines=180'),
-          getJSON('/api/audit/current')
+          getJSON('/api/products/feed?limit=50')
         ]);
 
         renderStatus(status);
         renderApproved(approved);
         renderProducts(filteredProducts.products || []);
-        renderQueue(queue);
         renderLogs(logs.log || '');
-        renderTimeline(audit);
-        renderPrintGallery(audit);
-        renderFeaturedStage(audit, status);
-        renderDomainHealth(allProducts.products || []);
+        renderFeed(feedData);
       } catch (error) {
         setActionMessage(error.message, true);
       }

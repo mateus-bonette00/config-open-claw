@@ -89,14 +89,14 @@ set_agent_identity() {
   echo "$output"
 }
 
-TOTAL_AGENTS=5
+TOTAL_AGENTS=4
 register_agent "1" "$TOTAL_AGENTS" "LUCAS1" "fba-amazon"
 set_agent_identity "fba-amazon" "LUCAS1"
 register_agent "2" "$TOTAL_AGENTS" "WhatsApp Lembretes + Tarefas" "whatsapp-lembretes"
 register_agent "3" "$TOTAL_AGENTS" "Zoe Afazeres" "zoe-tarefas-prioridade"
 set_agent_identity "zoe-tarefas-prioridade" "Zoe Afazeres"
-register_agent "4" "$TOTAL_AGENTS" "Pro-saude Social" "prosaude-social"
-register_agent "5" "$TOTAL_AGENTS" "Moontech Prospecting" "moontech-prospecting"
+register_agent "4" "$TOTAL_AGENTS" "Zoe Ideias" "ideias"
+set_agent_identity "ideias" "Zoe Ideias"
 
 echo ""
 echo "=== Registro concluído ==="

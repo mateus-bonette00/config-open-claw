@@ -92,10 +92,14 @@ openclaw-agents-prod-*.json
 # =========================
 # Dados gerados localmente
 # =========================
+data/
 storage/exports/
 storage/audit/
 storage/inbox/
+storage/logs/
 storage/state/*.tmp
+storage/state/*.json
+storage/state/*.bak
 
 # Saídas de agentes / raspagens
 amazon-fba/produtos-encontrados/

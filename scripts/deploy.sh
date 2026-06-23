@@ -48,7 +48,6 @@ rsync -avz --delete \
   --exclude 'storage/screenshots' \
   --exclude 'storage/exports' \
   --exclude 'storage/chrome-profile-runtime*' \
-  --exclude 'storage/prosaude-output' \
   --exclude 'amazon-fba/produtos-encontrados' \
   --exclude 'amazon-fba/produtos-fornecedores-html' \
   --exclude '.git' \

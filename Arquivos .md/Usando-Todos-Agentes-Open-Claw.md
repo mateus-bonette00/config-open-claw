@@ -28,9 +28,7 @@ Pasta `agents/`:
 
 1. `agents/fba/index.js` -> Motor do agente Open Claw `LUCAS1` (id tecnico `fba-amazon`)
 2. `agents/varredor-fornecedores/index.js` -> Agente que inicia a automacao `varrer-fornecedores`
-3. `agents/moontech-prospecting/index.js` -> Agente comercial Moontech (pipeline/prospeccao)
-4. `agents/prosaude-social/index.js` -> Agente de arte/post para Pro-saude
-5. `agents/whatsapp-lembretes/index.js` -> Agente unificado de lembretes + tarefas + follow-up
+3. `agents/whatsapp-lembretes/index.js` -> Agente unificado de lembretes + tarefas + follow-up
 
 ---
 
@@ -386,166 +384,9 @@ ssh -i ~/.ssh/id_ed25519 bonette@192.168.0.173 "tail -n 40 \"$LATEST_AUDIT/event
 
 ---
 
-## 6) Agente Moontech (Outreach comercial)
+## 6) Agente WhatsApp Lembretes + Tarefas (unificado)
 
 ## 6.1 O que ele faz
-
-1. Pega contatos/leads do HubSpot.
-2. Monta envio comercial por e-mail (Zoho).
-3. Monta envio comercial por WhatsApp (Evolution API).
-4. Permite dry-run (sem disparo real) e commit (disparo real).
-
-## 6.2 Comandos de terminal Moontech (explicados)
-
-### 6.2.1 Dry-run completo (e-mail + WhatsApp)
-
-```bash
-bash /home/bonette/.openclaw/workspace/scripts/run-moontech-outreach.sh \
-  --limit 10 \
-  --send-email \
-  --send-whatsapp
-```
-
-### Para que serve
-
-- Simular envio em 10 contatos sem enviar de verdade.
-
-### O que cada parametro faz
-
-- `--limit 10`: quantidade maxima de leads processados.
-- `--send-email`: inclui canal e-mail no fluxo.
-- `--send-whatsapp`: inclui canal WhatsApp no fluxo.
-- Sem `--commit`: nao dispara real.
-
----
-
-### 6.2.2 Envio real (com confirmacao forte)
-
-```bash
-bash /home/bonette/.openclaw/workspace/scripts/run-moontech-outreach.sh \
-  --limit 10 \
-  --send-email \
-  --send-whatsapp \
-  --commit \
-  --confirm-send "ENVIAR AGORA"
-```
-
-### Para que serve
-
-- Disparo real para os canais selecionados.
-
-### O que cada parametro extra faz
-
-- `--commit`: habilita envio real.
-- `--confirm-send "ENVIAR AGORA"`: frase de seguranca para evitar disparo acidental.
-
----
-
-### 6.2.3 Apenas WhatsApp (dry-run)
-
-```bash
-bash /home/bonette/.openclaw/workspace/scripts/run-moontech-outreach.sh \
-  --limit 10 \
-  --send-whatsapp
-```
-
-### Para que serve
-
-- Testar apenas o canal WhatsApp, sem envio real.
-
----
-
-### 6.2.4 Apenas e-mail (dry-run)
-
-```bash
-bash /home/bonette/.openclaw/workspace/scripts/run-moontech-outreach.sh \
-  --limit 10 \
-  --send-email
-```
-
-### Para que serve
-
-- Testar apenas o canal e-mail, sem envio real.
-
----
-
-### 6.2.5 Upsert de empresa no HubSpot
-
-```bash
-node /home/bonette/.openclaw/workspace/hubspot-upsert.js \
-  "Nome da Empresa" \
-  "https://site.com.br" \
-  "Segmento" \
-  "+55 11 99999-9999" \
-  "Cidade, UF" \
-  "Descricao curta + links"
-```
-
-### Para que serve
-
-- Criar ou atualizar empresa no HubSpot.
-- "upsert" = se existe, atualiza; se nao existe, cria.
-
-### O que cada argumento representa
-
-1. Nome da empresa
-2. Site
-3. Segmento
-4. Telefone
-5. Cidade/UF
-6. Descricao/notas
-
-## 6.3 O que mandar para ZoeBot (Moontech)
-
-1. `Zoe, teste contatos`
-2. `Zoe, teste contatos 20`
-3. `Zoe, teste whatsapp`
-4. `Zoe, teste email`
-5. `Zoe, enviar mensagens`
-6. `CONFIRMO ENVIO` (somente quando quiser envio real)
-
-### Regra de seguranca importante
-
-- Nunca comece com envio real.
-- Sempre: dry-run -> revisar resumo -> confirmar envio.
-
----
-
-## 7) Agente Pro-saude Social
-
-## 7.1 O que ele faz
-
-1. Recebe dados de produto (nome, imagem, texto).
-2. Monta arte em template de rede social.
-3. Prepara saida para publicacao.
-
-### Regra atual no seu ambiente
-
-- Remocao automatica de fundo esta desativada.
-- Entao, quando necessario, envie a imagem ja sem fundo.
-
-## 7.2 Comando tecnico de start
-
-```bash
-$NODE agents/prosaude-social/index.js
-```
-
-### O que faz
-
-- Inicia o agente de social no terminal.
-
-## 7.3 O que mandar para ZoeBot (Pro-saude)
-
-1. `Zoe, criar arte Pro-saude com este produto: NOME_DO_PRODUTO`
-2. `Zoe, usar template Pro-saude padrao com a imagem anexada`
-3. `Zoe, gerar arte para redes sociais da Pro-saude com legenda pronta`
-4. `Zoe, a imagem ja esta sem fundo, so encaixar no template`
-
----
-
-## 8) Agente WhatsApp Lembretes + Tarefas (unificado)
-
-## 8.1 O que ele faz
 
 1. Agenda lembretes com data/hora.
 2. Gerencia tarefas (criar, listar, concluir, remover).
@@ -555,7 +396,7 @@ $NODE agents/prosaude-social/index.js
 6. Envia via API WhatsApp configurada.
 7. Armazena comandos e snippets (textos, prompts e comandos de terminal).
 
-## 8.2 Comando tecnico de start
+## 6.2 Comando tecnico de start
 
 ```bash
 $NODE agents/whatsapp-lembretes/index.js
@@ -571,7 +412,7 @@ Comando tecnico para testar os slash commands:
 $NODE scripts/whatsapp-lembretes-command.js "/comandos" --phone 553598183459
 ```
 
-## 8.3 O que mandar para ZoeBot (Lembretes)
+## 6.3 O que mandar para ZoeBot (Lembretes)
 
 1. `Zoe, criar lembrete para hoje as 17:30: enviar relatorio`
 2. `Zoe, agendar lembrete diario as 08:00 para revisar tarefas`
@@ -592,35 +433,9 @@ $NODE scripts/whatsapp-lembretes-command.js "/comandos" --phone 553598183459
 
 ---
 
-## 9) Agente Moontech Prospecting (base CRM)
+## 7) Comandos de administracao (Open Claw)
 
-## 9.1 O que ele faz
-
-1. Pesquisa e organiza potenciais empresas.
-2. Ajuda classificacao de fit comercial.
-3. Suporta resumo de pipeline.
-
-## 9.2 Comando tecnico de start
-
-```bash
-$NODE agents/moontech-prospecting/index.js
-```
-
-### O que faz
-
-- Inicia rotina/base do agente de prospeccao.
-
-## 9.3 O que mandar para ZoeBot
-
-1. `Zoe, buscar 10 empresas com perfil para o produto Apolo`
-2. `Zoe, salvar esses leads no HubSpot`
-3. `Zoe, gerar resumo do pipeline da Moontech`
-
----
-
-## 10) Comandos de administracao (Open Claw)
-
-## 10.1 Registrar agentes
+## 7.1 Registrar agentes
 
 ```bash
 cd /home/bonette/openclaw-agents
@@ -629,10 +444,10 @@ bash scripts/register-agents.sh
 
 ### O que faz
 
-- Registra os 4 agentes principais no Open Claw gateway.
+- Registra os 3 agentes principais no Open Claw gateway.
 - Se agente ja existir, mantem e segue.
 
-## 10.2 Ver logs importantes
+### 7.2 Ver logs importantes
 
 ```bash
 tail -f /home/bonette/openclaw-agents/storage/logs/fba-agent.log
@@ -650,7 +465,7 @@ journalctl --user -u openclaw-gateway -f
 - `-u openclaw-gateway` = unidade especifica.
 - `-f` = seguir ao vivo.
 
-## 11.3 Deploy do notebook para o servidor
+## 7.3 Deploy do notebook para o servidor
 
 ```bash
 cd /home/mateus/Documentos/Projetos/config-open-claw
@@ -663,15 +478,12 @@ bash scripts/deploy.sh
 
 ---
 
-## 12) Frases curtas recomendadas para falar com a Zoe
+## 8) Frases curtas recomendadas para falar com a Zoe
 
-1. `Zoe, testar contatos`
-2. `Zoe, enviar mensagens`
-3. `Zoe, iniciar FBA com arquivo X.html`
-4. `Zoe, retomar FBA`
-5. `Zoe, criar arte Pro-saude com imagem anexada`
-6. `Zoe, criar lembrete para hoje as 18:00`
-7. `Zoe, listar tarefas pendentes`
+1. `Zoe, iniciar FBA com arquivo X.html`
+2. `Zoe, retomar FBA`
+3. `Zoe, criar lembrete para hoje as 18:00`
+4. `Zoe, listar tarefas pendentes`
 
 ### O que esperar como resposta da Zoe
 
@@ -682,9 +494,9 @@ bash scripts/deploy.sh
 
 ---
 
-## 13) Checklist rapido por operacao
+## 9) Checklist rapido por operacao
 
-### 13.1 FBA
+### 9.1 FBA
 
 1. HTML dentro de `amazon-fba/produtos-fornecedores-html/`
 2. VPN US ativa no servidor
@@ -692,24 +504,9 @@ bash scripts/deploy.sh
 4. Rodar `dry-run` primeiro
 5. Rodar `auto` e acompanhar log
 
-### 13.2 Moontech envio comercial
-
-1. HubSpot configurado
-2. Zoho SMTP configurado
-3. WhatsApp instance correta
-4. Dry-run primeiro
-5. Envio real so com confirmacao
-
-### 13.3 Pro-saude
-
-1. Imagem correta do produto
-2. Se necessario, imagem ja sem fundo
-3. Template correto
-4. Revisar arte final
-
 ---
 
-## 14) Glossario simples (sem termos dificeis)
+## 10) Glossario simples (sem termos dificeis)
 
 - `dry-run`: simulacao, sem efeito real externo.
 - `commit`: envio/acao real.
@@ -721,7 +518,7 @@ bash scripts/deploy.sh
 
 ---
 
-## 15) Dica final para evitar erro operacional
+## 11) Dica final para evitar erro operacional
 
 Para qualquer envio externo (WhatsApp/e-mail), siga sempre:
 

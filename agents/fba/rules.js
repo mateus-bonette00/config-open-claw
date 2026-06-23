@@ -11,7 +11,7 @@ const RULES = {
   PREP_FEE: 2.00,
   MIN_MARGIN_FBA: 0.10,     // Margem mínima FBA (10%)
   MIN_ROI: 0.15,            // ROI mínimo (15%)
-  MIN_BSR_DROPS: 3,         // Mínimo de quedas de BSR no Keepa (= vendas nos últimos 30 dias)
+  MIN_SALES_YEAR: 10,       // Mínimo de vendas/ano para seguir (estimativa Keepa)
   REJECT_IF_AMAZON_SELLS: true,  // Rejeitar se Amazon é vendedora
   MAX_SUPPLIER_PRICE: 80,   // Preço máximo do fornecedor (USD)
 };
@@ -53,6 +53,33 @@ export function calculateROI(amazonPrice, fbaFees, buyCost) {
   return profit / buyCost;
 }
 
+function normalizeWeightLb(value) {
+  const numeric = normalizeRuleNumber(value, { allowZero: false });
+  if (numeric === null) return null;
+  return numeric;
+}
+
+export function estimateFbaFeesFallback(amazonPrice, productIdentity = {}) {
+  const price = normalizeRuleNumber(amazonPrice);
+  if (price === null) return null;
+
+  const referralFee = Number((price * 0.15).toFixed(2));
+  const weightLb = normalizeWeightLb(productIdentity.packageWeightLb)
+    ?? normalizeWeightLb(productIdentity.itemWeightLb)
+    ?? 1.0;
+
+  let fulfillmentFee = 3.22; // base leve
+  if (weightLb > 1) {
+    fulfillmentFee = 3.22 + ((weightLb - 1) * 0.42);
+  }
+  if (weightLb > 3) {
+    fulfillmentFee = 4.06 + ((weightLb - 3) * 0.60);
+  }
+
+  const total = Number((referralFee + fulfillmentFee).toFixed(2));
+  return total > 0 ? total : null;
+}
+
 /**
  * Avalia um produto contra todas as regras de negócio.
  * Retorna decisão com motivos detalhados.
@@ -74,6 +101,7 @@ export function evaluateProduct(product) {
     supplierPrice,
     amazonPrice,
     fbaFees,
+    fbaFeesSource = null,
     amazonSells = false,
     keepaData = {},
     azInsightData = {}
@@ -137,11 +165,24 @@ export function evaluateProduct(product) {
     markRejected(`ROI (${(roi * 100).toFixed(1)}%) abaixo do minimo (${(RULES.MIN_ROI * 100)}%)`);
   }
 
-  // 6. Dados do Keepa — vendas históricas
-  if (keepaData.available && keepaData.bsrDrops !== undefined) {
-    if (keepaData.bsrDrops < RULES.MIN_BSR_DROPS) {
-      markRejected(`Poucas vendas no Keepa (${keepaData.bsrDrops} quedas BSR, minimo ${RULES.MIN_BSR_DROPS})`);
-    }
+  // 6. Dados do Keepa — vendas históricas (agora focadas em ANO)
+  const salesYearEstimate = normalizeRuleNumber(
+    keepaData.salesYearEstimate
+      ?? ((normalizeRuleNumber(keepaData.monthlySold, { allowZero: true }) ?? null) !== null
+        ? Number(keepaData.monthlySold) * 12
+        : null)
+      ?? ((normalizeRuleNumber(keepaData.bsrDrops, { allowZero: true }) ?? null) !== null
+        ? Number(keepaData.bsrDrops) * 12
+        : null),
+    { allowZero: true }
+  );
+
+  if (!keepaData.available) {
+    markNeedsReview('Keepa não carregou dados suficientes para validar vendas');
+  } else if (salesYearEstimate === null) {
+    markNeedsReview('Keepa carregou, mas não informou vendas suficientes para estimar vendas/ano');
+  } else if (salesYearEstimate < RULES.MIN_SALES_YEAR) {
+    markRejected(`Poucas vendas no Keepa (${salesYearEstimate}/ano, minimo ${RULES.MIN_SALES_YEAR}/ano)`);
   }
 
   const decision = {
@@ -160,6 +201,8 @@ export function evaluateProduct(product) {
         ? 'missing'
         : (fbaFeesValue === 0 ? 'zero_detected' : 'ok')
     ),
+    fbaFeesSource,
+    salesYearEstimate,
     amazonSells,
     reasons
   };

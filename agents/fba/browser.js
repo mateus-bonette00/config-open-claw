@@ -4,7 +4,7 @@ import { createLogger } from '../../core/logger.js';
 import { config } from '../../core/secrets.js';
 import path from 'path';
 import fs from 'fs';
-import { spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import * as cheerio from 'cheerio';
 
@@ -21,8 +21,14 @@ const MARKETPLACE_EXTENSION_IDS = {
   keepa: 'neebplgakaahbhdphmkckjjcegoiijjo',
   azInsight: 'gefiflkplklbfkcjjcbobokclopbigfg'
 };
-const AZINSIGHT_PANEL_SELECTOR =
-  '[id*="azinsight" i], [id*="asinzen" i], [class*="azinsight" i], [class*="asinzen" i]';
+const AZINSIGHT_ROOT_SELECTORS = [
+  '[id*="azinsight" i]',
+  '[id*="asinzen" i]',
+  '[class*="azinsight" i]',
+  '[class*="asinzen" i]',
+  'body'
+];
+const AZINSIGHT_PANEL_SELECTOR = AZINSIGHT_ROOT_SELECTORS.join(', ');
 const DEFAULT_USER_AGENT = process.env.FBA_USER_AGENT ||
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36';
 const NAVIGATION_ATTEMPTS = [
@@ -84,6 +90,239 @@ function cleanupChromeLockFiles(dirPath) {
 
   for (const name of lockNames) {
     removeIfExists(path.join(dirPath, name));
+  }
+}
+
+function removeArg(args, prefix) {
+  return args.filter(arg => !String(arg).startsWith(prefix));
+}
+
+function normalizeFinitePositiveNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function resolveChromeDebugPort() {
+  const rawPort = process.env.FBA_CHROME_DEBUG_PORT || process.env.CHROME_DEBUG_PORT || '9222';
+  const port = Number.parseInt(rawPort, 10);
+  if (!Number.isInteger(port) || port < 1024 || port > 65535) {
+    throw new Error(`Porta de controle do Chrome invalida: ${rawPort}`);
+  }
+  return port;
+}
+
+async function probeChromeDebugger(port) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/json/version`, {
+      signal: AbortSignal.timeout(1000)
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function waitForChromeDebugger(port, chromeProcess, getRecentLogs, timeoutMs = 45000) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const version = await probeChromeDebugger(port);
+    if (version?.webSocketDebuggerUrl) {
+      return version;
+    }
+
+    if (chromeProcess.exitCode !== null || chromeProcess.signalCode) {
+      throw new Error(
+        `Chrome encerrou antes de abrir a porta de controle ${port}. ` +
+        `Logs: ${getRecentLogs() || 'sem logs'}`
+      );
+    }
+
+    await sleep(500);
+  }
+
+  throw new Error(
+    `Chrome abriu, mas a porta de controle ${port} nao respondeu em ${Math.round(timeoutMs / 1000)}s. ` +
+    `Logs: ${getRecentLogs() || 'sem logs'}`
+  );
+}
+
+async function launchChromeViaBrowserUrl(launchOptions) {
+  const debugPort = resolveChromeDebugPort();
+  const existingDebugger = await probeChromeDebugger(debugPort);
+  if (existingDebugger) {
+    throw new Error(
+      `A porta de controle do Chrome ${debugPort} ja esta em uso. ` +
+      'Feche outro Chrome/LUCAS1 aberto com debugger e tente novamente.'
+    );
+  }
+
+  let args = Array.isArray(launchOptions.args) ? [...launchOptions.args] : [];
+  args = removeArg(args, '--remote-debugging-');
+  args.push(`--remote-debugging-port=${debugPort}`);
+
+  const recentLogs = [];
+  const rememberLog = chunk => {
+    const text = String(chunk || '').trim();
+    if (!text) return;
+    recentLogs.push(text);
+    while (recentLogs.length > 12) recentLogs.shift();
+  };
+  const getRecentLogs = () => recentLogs.join(' | ');
+
+  const chromeProcess = spawn(launchOptions.executablePath, args, {
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  chromeProcess.stdout.on('data', rememberLog);
+  chromeProcess.stderr.on('data', rememberLog);
+
+  let browser;
+  try {
+    await waitForChromeDebugger(debugPort, chromeProcess, getRecentLogs);
+    browser = await puppeteer.connect({
+      browserURL: `http://127.0.0.1:${debugPort}`,
+      defaultViewport: launchOptions.defaultViewport,
+      protocolTimeout: launchOptions.protocolTimeout
+    });
+  } catch (error) {
+    if (chromeProcess.exitCode === null && !chromeProcess.killed) {
+      chromeProcess.kill('SIGTERM');
+    }
+    throw error;
+  }
+
+  browser.once('disconnected', () => {
+    if (chromeProcess.exitCode === null && !chromeProcess.killed) {
+      chromeProcess.kill('SIGTERM');
+    }
+  });
+
+  return browser;
+}
+
+function firstFiniteNumber(values = []) {
+  for (const value of values) {
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return numeric;
+  }
+  return null;
+}
+
+function normalizeKeepaRank(value) {
+  const numeric = normalizeFinitePositiveNumber(value);
+  if (numeric === null || numeric < 0) return null;
+  return numeric;
+}
+
+function normalizeKeepaMoney(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) return null;
+  return Number((numeric / 100).toFixed(2));
+}
+
+function extractKeepaApiStats(product = {}) {
+  const stats = product.stats || {};
+  const current = Array.isArray(stats.current) ? stats.current : [];
+
+  const bsrDrops30 = firstFiniteNumber([
+    product.salesRankDrops30,
+    product.salesRankDrops30d,
+    stats.salesRankDrops30,
+    stats.salesRankDrops30d,
+    stats.salesRankDropsLast30
+  ]);
+  const bsrDrops90 = firstFiniteNumber([
+    product.salesRankDrops90,
+    product.salesRankDrops90d,
+    stats.salesRankDrops90,
+    stats.salesRankDrops90d,
+    stats.salesRankDropsLast90
+  ]);
+  const monthlySold = firstFiniteNumber([
+    product.monthlySold,
+    stats.monthlySold,
+    stats.sales30,
+    stats.salesLast30
+  ]);
+
+  return {
+    available: true,
+    source: 'keepa-api',
+    bsrDrops: bsrDrops30 ?? bsrDrops90 ?? null,
+    bsrDrops30: bsrDrops30 ?? null,
+    bsrDrops90: bsrDrops90 ?? null,
+    monthlySold: monthlySold ?? null,
+    salesYearEstimate: (
+      monthlySold !== null && monthlySold !== undefined
+        ? Math.max(0, Math.round(monthlySold * 12))
+        : (bsrDrops30 !== null && bsrDrops30 !== undefined
+          ? Math.max(0, Math.round(bsrDrops30 * 12))
+          : (bsrDrops90 !== null && bsrDrops90 !== undefined
+            ? Math.max(0, Math.round(bsrDrops90 * (365 / 90)))
+            : null))
+    ),
+    salesRankCurrent: normalizeKeepaRank(product.stats?.current_SALES ?? current[3]),
+    buyBoxPrice: normalizeKeepaMoney(product.stats?.buyBoxPrice ?? current[18]),
+    rawStatsAvailable: Boolean(product.stats)
+  };
+}
+
+async function fetchKeepaApiData(asin) {
+  const apiKey = process.env.KEEPA_API_KEY || '';
+  if (!apiKey || !asin) return null;
+
+  try {
+    const url = new URL('https://api.keepa.com/product');
+    url.searchParams.set('key', apiKey);
+    url.searchParams.set('domain', '1');
+    url.searchParams.set('asin', asin);
+    url.searchParams.set('stats', '90');
+    url.searchParams.set('history', '1');
+    url.searchParams.set('rating', '0');
+
+    const response = await fetch(url, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(Number(process.env.FBA_KEEPA_API_TIMEOUT_MS || 15000))
+    });
+
+    if (!response.ok) {
+      log.warn(`Keepa API falhou para ${asin}: HTTP ${response.status}`);
+      return {
+        available: false,
+        source: 'keepa-api',
+        apiError: `HTTP ${response.status}`
+      };
+    }
+
+    const payload = await response.json();
+    log.info(
+      `Keepa API OK para ${asin}: tokensLeft=${payload?.tokensLeft ?? 'n/a'} refillIn=${payload?.refillIn ?? 'n/a'}`
+    );
+    const product = payload?.products?.[0] || null;
+    if (!product) {
+      return {
+        available: false,
+        source: 'keepa-api',
+        apiError: 'ASIN sem produto na resposta'
+      };
+    }
+
+    return extractKeepaApiStats(product);
+  } catch (error) {
+    log.warn(`Keepa API indisponivel para ${asin}: ${error.message}`);
+    return {
+      available: false,
+      source: 'keepa-api',
+      apiError: error.message
+    };
   }
 }
 
@@ -217,15 +456,24 @@ function attachAzInsightResponseWatcher(page) {
   page.on('response', async response => {
     try {
       const url = response.url();
-      if (!url.includes('go-api.azinsight.srvasinzen.com')) return;
+      if (!/azinsight|asinzen|srvasinzen/i.test(url)) return;
       const type = response.request().resourceType();
       if (type !== 'xhr' && type !== 'fetch') return;
 
       const status = response.status();
+      if (status === 401 || status === 403) {
+        page.__azInsightAuthIssue = { url, status, bodySample: `http_${status}` };
+        return;
+      }
+
       const body = await response.text();
       if (!body) return;
 
-      if (/\\"unauthorized\\"/i.test(body) || /\"message\"\s*:\s*\"unauthorized\"/i.test(body)) {
+      if (
+        /unauthorized/i.test(body) ||
+        /\"message\"\s*:\s*\"unauthorized\"/i.test(body) ||
+        /\\"unauthorized\\"/i.test(body)
+      ) {
         page.__azInsightAuthIssue = {
           url,
           status,
@@ -234,6 +482,433 @@ function attachAzInsightResponseWatcher(page) {
       }
     } catch {}
   });
+}
+
+async function resolveBestAzInsightFrame(page) {
+  let bestFrame = null;
+  let bestScore = 0;
+  for (const frame of page.frames()) {
+    try {
+      let score = await frame.evaluate((sels) => {
+        let max = 0;
+        for (const sel of sels) {
+          let nodes = [];
+          try {
+            nodes = Array.from(document.querySelectorAll(sel));
+          } catch {
+            nodes = [];
+          }
+          for (const el of nodes) {
+            const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+            const rect = el.getBoundingClientRect();
+            const visible = rect.width > 140 && rect.height > 100;
+            if (!visible) continue;
+            const hasSignature =
+              text.includes('supplier tracker') ||
+              /buy\s*cost|purchase\s*cost|custo/.test(text) ||
+              /sell price based on roi|sell price based on profit/.test(text) ||
+              (/\bfbm\b/.test(text) && /\bfba\b/.test(text));
+            if (!hasSignature) continue;
+            const inputCount = Array.from(el.querySelectorAll('input, textarea')).filter(input => {
+              const inputRect = input.getBoundingClientRect();
+              return inputRect.width > 10 && inputRect.height > 10;
+            }).length;
+            if (text.length < 24 && inputCount === 0) continue;
+            let s = inputCount * 4;
+            if (text.includes('supplier tracker')) s += 25;
+            if (text.includes('buy cost') || text.includes('purchase')) s += 18;
+            if (text.includes('fba')) s += 12;
+            if (text.includes('profit') || text.includes('roi') || text.includes('margin')) s += 10;
+            if (text.includes('lucro') || text.includes('margem')) s += 10;
+            if (inputCount >= 4) s += 14;
+            if (inputCount >= 6) s += 18;
+            if (s > max) max = s;
+          }
+        }
+        return max;
+      }, AZINSIGHT_ROOT_SELECTORS);
+      const frameUrl = String(frame.url() || '').toLowerCase();
+      if (frameUrl.includes(`chrome-extension://${MARKETPLACE_EXTENSION_IDS.azInsight}`)) {
+        score += 120;
+      } else if (frameUrl.includes('azinsight') || frameUrl.includes('asinzen')) {
+        score += 40;
+      } else if (frame === page.mainFrame()) {
+        score += 5;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestFrame = frame;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return bestScore >= 18 ? bestFrame : null;
+}
+
+async function scrollAzInsightPanelIntoView(frame) {
+  if (!frame) return;
+  await frame.evaluate((sels) => {
+    let best = null;
+    let bestScore = -1;
+    for (const sel of sels) {
+      let nodes = [];
+      try {
+        nodes = Array.from(document.querySelectorAll(sel));
+      } catch {
+        nodes = [];
+      }
+      for (const el of nodes) {
+        const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        const inputCount = Array.from(el.querySelectorAll('input, textarea')).filter(input => {
+          const rect = input.getBoundingClientRect();
+          return rect.width > 10 && rect.height > 10;
+        }).length;
+        let s = inputCount * 3;
+        if (text.includes('supplier tracker')) s += 12;
+        if (text.includes('buy cost')) s += 12;
+        if (text.includes('fba')) s += 6;
+        if (s > bestScore) {
+          bestScore = s;
+          best = el;
+        }
+      }
+    }
+    best?.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+  }, AZINSIGHT_ROOT_SELECTORS).catch(() => null);
+}
+
+async function isAzInsightCalculatorReadyOnFrame(frame) {
+  if (!frame) return false;
+  return frame.evaluate((sels) => {
+    const candidates = [];
+    for (const sel of sels) {
+      let nodes = [];
+      try {
+        nodes = Array.from(document.querySelectorAll(sel));
+      } catch {
+        nodes = [];
+      }
+      for (const el of nodes) {
+        const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        const rect = el.getBoundingClientRect();
+        const visible = rect.width > 140 && rect.height > 100;
+        if (!visible) continue;
+        const hasSignature =
+          text.includes('supplier tracker') ||
+          /buy\s*cost|purchase\s*cost|custo/.test(text) ||
+          /sell price based on roi|sell price based on profit/.test(text) ||
+          (/\bfbm\b/.test(text) && /\bfba\b/.test(text));
+        if (!hasSignature) continue;
+        const inputs = Array.from(el.querySelectorAll('input, textarea')).filter(input => {
+          const inputRect = input.getBoundingClientRect();
+          return inputRect.width > 10 && inputRect.height > 10;
+        });
+        if (text.length < 24 && inputs.length === 0) continue;
+        let score = inputs.length * 3;
+        if (text.includes('supplier tracker')) score += 10;
+        if (text.includes('buy cost')) score += 10;
+        if (text.includes('fba')) score += 4;
+        candidates.push({ text, inputs, score });
+      }
+    }
+    if (!candidates.length) return false;
+    return candidates.some(candidate => {
+      const text = candidate.text || '';
+      const inputs = candidate.inputs || [];
+      const strictReady =
+        text.includes('supplier tracker') &&
+        text.includes('buy cost') &&
+        text.includes('fba') &&
+        inputs.length >= 2;
+      if (strictReady) return true;
+      const hasBuy = /buy\s*cost|purchase\s*cost|custo/.test(text);
+      const hasFba = /\bfba\b|fulfillment|referral/.test(text);
+      const hasOfferColumns = /\bfbm\b/.test(text) && /\bfba\b/.test(text);
+      const hasCalcControls =
+        /sell price based on roi|sell price based on profit/.test(text);
+      const hasProfitUi =
+        /(profit|lucro|roi|margin|margem)/.test(text) &&
+        (/[0-9.]+\s*%/.test(text) || /\$\s*[0-9]/.test(text));
+      if (inputs.length >= 2 && hasBuy && hasFba) return true;
+      if (hasBuy && (hasCalcControls || hasOfferColumns)) return true;
+      if (inputs.length >= 3 && hasBuy && hasProfitUi) return true;
+      if (inputs.length >= 4 && hasProfitUi) return true;
+      if (inputs.length >= 6 && hasBuy) return true;
+      return false;
+    });
+  }, AZINSIGHT_ROOT_SELECTORS).catch(() => false);
+}
+
+async function resolveAzInsightFrameOrMain(page) {
+  const extensionFrame = page.frames().find(frame => {
+    const frameUrl = String(frame.url() || '').toLowerCase();
+    return frameUrl.includes(`chrome-extension://${MARKETPLACE_EXTENSION_IDS.azInsight}`);
+  });
+  if (extensionFrame) return extensionFrame;
+  const hit = await resolveBestAzInsightFrame(page);
+  return hit || page.mainFrame();
+}
+
+async function clickAzInsightRefreshControl(frame) {
+  if (!frame) return false;
+  return frame.evaluate((sels) => {
+    const roots = [];
+    for (const sel of sels) {
+      try {
+        roots.push(...Array.from(document.querySelectorAll(sel)));
+      } catch {
+        continue;
+      }
+    }
+    const root = roots[0] || document;
+    const candidates = Array.from(root.querySelectorAll('button, [role="button"], .icon, i'))
+      .filter(el => {
+        const label = [
+          el.getAttribute?.('aria-label'),
+          el.getAttribute?.('title'),
+          el.className,
+          el.id,
+          el.textContent
+        ].filter(Boolean).join(' ').toLowerCase();
+        return /refresh|reload|recarregar|atualizar/.test(label);
+      });
+    if (!candidates.length) return false;
+    candidates[0].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    return true;
+  }, AZINSIGHT_ROOT_SELECTORS).catch(() => false);
+}
+
+async function getAzInsightPanelSnapshot(frame) {
+  if (!frame) {
+    return {
+      panelDetected: false,
+      calculatorReady: false,
+      loading: false,
+      loginRequired: false,
+      inputCount: 0,
+      textSample: '',
+      metricsVisible: false
+    };
+  }
+
+  return frame.evaluate((sels) => {
+    const roots = [];
+    for (const sel of sels) {
+      try {
+        roots.push(...Array.from(document.querySelectorAll(sel)));
+      } catch {
+        continue;
+      }
+    }
+
+    const best = roots
+      .map(el => {
+        const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+        const lower = text.toLowerCase();
+        const rect = el.getBoundingClientRect();
+        const visible = rect.width > 140 && rect.height > 100;
+        if (!visible) return { score: -1, text: '', inputCount: 0 };
+        const hasSignature =
+          lower.includes('supplier tracker') ||
+          /buy\s*cost|purchase\s*cost|custo/.test(lower) ||
+          /sell price based on roi|sell price based on profit/.test(lower) ||
+          (/\bfbm\b/.test(lower) && /\bfba\b/.test(lower));
+        if (!hasSignature) return { score: -1, text: '', inputCount: 0 };
+        const inputCount = Array.from(el.querySelectorAll('input, textarea')).filter(input => {
+          const inputRect = input.getBoundingClientRect();
+          return inputRect.width > 10 && inputRect.height > 10;
+        }).length;
+        if (text.length < 24 && inputCount === 0) return { score: -1, text: '', inputCount: 0 };
+        let score = inputCount * 3;
+        if (lower.includes('supplier tracker')) score += 12;
+        if (lower.includes('buy cost') || lower.includes('purchase')) score += 10;
+        if (lower.includes('fba')) score += 5;
+        if (/(profit|roi|margin|lucro|margem)/.test(lower)) score += 4;
+        return { score, text, inputCount };
+      })
+      .sort((a, b) => b.score - a.score)[0] || { score: -1, text: '', inputCount: 0 };
+
+    const text = String(best.text || '');
+    const lower = text.toLowerCase();
+    const metricsVisible =
+      (/\$\s*[0-9]/.test(text) || /-?[0-9]+(?:[.,][0-9]+)?\s*%/.test(text)) &&
+      /(profit|roi|margin|lucro|margem|fba)/i.test(text);
+    const loginRequired =
+      /(sign in|log in|login|unauthorized|assinatura|subscription|upgrade plan|trial expired)/i.test(text);
+    const loading =
+      /(sales data is loading|hold tight|carregando|loading)/i.test(lower) &&
+      !metricsVisible;
+    const calculatorReady =
+      lower.includes('supplier tracker') &&
+      (lower.includes('buy cost') || lower.includes('purchase cost') || lower.includes('custo')) &&
+      best.inputCount >= 2 &&
+      (metricsVisible || /\bfba\b/.test(lower));
+
+    return {
+      panelDetected: best.score >= 0,
+      calculatorReady,
+      loading,
+      loginRequired,
+      inputCount: best.inputCount || 0,
+      textSample: text.slice(0, 600),
+      metricsVisible
+    };
+  }, AZINSIGHT_ROOT_SELECTORS).catch(() => ({
+    panelDetected: false,
+    calculatorReady: false,
+    loading: false,
+    loginRequired: false,
+    inputCount: 0,
+    textSample: '',
+    metricsVisible: false
+  }));
+}
+
+async function waitForAzInsightSnapshot(frame, timeoutMs) {
+  const deadline = Date.now() + Math.max(0, Number(timeoutMs) || 0);
+  let lastSnapshot = await getAzInsightPanelSnapshot(frame);
+  while (Date.now() < deadline) {
+    if (lastSnapshot.calculatorReady || lastSnapshot.loginRequired) break;
+    await sleep(700);
+    lastSnapshot = await getAzInsightPanelSnapshot(frame);
+  }
+  return lastSnapshot;
+}
+
+async function resolveCurrentAmazonAsin(page) {
+  const fromUrl = String(page?.url?.() || '').match(/\/dp\/([A-Z0-9]{10})/i)?.[1];
+  if (fromUrl) return fromUrl.toUpperCase();
+  try {
+    const fromDom = await page.evaluate(() => {
+      const value = document.querySelector('#ASIN, input[name="ASIN"]')?.value || '';
+      return String(value || '').trim();
+    });
+    if (/^[A-Z0-9]{10}$/i.test(fromDom)) return fromDom.toUpperCase();
+  } catch {}
+  return null;
+}
+
+export async function recoverAzInsightCalculator(page, options = {}) {
+  const allowReload = options.allowReload !== false;
+  const context = options.context || 'runtime';
+  const settleMs = Number(options.settleMs || process.env.FBA_AZINSIGHT_RECOVERY_SETTLE_MS || 2200);
+  const waitAfterActionMs = Number(options.waitAfterActionMs || process.env.FBA_AZINSIGHT_RECOVERY_WAIT_MS || 12000);
+  const result = {
+    context,
+    recovered: false,
+    authIssue: page?.__azInsightAuthIssue || null,
+    initial: null,
+    final: null,
+    attempts: []
+  };
+
+  let frame = await resolveAzInsightFrameOrMain(page);
+  await scrollAzInsightPanelIntoView(frame);
+  await sleep(Math.max(700, settleMs));
+  result.initial = await getAzInsightPanelSnapshot(frame);
+
+  if (result.authIssue || result.initial.loginRequired) {
+    result.final = result.initial;
+    return result;
+  }
+
+  if (result.initial.calculatorReady) {
+    result.recovered = true;
+    result.final = result.initial;
+    return result;
+  }
+
+  const refreshed = await clickAzInsightRefreshControl(frame);
+  result.attempts.push({
+    action: 'panel-refresh',
+    executed: true,
+    success: refreshed
+  });
+  if (refreshed) {
+    await sleep(Math.max(1200, settleMs));
+    const afterRefresh = await waitForAzInsightSnapshot(frame, waitAfterActionMs);
+    if (afterRefresh.calculatorReady || afterRefresh.loginRequired) {
+      result.recovered = afterRefresh.calculatorReady;
+      result.final = afterRefresh;
+      return result;
+    }
+  }
+
+  if (allowReload) {
+    let reloadOk = false;
+    try {
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.waitForSelector('body', { timeout: 10000 }).catch(() => null);
+      await dismissCommonOverlays(page);
+      reloadOk = true;
+    } catch (error) {
+      result.attempts.push({
+        action: 'page-reload',
+        executed: true,
+        success: false,
+        error: error.message
+      });
+    }
+
+    if (reloadOk) {
+      result.attempts.push({
+        action: 'page-reload',
+        executed: true,
+        success: true
+      });
+      frame = await resolveAzInsightFrameOrMain(page);
+      await scrollAzInsightPanelIntoView(frame);
+      await sleep(Math.max(1200, settleMs));
+      const afterReload = await waitForAzInsightSnapshot(frame, waitAfterActionMs);
+      if (afterReload.calculatorReady || afterReload.loginRequired) {
+        result.recovered = afterReload.calculatorReady;
+        result.final = afterReload;
+        return result;
+      }
+    }
+  }
+
+  const asin = await resolveCurrentAmazonAsin(page);
+  if (asin) {
+    const canonicalUrl = `https://www.amazon.com/dp/${asin}`;
+    let canonicalOk = false;
+    try {
+      await page.goto(canonicalUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.waitForSelector('body', { timeout: 10000 }).catch(() => null);
+      await dismissCommonOverlays(page);
+      canonicalOk = true;
+    } catch (error) {
+      result.attempts.push({
+        action: 'open-canonical-dp',
+        executed: true,
+        success: false,
+        asin,
+        error: error.message
+      });
+    }
+
+    if (canonicalOk) {
+      result.attempts.push({
+        action: 'open-canonical-dp',
+        executed: true,
+        success: true,
+        asin
+      });
+      frame = await resolveAzInsightFrameOrMain(page);
+      await scrollAzInsightPanelIntoView(frame);
+      await sleep(Math.max(1200, settleMs));
+      const afterCanonical = await waitForAzInsightSnapshot(frame, waitAfterActionMs);
+      if (afterCanonical.calculatorReady || afterCanonical.loginRequired) {
+        result.recovered = afterCanonical.calculatorReady;
+        result.final = afterCanonical;
+        return result;
+      }
+    }
+  }
+
+  result.final = await getAzInsightPanelSnapshot(frame);
+  return result;
 }
 
 async function dismissCommonOverlays(page) {
@@ -992,7 +1667,6 @@ export async function launchBrowser(options = {}) {
     ignoreDefaultArgs: true,
     protocolTimeout: 180000,
     args: [
-      '--remote-debugging-port=0',
       '--no-first-run',
       '--no-default-browser-check',
       '--no-sandbox',
@@ -1026,7 +1700,7 @@ export async function launchBrowser(options = {}) {
   if (config.chrome.userDataDir && fs.existsSync(config.chrome.userDataDir)) {
     let effectiveUserDataDir = config.chrome.userDataDir;
     const chromeProfileName = config.chrome.profile || 'Default';
-    const profileStrategy = (process.env.FBA_CHROME_PROFILE_STRATEGY || 'source').trim().toLowerCase();
+    const profileStrategy = (process.env.FBA_CHROME_PROFILE_STRATEGY || 'snapshot').trim().toLowerCase();
     const sourceProfileState = inspectProfileExtensionsState(config.chrome.userDataDir, chromeProfileName);
     log.info(
       `Extensoes no perfil fonte (${sourceProfileState.profile}): ` +
@@ -1051,15 +1725,17 @@ export async function launchBrowser(options = {}) {
         if (effectiveUserDataDir !== config.chrome.userDataDir) {
           log.info(`Usando copia de trabalho do perfil Chrome: ${effectiveUserDataDir}`);
         }
-      } else {
+      } else if (parseBooleanFlag(process.env.FBA_CLEAN_CHROME_LOCKS) === true) {
         cleanupChromeLockFiles(effectiveUserDataDir);
         cleanupChromeLockFiles(path.join(effectiveUserDataDir, chromeProfileName));
       }
     }
 
     launchOptions.userDataDir = effectiveUserDataDir;
+    launchOptions.args = removeArg(launchOptions.args, '--user-data-dir=');
+    launchOptions.args.push(`--user-data-dir=${effectiveUserDataDir}`);
     launchOptions.args.push(`--profile-directory=${chromeProfileName}`);
-    log.info(`Usando perfil Chrome: ${config.chrome.userDataDir} (${config.chrome.profile})`);
+    log.info(`Usando perfil Chrome efetivo: ${effectiveUserDataDir} (${chromeProfileName})`);
 
     const runtimeProfileState = inspectProfileExtensionsState(effectiveUserDataDir, chromeProfileName);
     log.info(
@@ -1072,11 +1748,22 @@ export async function launchBrowser(options = {}) {
   }
 
   try {
-    const browser = await puppeteer.launch(launchOptions);
+    const useBrowserUrlLaunch = parseBooleanFlag(process.env.FBA_CHROME_BROWSER_URL_LAUNCH) !== false;
+    const shouldLaunchViaBrowserUrl = useBrowserUrlLaunch &&
+      launchOptions.executablePath &&
+      launchOptions.executablePath.includes('google-chrome');
+    const browser = shouldLaunchViaBrowserUrl
+      ? await launchChromeViaBrowserUrl(launchOptions)
+      : await puppeteer.launch(launchOptions);
     log.info('Browser lançado com sucesso.');
     return browser;
   } catch (error) {
-    if (String(error?.message || '').includes('The browser is already running for')) {
+    const message = String(error?.message || '');
+    if (
+      message.includes('The browser is already running for') ||
+      (message.includes('Failed to create') && message.includes('Singleton')) ||
+      message.includes('profile appears to be in use')
+    ) {
       throw new Error(
         'O Chrome real do Ubuntu ja esta aberto com esse mesmo perfil. Feche o Google Chrome do servidor e tente de novo.'
       );
@@ -1154,6 +1841,8 @@ export async function verifyVpnConnection() {
  */
 export async function saveScreenshot(page, name) {
   if (!page) return null;
+  const screenshotsEnabled = parseBooleanFlag(process.env.FBA_SCREENSHOTS_ENABLED);
+  if (screenshotsEnabled !== true) return null;
 
   try {
     if (typeof page.isClosed === 'function' && page.isClosed()) {
@@ -1353,6 +2042,19 @@ export async function extractAmazonSearchResults(page) {
       return { element: null, selector: '' };
     };
     const items = document.querySelectorAll('[data-component-type="s-search-result"][data-asin]');
+    const sanitizeAmazonUrl = (rawUrl, asin) => {
+      const absolute = absolutizeUrl(rawUrl);
+      if (!absolute) {
+        return asin ? `https://www.amazon.com/dp/${encodeURIComponent(asin)}` : '';
+      }
+      if (/^javascript:/i.test(absolute) || absolute.includes('void(0)')) {
+        return asin ? `https://www.amazon.com/dp/${encodeURIComponent(asin)}` : '';
+      }
+      if (!/^https?:\/\//i.test(absolute)) {
+        return asin ? `https://www.amazon.com/dp/${encodeURIComponent(asin)}` : '';
+      }
+      return absolute;
+    };
 
     return Array.from(items).slice(0, 5).map(item => {
       const asin = normalizeText(item.getAttribute('data-asin'));
@@ -1386,7 +2088,8 @@ export async function extractAmazonSearchResults(page) {
       const title = titleEl
         ? normalizeText(titleEl.textContent || titleEl.getAttribute('alt') || '')
         : '';
-      const url = linkEl ? absolutizeUrl(linkEl.getAttribute('href')) : '';
+      const rawUrl = linkEl ? (linkEl.getAttribute('href') || '') : '';
+      const url = sanitizeAmazonUrl(rawUrl, asin);
 
       return {
         asin,
@@ -2000,25 +2703,97 @@ export async function openSupplierPage(page, supplierUrl, options = {}) {
 export async function waitForMarketplaceExtensions(page) {
   const extensionState = {
     keepaLoaded: false,
-    azInsightLoaded: false
+    keepaReady: false,
+    azInsightLoaded: false,
+    azInsightCalculatorReady: false
   };
 
-  const azInsightTimeoutMs = Number(process.env.FBA_AZINSIGHT_WAIT_MS || 27000);
+  const keepaTimeoutMs = Number(process.env.FBA_KEEPA_WAIT_MS || 30000);
+  const azInsightTimeoutMs = Number(process.env.FBA_AZINSIGHT_WAIT_MS || 60000);
+  const azSettleMs = Number(process.env.FBA_AZINSIGHT_SETTLE_MS || 1500);
+  const azRecoveryAfterMs = Number(process.env.FBA_AZINSIGHT_RECOVERY_AFTER_MS || 12000);
+  const azReloadAfterMs = Number(process.env.FBA_AZINSIGHT_RELOAD_AFTER_MS || 25000);
+  const azLoopStartedAt = Date.now();
+  let azRefreshTried = false;
+  let azReloadTried = false;
 
   try {
-    await page.waitForSelector('#keepa_box, iframe[src*="keepa"]', { timeout: 15000 });
+    await page.waitForSelector('#keepa_box, iframe[src*="keepa"]', { timeout: keepaTimeoutMs });
     extensionState.keepaLoaded = true;
-    log.info('Keepa carregado na página.');
+    extensionState.keepaReady = await page.evaluate(() => {
+      const keepaBox = document.querySelector('#keepa_box');
+      const text = (keepaBox?.textContent || '').replace(/\s+/g, ' ').trim();
+      return Boolean(
+        document.querySelector('iframe[src*="keepa"]') ||
+        text.includes('Sales Rank') ||
+        text.includes('BSR') ||
+        text.length > 80
+      );
+    }).catch(() => false);
+    log.info(`Keepa carregado na página (${extensionState.keepaReady ? 'pronto' : 'sem dados visiveis ainda'}).`);
   } catch {
-    log.warn('Keepa não carregou em 15s. Extensão pode não estar ativa.');
+    log.warn(`Keepa não carregou em ${Math.round(keepaTimeoutMs / 1000)}s. Extensão pode não estar ativa.`);
   }
 
-  try {
-    await page.waitForSelector(AZINSIGHT_PANEL_SELECTOR, { timeout: azInsightTimeoutMs });
-    extensionState.azInsightLoaded = true;
-    log.info('AZInsight carregado na página.');
-  } catch {
+  const azDeadline = Date.now() + azInsightTimeoutMs;
+  while (Date.now() < azDeadline) {
+    const frame = await resolveAzInsightFrameOrMain(page);
+    const hasPanel = await frame.evaluate((sels) => {
+      for (const sel of sels) {
+        try {
+          if (document.querySelector(sel)) return true;
+        } catch {
+          continue;
+        }
+      }
+      return false;
+    }, AZINSIGHT_ROOT_SELECTORS).catch(() => false);
+
+    if (hasPanel) {
+      extensionState.azInsightLoaded = true;
+      await scrollAzInsightPanelIntoView(frame);
+      await sleep(azSettleMs);
+      extensionState.azInsightCalculatorReady = await isAzInsightCalculatorReadyOnFrame(frame);
+      if (extensionState.azInsightCalculatorReady) {
+        log.info('AZInsight carregado na página (calculadora pronta).');
+        break;
+      }
+      const elapsedMs = Date.now() - azLoopStartedAt;
+
+      if (!azRefreshTried && elapsedMs >= azRecoveryAfterMs) {
+        const refreshed = await clickAzInsightRefreshControl(frame);
+        azRefreshTried = true;
+        if (refreshed) {
+          log.warn('AZInsight estava em loading prolongado; acionei refresh interno do painel.');
+        } else {
+          log.warn('AZInsight em loading prolongado; botão refresh não encontrado no painel.');
+        }
+      }
+
+      if (!azReloadTried && elapsedMs >= azReloadAfterMs) {
+        azReloadTried = true;
+        log.warn('AZInsight ainda em loading; recarregando página Amazon 1x para recuperar painel.');
+        try {
+          await page.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
+          await page.waitForSelector('body', { timeout: 10000 }).catch(() => null);
+          await dismissCommonOverlays(page);
+        } catch (error) {
+          log.warn(`Falha ao recarregar Amazon para recuperar AZInsight: ${error.message}`);
+        }
+      }
+
+      log.debug('AZInsight: painel detectado, aguardando calculadora preencher…');
+    }
+    await sleep(650);
+  }
+
+  if (!extensionState.azInsightLoaded) {
     log.warn(`AZInsight não carregou em ${Math.round(azInsightTimeoutMs / 1000)}s. Extensão pode não estar ativa.`);
+  } else if (!extensionState.azInsightCalculatorReady) {
+    log.warn(
+      `AZInsight: painel visivel, mas calculadora nao confirmada em ${Math.round(azInsightTimeoutMs / 1000)}s. ` +
+      'Verifique login da extensao no Chrome do servidor.'
+    );
   }
 
   return extensionState;
@@ -2057,6 +2832,20 @@ export async function goToProductPage(page, amazonUrl) {
 export async function extractAmazonProductIdentity(page) {
   return page.evaluate(() => {
     const normalizeText = value => String(value || '').replace(/\s+/g, ' ').trim();
+    const parseWeightLb = rawValue => {
+      const value = normalizeText(rawValue).toLowerCase().replace(',', '.');
+      if (!value) return null;
+      const match = value.match(/([0-9]+(?:\.[0-9]+)?)\s*(lb|lbs|pounds|oz|ounces|kg|kgs|g|grams)\b/i);
+      if (!match) return null;
+      const amount = Number.parseFloat(match[1]);
+      if (!Number.isFinite(amount) || amount <= 0) return null;
+      const unit = match[2].toLowerCase();
+      if (unit === 'lb' || unit === 'lbs' || unit === 'pounds') return Number(amount.toFixed(3));
+      if (unit === 'oz' || unit === 'ounces') return Number((amount / 16).toFixed(3));
+      if (unit === 'kg' || unit === 'kgs') return Number((amount * 2.20462).toFixed(3));
+      if (unit === 'g' || unit === 'grams') return Number((amount / 453.592).toFixed(3));
+      return null;
+    };
 
     const getText = selectors => {
       for (const selector of selectors) {
@@ -2168,6 +2957,13 @@ export async function extractAmazonProductIdentity(page) {
       asinFromUrl
     );
 
+    const detailValues = detailPairs.map(pair => `${pair.label} ${pair.value}`);
+    const itemWeightRaw = detailPairs.find(pair => /item weight/i.test(pair.label))?.value || '';
+    const packageWeightRaw = detailPairs.find(pair => /shipping weight|package weight/i.test(pair.label))?.value || '';
+    const fallbackWeightRaw = detailValues.find(value => /(weight)/i.test(value)) || '';
+    const itemWeightLb = parseWeightLb(itemWeightRaw) || parseWeightLb(fallbackWeightRaw);
+    const packageWeightLb = parseWeightLb(packageWeightRaw) || parseWeightLb(fallbackWeightRaw);
+
     return {
       title,
       brand,
@@ -2175,6 +2971,8 @@ export async function extractAmazonProductIdentity(page) {
       modelNumbers,
       productCodes,
       bullets,
+      itemWeightLb,
+      packageWeightLb,
       url: location.href
     };
   });
@@ -2183,29 +2981,63 @@ export async function extractAmazonProductIdentity(page) {
 /**
  * Tenta extrair dados do Keepa da página do produto.
  */
-export async function extractKeepaData(page) {
+export async function extractKeepaData(page, options = {}) {
   log.info('Extraindo dados do Keepa...');
   await saveScreenshot(page, 'keepa-section');
 
-  const keepaData = await page.evaluate(() => {
+  const extensionData = await page.evaluate(() => {
     const keepaBox = document.querySelector('#keepa_box');
     if (!keepaBox) return null;
 
-    const text = keepaBox.textContent || '';
+    const text = (keepaBox.textContent || '').replace(/\s+/g, ' ').trim();
+    const parseNear = label => {
+      const pattern = new RegExp(`${label}[^0-9-]*(\\d+[\\d,]*)`, 'i');
+      const match = text.match(pattern);
+      if (!match) return null;
+      const parsed = Number.parseInt(match[1].replace(/,/g, ''), 10);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const bsrDrops = parseNear('BSR Drops') || parseNear('Sales Rank Drops') || null;
+    const monthlySold = parseNear('Bought in past month') || parseNear('Monthly Sales') || null;
+    const salesRank = parseNear('BSR') || parseNear('Sales Rank') || null;
 
     return {
       available: true,
+      source: 'keepa-extension',
       rawText: text.substring(0, 2000),
-      hasBSRData: text.includes('Sales Rank') || text.includes('BSR')
+      hasBSRData: text.includes('Sales Rank') || text.includes('BSR'),
+      bsrDrops,
+      bsrDrops30: bsrDrops,
+      salesYearEstimate: bsrDrops !== null ? Math.max(0, Math.round(bsrDrops * 12)) : null,
+      monthlySold,
+      salesRankCurrent: salesRank
     };
   });
 
-  if (!keepaData) {
-    log.warn('Não foi possível extrair dados do Keepa.');
-    return { available: false };
+  const apiData = await fetchKeepaApiData(options.asin || '');
+
+  if (apiData?.available) {
+    return {
+      ...(extensionData || {}),
+      ...apiData,
+      source: extensionData?.available ? 'keepa-api+extension' : 'keepa-api',
+      extensionAvailable: extensionData?.available === true
+    };
   }
 
-  return keepaData;
+  if (extensionData) {
+    if (apiData?.apiError) {
+      extensionData.apiError = apiData.apiError;
+    }
+    return extensionData;
+  }
+
+  log.warn('Não foi possível extrair dados do Keepa.');
+  return {
+    available: false,
+    source: apiData?.source || 'none',
+    apiError: apiData?.apiError || null
+  };
 }
 
 /**
@@ -2221,35 +3053,159 @@ export async function extractAZInsightData(page) {
     return { available: false, authIssue };
   }
 
-  const azData = await page.evaluate(selector => {
-    const azPanel = document.querySelector(selector);
+  const azFrame = await resolveAzInsightFrameOrMain(page);
+  await scrollAzInsightPanelIntoView(azFrame);
+
+  const azData = await azFrame.evaluate(sels => {
+    const allNodes = [];
+    for (const sel of sels) {
+      let nodes = [];
+      try {
+        nodes = Array.from(document.querySelectorAll(sel));
+      } catch {
+        nodes = [];
+      }
+      for (const el of nodes) allNodes.push(el);
+    }
+    const azPanel = allNodes
+      .map(el => {
+        const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+        const rect = el.getBoundingClientRect();
+        const visible = rect.width > 140 && rect.height > 100;
+        if (!visible) return { el, score: -1 };
+        const lower = text.toLowerCase();
+        const hasSignature =
+          lower.includes('supplier tracker') ||
+          /buy\s*cost|purchase\s*cost|custo/.test(lower) ||
+          /sell price based on roi|sell price based on profit/.test(lower) ||
+          (/\bfbm\b/.test(lower) && /\bfba\b/.test(lower));
+        if (!hasSignature) return { el, score: -1 };
+        const inputs = Array.from(el.querySelectorAll('input, textarea'))
+          .filter(input => {
+            const inputRect = input.getBoundingClientRect();
+            return inputRect.width > 10 && inputRect.height > 10;
+          });
+        if (text.length < 24 && inputs.length === 0) return { el, score: -1 };
+        let score = inputs.length * 3;
+        if (lower.includes('supplier tracker')) score += 10;
+        if (lower.includes('buy cost')) score += 10;
+        if (lower.includes('fba')) score += 4;
+        return { el, score };
+      })
+      .filter(item => item.score >= 0)
+      .sort((a, b) => b.score - a.score)[0]?.el || null;
     if (!azPanel) return null;
 
     const text = (azPanel.innerText || azPanel.textContent || '').replace(/\s+/g, ' ').trim();
+    const parseMoney = value => {
+      const match = String(value || '').match(/-?\$?\s*([0-9]+(?:[.,][0-9]{1,2})?)/);
+      if (!match) return null;
+      const parsed = Number.parseFloat(match[1].replace(',', ''));
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const parsePercent = value => {
+      const match = String(value || '').match(/(-?[0-9]+(?:[.,][0-9]+)?)\s*%/);
+      if (!match) return null;
+      const parsed = Number.parseFloat(match[1].replace(',', ''));
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const visibleInputs = Array.from(azPanel.querySelectorAll('input, textarea'))
+      .map((el, index) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          index,
+          value: parseMoney(el.value),
+          rawValue: el.value || '',
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height
+        };
+      })
+      .filter(item => item.width > 10 && item.height > 10)
+      .sort((a, b) => (a.y - b.y) || (a.x - b.x));
 
     const extractNumber = label => {
-      const regex = new RegExp(`${label}[:\\s]*\\$?([\\d.,]+)`, 'i');
+      const regex = new RegExp(`(?:${label})[:\\s]*\\$?([\\d.,]+)`, 'i');
       const match = text.match(regex);
-      return match ? parseFloat(match[1].replace(',', '')) : null;
+      if (!match || !match[1]) return null;
+      return parseFloat(match[1].replace(',', ''));
     };
+    const extractLineMoneyValues = label => {
+      const regex = new RegExp(`${label}[^\\n]*`, 'i');
+      const line = (text.match(regex) || [])[0] || '';
+      return (line.match(/-?\$\s*[0-9]+(?:[.,][0-9]{1,2})?/g) || [])
+        .map(parseMoney)
+        .filter(value => value !== null);
+    };
+    const extractLinePercentValues = label => {
+      const regex = new RegExp(`${label}[^\\n]*`, 'i');
+      const line = (text.match(regex) || [])[0] || '';
+      return (line.match(/-?[0-9]+(?:[.,][0-9]+)?\s*%/g) || [])
+        .map(parsePercent)
+        .filter(value => value !== null);
+    };
+
+    const fbaSellPrice = visibleInputs[1]?.value ?? visibleInputs[0]?.value ?? null;
+    const fbaBuyCost = visibleInputs[3]?.value ?? visibleInputs.at(-1)?.value ?? null;
+    const profitValues = extractLineMoneyValues('Profit');
+    const roiValues = extractLinePercentValues('ROI');
+    const marginValues = extractLinePercentValues('Margin');
+    const estimatedProfit = extractNumber('Profit|Net') ?? profitValues.at(-1) ?? null;
+    const amazonPrice = extractNumber('Amazon Price|Buy Box|Price') ?? fbaSellPrice;
+    const fbaFeeFromProfit = (
+      amazonPrice !== null &&
+      fbaBuyCost !== null &&
+      estimatedProfit !== null
+    )
+      ? Number((amazonPrice - fbaBuyCost - estimatedProfit).toFixed(2))
+      : null;
+
+    const panelSignature =
+      /supplier\s*tracker|buy\s*cost|purchase\s*cost|sell\s*price\s*based\s*on\s*(roi|profit)|\bfbm\b/i.test(text);
 
     return {
       available: true,
-      amazonPrice: extractNumber('Amazon Price|Buy Box|Price'),
-      fbaFee: extractNumber('FBA Fee|Fulfillment'),
+      amazonPrice,
+      fbaFee: extractNumber('FBA Fee|Fulfillment') ?? fbaFeeFromProfit,
       referralFee: extractNumber('Referral Fee'),
-      estimatedProfit: extractNumber('Profit|Net'),
-      roi: extractNumber('ROI'),
-      margin: extractNumber('Margin'),
+      estimatedProfit,
+      roi: extractNumber('ROI') ?? roiValues.at(-1) ?? null,
+      margin: extractNumber('Margin') ?? marginValues.at(-1) ?? null,
+      fbaBuyCost,
+      fbaSellPrice,
+      calculatorReady: text.toLowerCase().includes('supplier tracker') && visibleInputs.length >= 2,
+      inputCount: visibleInputs.length,
       rawText: text.substring(0, 2000),
+      panelSignature,
       amazonSells: text.toLowerCase().includes('amazon') &&
         (text.toLowerCase().includes('sells') || text.toLowerCase().includes('offer'))
     };
-  }, AZINSIGHT_PANEL_SELECTOR);
+  }, AZINSIGHT_ROOT_SELECTORS);
 
   if (!azData) {
     log.warn('Não foi possível extrair dados do AZInsight.');
     return { available: false };
+  }
+
+  const rawLower = String(azData.rawText || '').toLowerCase();
+  const looksAmazonShell = rawLower.startsWith('skip to main content') || rawLower.includes('search alt + /');
+  if (looksAmazonShell || azData.panelSignature !== true) {
+    return { available: false };
+  }
+
+  if (Number.isFinite(azData.fbaFee) && azData.fbaFee < 0) {
+    azData.fbaFee = null;
+  }
+  if (Number.isFinite(azData.fbaBuyCost) && azData.fbaBuyCost <= 0) {
+    azData.fbaBuyCost = null;
+  }
+  const looksLoading = /sales data is loading|hold tight|carregando/.test(rawLower);
+  const hasAnyMetric = [azData.amazonPrice, azData.fbaFee, azData.estimatedProfit, azData.roi, azData.margin]
+    .some(value => value !== null && value !== undefined);
+  if (looksLoading && !hasAnyMetric) {
+    azData.loading = true;
+    log.warn('AZInsight ainda em loading (sem métricas).');
   }
 
   return azData;
@@ -2258,45 +3214,170 @@ export async function extractAZInsightData(page) {
 /**
  * Insere o Buy Cost no campo do AZInsight para calcular lucro real.
  */
-export async function inputBuyCostInAZInsight(page, buyCost) {
+export async function inputBuyCostInAZInsight(page, buyCost, options = {}) {
   log.info(`Inserindo Buy Cost no AZInsight: $${buyCost.toFixed(2)}`);
 
-  const updated = await page.evaluate((selector, value) => {
-    const root = document.querySelector(selector) || document;
-    const inputs = Array.from(root.querySelectorAll('input, textarea'))
-      .filter(el => {
-        const type = (el.getAttribute('type') || '').toLowerCase();
-        return !type || type === 'text' || type === 'number';
-      });
+  const azFrame = await resolveAzInsightFrameOrMain(page);
+  await scrollAzInsightPanelIntoView(azFrame);
+
+  const sellPrice = normalizeFinitePositiveNumber(options.sellPrice);
+  if (sellPrice !== null) {
+    await inputAzInsightValueByVisualCoordinates(page, azFrame, sellPrice, 'fbaSellPrice');
+  }
+
+  const marked = await azFrame.evaluate((sels) => {
+    for (const el of document.querySelectorAll('[data-fba-temp-bc]')) {
+      el.removeAttribute('data-fba-temp-bc');
+    }
+
+    const allRoots = [];
+    for (const sel of sels) {
+      let nodes = [];
+      try {
+        nodes = Array.from(document.querySelectorAll(sel));
+      } catch {
+        nodes = [];
+      }
+      for (const el of nodes) allRoots.push(el);
+    }
+
+    const root =
+      allRoots
+        .map(el => {
+          const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+          const hasSignature =
+            text.includes('supplier tracker') ||
+            /buy\s*cost|purchase\s*cost|custo/.test(text) ||
+            /sell price based on roi|sell price based on profit/.test(text) ||
+            (/\bfbm\b/.test(text) && /\bfba\b/.test(text));
+          if (!hasSignature) return { el, score: -1 };
+          const inputs = Array.from(el.querySelectorAll('input, textarea')).filter(input => {
+            const rect = input.getBoundingClientRect();
+            return rect.width > 10 && rect.height > 10;
+          });
+          let score = inputs.length * 3;
+          if (text.includes('supplier tracker')) score += 10;
+          if (text.includes('buy cost')) score += 10;
+          if (text.includes('fba')) score += 4;
+          return { el, score };
+        })
+        .filter(item => item.score >= 0)
+        .sort((a, b) => b.score - a.score)[0]?.el || null;
+
+    const scope = root || document.body;
+    if (!scope || typeof scope.querySelectorAll !== 'function') {
+      return false;
+    }
+    const inputs = Array.from(scope.querySelectorAll('input, textarea')).filter(el => {
+      const type = (el.getAttribute('type') || '').toLowerCase();
+      const rect = el.getBoundingClientRect();
+      return (
+        (!type || type === 'text' || type === 'number') &&
+        rect.width > 10 &&
+        rect.height > 10
+      );
+    });
+
+    const getTextNodeRects = (subRoot, pattern) => {
+      const walker = document.createTreeWalker(subRoot, NodeFilter.SHOW_TEXT);
+      const rects = [];
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        const text = String(node.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!pattern.test(text)) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          rects.push(rect);
+        }
+      }
+      return rects;
+    };
+
+    const buyCostRects = getTextNodeRects(scope, /buy\s*cost|custo/i);
+    const fbaRects = getTextNodeRects(scope, /\bFBA\b/i);
+    const buyCostY = buyCostRects.at(-1)
+      ? buyCostRects.at(-1).top + (buyCostRects.at(-1).height / 2)
+      : null;
+    const fbaX = fbaRects.length
+      ? Math.max(...fbaRects.map(rect => rect.left + (rect.width / 2)))
+      : null;
 
     const scoreInput = el => {
+      const rect = el.getBoundingClientRect();
       const attrs = [
         el.getAttribute('aria-label'),
         el.getAttribute('placeholder'),
         el.getAttribute('name'),
         el.id
-      ].filter(Boolean).join(' ').toLowerCase();
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
 
       let score = 0;
       if (attrs.includes('buy cost')) score += 5;
       if (attrs.includes('cost')) score += 2;
       if (attrs.includes('buy')) score += 1;
+      if (buyCostY !== null) {
+        const y = rect.top + (rect.height / 2);
+        const distance = Math.abs(y - buyCostY);
+        if (distance < 30) score += 8;
+        else if (distance < 70) score += 3;
+      }
+      if (fbaX !== null) {
+        const x = rect.left + (rect.width / 2);
+        if (x >= fbaX - 40) score += 5;
+      }
       return score;
     };
 
-    const best = inputs
-      .map(el => ({ el, score: scoreInput(el) }))
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score)[0]?.el || null;
+    let best =
+      inputs
+        .map(el => ({ el, score: scoreInput(el) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)[0]?.el || null;
 
-    if (!best) return false;
+    if (!best && inputs.length >= 4) best = inputs[3];
+    if (!best && inputs.length >= 2) best = inputs.at(-1);
 
-    best.focus();
-    best.value = value;
-    best.dispatchEvent(new Event('input', { bubbles: true }));
-    best.dispatchEvent(new Event('change', { bubbles: true }));
+    if (best) {
+      best.setAttribute('data-fba-temp-bc', '1');
+      return true;
+    }
+    return false;
+  }, AZINSIGHT_ROOT_SELECTORS).catch(() => false);
+
+  let target = marked ? await azFrame.$('[data-fba-temp-bc="1"]') : null;
+  if (target) {
+    await target.evaluate(el => el.removeAttribute('data-fba-temp-bc'));
+  }
+
+  if (!target) {
+    const visualFallback = await inputAzInsightValueByVisualCoordinates(page, azFrame, buyCost, 'fbaBuyCost');
+    if (visualFallback) return true;
+    log.warn('Campo de Buy Cost do AZInsight não encontrado.');
+    return false;
+  }
+
+  await target.click({ clickCount: 3 });
+  await target.type(String(buyCost.toFixed(2)), { delay: 20 });
+  await target.press('Tab');
+
+  const valueStr = buyCost.toFixed(2);
+  const updated = await target.evaluate((el, value) => {
+    const setter =
+      Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value')?.set ||
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+    if (setter) setter.call(el, value);
+    else el.value = value;
+
+    el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Tab' }));
     return true;
-  }, AZINSIGHT_PANEL_SELECTOR, buyCost.toFixed(2));
+  }, valueStr);
 
   if (!updated) {
     log.warn('Campo de Buy Cost do AZInsight não encontrado.');
@@ -2307,6 +3388,143 @@ export async function inputBuyCostInAZInsight(page, buyCost) {
 
   await saveScreenshot(page, 'azinsight-after-cost');
   return true;
+}
+
+async function inputAzInsightValueByVisualCoordinates(page, azFrame, value, field) {
+  const targetPoint = await azFrame.evaluate((sels, targetField) => {
+    const visibleRect = el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 200 || rect.height < 200) return null;
+      if (rect.bottom < 0 || rect.right < 0) return null;
+      return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    };
+
+    const all = [];
+    for (const sel of sels) {
+      try {
+        all.push(...Array.from(document.querySelectorAll(sel)));
+      } catch {
+        continue;
+      }
+    }
+
+    const panel = all
+      .map(el => {
+        const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        const rect = visibleRect(el);
+        const hasSignature =
+          text.includes('supplier tracker') ||
+          /buy\s*cost|purchase\s*cost|custo/.test(text) ||
+          /sell price based on roi|sell price based on profit/.test(text) ||
+          (/\bfbm\b/.test(text) && /\bfba\b/.test(text));
+        let score = 0;
+        if (rect) score += 10;
+        if (!hasSignature) score -= 50;
+        if (text.includes('supplier tracker')) score += 20;
+        if (text.includes('buy cost') || text.includes('custo')) score += 20;
+        if (text.includes('fba')) score += 8;
+        return { rect, score };
+      })
+      .filter(item => item.rect)
+      .sort((a, b) => b.score - a.score)[0]?.rect || null;
+
+    if (panel) {
+      return {
+        x: Math.round(panel.left + panel.width * 0.78),
+        y: Math.round(panel.top + panel.height * (targetField === 'fbaSellPrice' ? 0.56 : 0.68)),
+        source: 'az-panel'
+      };
+    }
+
+    return {
+      x: Math.round(window.innerWidth * 0.70),
+      y: Math.round(window.innerHeight * (targetField === 'fbaSellPrice' ? 0.724 : 0.795)),
+      source: 'viewport-fallback'
+    };
+  }, AZINSIGHT_ROOT_SELECTORS, field).catch(() => null);
+
+  if (!targetPoint) return false;
+
+  targetPoint.x = Math.max(0, Math.min(targetPoint.x, 1910));
+  targetPoint.y = Math.max(0, Math.min(targetPoint.y, 1070));
+
+  log.warn(
+    `Campo ${field === 'fbaSellPrice' ? 'FBA Sell Price' : 'FBA Buy Cost'} inacessivel pelo DOM; ` +
+    `usando clique visual em ${targetPoint.x},${targetPoint.y} (${targetPoint.source}).`
+  );
+
+  await page.mouse.click(targetPoint.x, targetPoint.y, { clickCount: 3 });
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type(value.toFixed(2), { delay: 20 });
+  await page.keyboard.press('Tab');
+  await sleep(500);
+  await saveScreenshot(page, field === 'fbaSellPrice' ? 'azinsight-after-sell-price-visual' : 'azinsight-after-cost-visual');
+  return true;
+}
+
+export async function waitForAZInsightCalculation(page, buyCost) {
+  const timeoutMs = Number(process.env.FBA_AZINSIGHT_CALC_WAIT_MS || 60000);
+  const expectedBuyCost = Number(buyCost.toFixed(2));
+  const azFrame = await resolveAzInsightFrameOrMain(page);
+
+  try {
+    await azFrame.waitForFunction(
+      (sels, expected) => {
+        const roots = [];
+        for (const sel of sels) {
+          try {
+            roots.push(...Array.from(document.querySelectorAll(sel)));
+          } catch {
+            continue;
+          }
+        }
+        const root =
+          roots
+            .map(el => {
+              const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+              const hasSignature =
+                text.includes('supplier tracker') ||
+                /buy\s*cost|purchase\s*cost|custo/.test(text) ||
+                /sell price based on roi|sell price based on profit/.test(text) ||
+                (/\bfbm\b/.test(text) && /\bfba\b/.test(text));
+              if (!hasSignature) return { el, score: -1 };
+              const inputCount = el.querySelectorAll('input, textarea').length;
+              let score = inputCount * 3;
+              if (text.includes('supplier tracker')) score += 10;
+              if (text.includes('buy cost')) score += 10;
+              if (text.includes('fba')) score += 4;
+              return { el, score };
+            })
+            .filter(item => item.score >= 0)
+            .sort((a, b) => b.score - a.score)[0]?.el || null;
+        if (!root) return false;
+        const text = (root.innerText || root.textContent || '').replace(/\s+/g, ' ').trim();
+        const inputValues = Array.from(root.querySelectorAll('input, textarea'))
+          .map(el => Number.parseFloat(String(el.value || '').replace(/[^0-9.-]/g, '')))
+          .filter(Number.isFinite);
+        const hasBuyCost = inputValues.some(value => Math.abs(value - expected) < 0.02);
+        const hasProfit =
+          /(profit|lucro)/i.test(text) &&
+          ((/profit[^$-]*-?\$\s*\d/i.test(text)) || (/lucro[^$-]*-?\$\s*\d/i.test(text)));
+        const hasRoiOrMargin =
+          /(roi|margin|margem)/i.test(text) && /-?\d+(?:\.\d+)?\s*%/.test(text);
+        return hasBuyCost && (hasProfit || hasRoiOrMargin);
+      },
+      { timeout: timeoutMs },
+      AZINSIGHT_ROOT_SELECTORS,
+      expectedBuyCost
+    );
+    log.info('AZInsight recalculou lucro após Buy Cost.');
+    return true;
+  } catch {
+    log.warn(`AZInsight não confirmou cálculo em ${Math.round(timeoutMs / 1000)}s após Buy Cost.`);
+    return false;
+  }
 }
 
 /**

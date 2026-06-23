@@ -9,6 +9,8 @@ MAIN_WORKSPACE_DIR="${OPENCLAW_MAIN_WORKSPACE_DIR:-/home/bonette/.openclaw/works
 MAIN_AGENTS_PATH="${MAIN_WORKSPACE_DIR}/AGENTS.md"
 MAIN_TOOLS_PATH="${MAIN_WORKSPACE_DIR}/TOOLS.md"
 MAIN_COMMANDS_PATH="${MAIN_WORKSPACE_DIR}/COMMANDS.md"
+ZOE_IDEIAS_COMMAND_SCRIPT="${OPENCLAW_ZOE_IDEIAS_COMMAND_PATH:-/home/bonette/openclaw-agents/scripts/zoe-ideias-command.js}"
+NODE_BIN_FOR_IDEIAS="${OPENCLAW_NODE_BIN:-/home/bonette/.local/openclaw-node22/current/bin/node}"
 
 log() {
   printf '[install-workspace-lucas1] %s\n' "$*"
@@ -37,6 +39,8 @@ set -euo pipefail
 ORIGINAL_SCRIPT="$BACKUP_SCRIPT"
 LUCAS1_CONTROL_SCRIPT="$CONTROL_SCRIPT"
 ZOE_TAREFAS_COMMAND_SCRIPT="$ZOE_TAREFAS_COMMAND_SCRIPT"
+ZOE_IDEIAS_COMMAND_SCRIPT="$ZOE_IDEIAS_COMMAND_SCRIPT"
+NODE_BIN_FOR_IDEIAS="$NODE_BIN_FOR_IDEIAS"
 
 trim() {
   local s="\$*"
@@ -78,6 +82,59 @@ run_zoe_tarefas_command() {
     echo "Falha ao processar comando de tarefas."
   fi
   return 0
+}
+
+run_zoe_ideias_command() {
+  local raw="\$1"
+  local output
+  local node_bin="\$NODE_BIN_FOR_IDEIAS"
+
+  if [[ ! -f "\$ZOE_IDEIAS_COMMAND_SCRIPT" ]]; then
+    echo "Nao consegui processar ideias agora: script nao encontrado."
+    return 0
+  fi
+
+  if [[ ! -x "\$node_bin" ]]; then
+    for CANDIDATE in \
+      "/home/bonette/.local/openclaw-node22/current/bin/node" \
+      "/home/bonette/.nvm/versions/node/v24.14.0/bin/node"
+    do
+      if [[ -x "\$CANDIDATE" ]]; then
+        node_bin="\$CANDIDATE"
+        break
+      fi
+    done
+  fi
+
+  if output="\$("\$node_bin" "\$ZOE_IDEIAS_COMMAND_SCRIPT" "\$raw" 2>\&1)"; then
+    printf "%s\n" "\$output"
+    return 0
+  fi
+
+  if [[ -n "\$output" ]]; then
+    printf "%s\n" "\$output"
+  else
+    echo "Falha ao processar comando de ideias."
+  fi
+  return 0
+}
+
+handle_zoe_ideias() {
+  local raw="\$1"
+  local low
+  low="\$(normalize_for_match "\$raw")"
+
+  if [[ "\$low" =~ ^(listar|lista|mostrar|ver)[[:space:]]+ideias$ || "\$low" == "/ideia-listar" || "\$low" == "listar ideias" ]]; then
+    run_zoe_ideias_command "\$raw"
+    return \$?
+  fi
+
+  if [[ "\$low" =~ tive[[:space:]]+uma[[:space:]]+ideia || "\$low" =~ adiciona[[:space:]]+(a|uma)[[:space:]]+ideia || "\$low" =~ ^/ideia-add[[:space:]]+ ]]; then
+    run_zoe_ideias_command "\$raw"
+    return \$?
+  fi
+
+  return 1
 }
 
 handle_zoe_tarefas() {
@@ -156,11 +213,16 @@ handle_lucas1() {
   return 1
 }
 
+
 if [[ "\$#" -eq 0 ]]; then
   exec bash "\$ORIGINAL_SCRIPT"
 fi
 
 RAW_MSG="\$*"
+
+if handle_zoe_ideias "\$RAW_MSG"; then
+  exit \$?
+fi
 
 if handle_zoe_tarefas "\$RAW_MSG"; then
   exit \$?
@@ -216,6 +278,16 @@ cat > "$MAIN_AGENTS_PATH" <<EOF
 - Nao adicione explicacao extra nesses casos.
 - Para saudacao simples ("oi", "ola", "bom dia", "boa tarde", "boa noite"), responda em 1 linha curta.
 - Para \`/comandos\`, mostre o COMMANDS.md direto, sem texto introdutorio.
+
+## Zoe Ideias (obrigatorio)
+- Se a mensagem for sobre ideias (ex.: "tive uma ideia", "adiciona a ideia", "listar ideias", "/ideia-add", "/ideia-listar"), execute SEMPRE:
+  \`$NODE_BIN_FOR_IDEIAS $ZOE_IDEIAS_COMMAND_SCRIPT "<mensagem original do usuario>"\`
+- Nesses casos, responda somente com a saida do script.
+- IMPORTANTE: Se o usuario enviar um AUDIO (mensagem de voz) falando sobre uma ideia, voce deve transcrever o audio, extrair o conteudo da ideia, e executar o script passando o texto transcrito.
+- Exemplo com audio: o usuario manda um audio dizendo "Zoe, tive uma ideia de criar um app de financas". Voce deve executar:
+  \`$NODE_BIN_FOR_IDEIAS $ZOE_IDEIAS_COMMAND_SCRIPT "tive uma ideia de criar um app de financas"\`
+- Se o audio nao for sobre ideias, trate normalmente.
+- Resumos automaticos de ideias sao enviados as 10:30 e 14:30 (America/Sao_Paulo).
 EOF
 
 cat > "$MAIN_TOOLS_PATH" <<EOF
@@ -229,6 +301,11 @@ cat > "$MAIN_TOOLS_PATH" <<EOF
 - Adicionar: \`bash ${ZOE_TAREFAS_COMMAND_SCRIPT} "/afazer-add Pagar boleto"\`
 - Concluir: \`bash ${ZOE_TAREFAS_COMMAND_SCRIPT} "/afazer-feita 1"\`
 - Remover: \`bash ${ZOE_TAREFAS_COMMAND_SCRIPT} "/afazer-remover 1"\`
+
+## Zoe Ideias
+- Script oficial: \`${ZOE_IDEIAS_COMMAND_SCRIPT}\`
+- Executar: \`${NODE_BIN_FOR_IDEIAS} ${ZOE_IDEIAS_COMMAND_SCRIPT} "<mensagem>"\`
+- Listar ideias: \`${NODE_BIN_FOR_IDEIAS} ${ZOE_IDEIAS_COMMAND_SCRIPT} "listar ideias"\`
 
 ## FBA automacao
 - Script oficial do bot: \`${WORKSPACE_SCRIPT}\`
@@ -304,20 +381,15 @@ Obs: o fuso horario e America/Sao_Paulo. Informe data e hora normalmente (ex: "a
 
 Arquivo de referencia: `ALLOWFROM_CONTATOS.md`
 
-## Pro-saude (Arte para redes sociais)
+## Zoe Ideias
 
-- `Zoe, criar arte pro-saude <descricao>` -> delega criacao de arte ao agente prosaude-social.
-- `Zoe, post pro-saude <tema>` -> gera arte e texto para publicacao.
+- `/ideia-listar` ou `listar ideias` -> mostra todas as ideias salvas.
+- `Tive uma ideia <descricao>` -> registra a ideia com classificacao automatica.
+- `Zoe, adiciona a ideia <descricao>` -> registra a ideia.
+- `/ideia-add <descricao>` -> registra a ideia (comando direto).
+- **Audio**: grave um audio falando sua ideia (ex.: "Zoe, tive uma ideia de criar um app"). A Zoe transcreve e registra automaticamente.
 
-Obs: envie imagens de referencia ja sem fundo (PNG transparente).
-
-## Moontech (Prospeccao comercial)
-
-- `Zoe, prospectar leads <criterios>` -> delega busca e prospeccao ao agente moontech-prospecting.
-- `Zoe, buscar empresas <segmento>` -> busca empresas no segmento especificado.
-- `Zoe, enviar proposta <empresa>` -> inicia fluxo de envio comercial (sempre com dry-run antes).
-
-Obs: nenhum disparo comercial e feito sem confirmacao explicita do Papai.
+Resumos automaticos: 10:30 e 14:30 (America/Sao_Paulo).
 
 ## Regras internas (para a Zoe)
 

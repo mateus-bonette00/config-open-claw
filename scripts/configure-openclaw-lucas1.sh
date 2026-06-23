@@ -53,7 +53,7 @@ agents_list = agents_root.get("list", [])
 for agent in agents_list:
     if agent.get("id") == "main":
         agent["model"] = {
-            "primary": "google-gemini-cli/gemini-2.5-flash",
+            "primary": "google/gemini-2.5-flash",
             "fallbacks": ["openai-codex/gpt-5.4"]
         }
         params = agent.setdefault("params", {})

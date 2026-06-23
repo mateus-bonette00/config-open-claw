@@ -17,14 +17,13 @@ import {
   extractSupplierData,
   inspectPageAccess,
   extractKeepaData,
-  extractAZInsightData,
-  inputBuyCostInAZInsight,
   checkAmazonSells,
   saveScreenshot,
   verifyVpnConnection
 } from './browser.js';
-import { evaluateProduct, calculateBuyCost } from './rules.js';
+import { evaluateProduct, calculateBuyCost, estimateFbaFeesFallback } from './rules.js';
 import { generateApprovedHTML } from './report.js';
+import { fetchFbaFeesFromSpApi, isSpApiConfigured } from './spapi-fees.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const log = createLogger('fba-agent');
@@ -59,6 +58,14 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const MANUAL_MODE = process.argv.includes('--manual');
 const MAX_ERRORS_CONSECUTIVOS = 5;
 const BATCH_SIZE = parseInt(process.env.FBA_BATCH_SIZE || '200', 10);
+const FBA_DELAY_BETWEEN_PRODUCTS_MIN_MS = parseInt(
+  process.env.FBA_DELAY_BETWEEN_PRODUCTS_MIN_MS || '2000',
+  10
+);
+const FBA_DELAY_BETWEEN_PRODUCTS_MAX_MS = parseInt(
+  process.env.FBA_DELAY_BETWEEN_PRODUCTS_MAX_MS || '5000',
+  10
+);
 const REPORT_DIR = OUTPUT_DIR;
 const DONE_DIR = process.env.FBA_DONE_DIR || path.join(INPUT_DIR, 'feitos');
 const PROFIT_DIR = process.env.FBA_PROFIT_DIR || OUTPUT_DIR;
@@ -106,6 +113,11 @@ function formatReasons(result) {
   return (result.reasons || [])
     .filter(Boolean)
     .join(' | ');
+}
+
+function useAzInsightEnabled() {
+  const raw = String(process.env.FBA_USE_AZINSIGHT || '0').trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on'].includes(raw);
 }
 
 function normalizeFiniteNumber(value, { allowZero = false } = {}) {
@@ -578,6 +590,7 @@ function buildExtensionRuntimeState(extensionState = {}, keepaData = null, azIns
     ? true
     : (azInsightData?.available === false ? false : null);
   const azInsightAuthIssue = azInsightData?.authIssue || null;
+  const azInsightEnabled = useAzInsightEnabled();
 
   return {
     keepaLoaded,
@@ -587,7 +600,9 @@ function buildExtensionRuntimeState(extensionState = {}, keepaData = null, azIns
       : (keepaLoaded === false ? 'Keepa não carregou na página.' : 'Keepa ainda não foi testado nesta sessão.'),
     azInsightLoaded,
     azInsightAvailable,
-    azInsightSummary: azInsightLoaded === true
+    azInsightSummary: !azInsightEnabled
+      ? 'AZInsight desativado nesta execução (SP-API como fonte principal).'
+      : azInsightLoaded === true
       ? (
         azInsightAuthIssue
           ? 'AZInsight pediu login (não está logado no servidor).'
@@ -725,6 +740,18 @@ function buildStateResult(product, result) {
     supplierUrl: product.supplierUrl,
     ...result
   };
+}
+
+function isExpectedShutdownInterruption(error, runtime) {
+  const message = String(error?.message || '').toLowerCase();
+  if (!runtime?.stopRequested) return false;
+  return (
+    message.includes('detached frame') ||
+    message.includes('target closed') ||
+    message.includes('session closed') ||
+    message.includes('execution context was destroyed') ||
+    message.includes('navigating frame was detached')
+  );
 }
 
 async function safeCaptureScreenshot(page, label) {
@@ -1096,9 +1123,9 @@ async function ensureSupplierData(page, product, manual, audit, runtime) {
   return { status: 'ok', supplierData };
 }
 
-async function searchAmazonForProduct(page, product, supplierData, manual, audit, runtime) {
-  const queries = buildSearchQueries(product);
-  const attempts = [];
+async function searchAmazonForProduct(page, product, supplierData, manual, audit, runtime, options = {}) {
+  const queries = options.queries || buildSearchQueries(product);
+  const attempts = options.attempts || [];
 
   for (const query of queries) {
     markRuntimeState({
@@ -1261,11 +1288,39 @@ async function openAmazonResultPage(page, product, supplierData, searchOutcome, 
   const mismatches = [];
 
   for (const [candidateIndex, candidate] of candidates.entries()) {
+    const candidateUrl = String(candidate.url || '').trim();
+    const invalidCandidateUrl = (
+      !candidateUrl ||
+      /^javascript:/i.test(candidateUrl) ||
+      candidateUrl.includes('void(0)') ||
+      !/^https?:\/\//i.test(candidateUrl)
+    );
+    if (invalidCandidateUrl) {
+      const reason = `Resultado Amazon ignorado: link inválido (${candidateUrl || 'vazio'})`;
+      log.warn(`${reason} | ASIN ${candidate.asin || '-'}`);
+      recordAudit(audit, 'amazon-product:invalid-url', {
+        productIndex: product.index,
+        productName: product.name,
+        asin: candidate.asin || null,
+        candidateIndex: candidateIndex + 1,
+        url: candidateUrl || null,
+        reason
+      });
+      mismatches.push({
+        asin: candidate.asin,
+        title: candidate.title,
+        score: candidate.matchScore ?? 0,
+        confidence: candidate.matchConfidence || 'low',
+        reasons: [reason]
+      });
+      continue;
+    }
+
     markRuntimeState({
       currentStep: 'abrindo-produto-amazon',
       currentProduct: buildCurrentProductSnapshot(product, {
         asin: candidate.asin,
-        amazonUrl: candidate.url,
+        amazonUrl: candidateUrl,
         candidateIndex: candidateIndex + 1
       })
     });
@@ -1274,7 +1329,7 @@ async function openAmazonResultPage(page, product, supplierData, searchOutcome, 
       productIndex: product.index,
       productName: product.name,
       asin: candidate.asin,
-      url: candidate.url,
+      url: candidateUrl,
       candidateIndex: candidateIndex + 1,
       matchScore: candidate.matchScore ?? null,
       matchConfidence: candidate.matchConfidence || null,
@@ -1290,7 +1345,29 @@ async function openAmazonResultPage(page, product, supplierData, searchOutcome, 
       };
     }
 
-    let pageResult = await goToProductPage(page, candidate.url);
+    let pageResult = await goToProductPage(page, candidateUrl);
+    if (pageResult.error) {
+      const openReason = String(pageResult.accessIssue?.reason || pageResult.error || '').toLowerCase();
+      const shouldRetryCanonical = (
+        Boolean(candidate.asin) &&
+        (openReason.includes('net::err_aborted') || openReason.includes('javascript:void(0)'))
+      );
+
+      if (shouldRetryCanonical) {
+        const canonicalUrl = `https://www.amazon.com/dp/${candidate.asin}`;
+        log.warn(`Falha ao abrir URL original. Tentando URL canônica do ASIN: ${canonicalUrl}`);
+        recordAudit(audit, 'amazon-product:canonical-retry', {
+          productIndex: product.index,
+          productName: product.name,
+          asin: candidate.asin,
+          originalUrl: candidateUrl,
+          canonicalUrl,
+          reason: pageResult.accessIssue?.reason || pageResult.error
+        });
+        pageResult = await goToProductPage(page, canonicalUrl);
+      }
+    }
+
     if (pageResult.error) {
       const screenshotPath = await ensureIssueScreenshot(
         page,
@@ -1439,6 +1516,95 @@ async function openAmazonResultPage(page, product, supplierData, searchOutcome, 
   };
 }
 
+async function findAmazonProductForProduct(page, product, supplierData, manual, audit, runtime) {
+  const queries = buildSearchQueries(product);
+  const attempts = [];
+  const allMismatches = [];
+  let lastOutcome = null;
+
+  for (const query of queries) {
+    const searchOutcome = await searchAmazonForProduct(
+      page,
+      product,
+      supplierData,
+      manual,
+      audit,
+      runtime,
+      { queries: [query], attempts }
+    );
+
+    if (searchOutcome.status !== 'ok') {
+      lastOutcome = searchOutcome;
+      if (searchOutcome.step === 'amazon-search') {
+        continue;
+      }
+      return {
+        status: searchOutcome.status,
+        searchOutcome,
+        pageOutcome: null,
+        searchAttempts: attempts,
+        reasons: searchOutcome.reasons || []
+      };
+    }
+
+    const pageOutcome = await openAmazonResultPage(
+      page,
+      product,
+      supplierData,
+      searchOutcome,
+      manual,
+      audit,
+      runtime
+    );
+
+    if (pageOutcome.status === 'ok') {
+      return {
+        status: 'ok',
+        searchOutcome,
+        pageOutcome,
+        searchAttempts: attempts
+      };
+    }
+
+    lastOutcome = pageOutcome;
+    if (Array.isArray(pageOutcome.mismatches)) {
+      allMismatches.push(...pageOutcome.mismatches.map(item => ({
+        ...item,
+        searchType: query.type,
+        searchTerm: query.term
+      })));
+    }
+
+    if (pageOutcome.status === 'needs_review' && pageOutcome.step === 'amazon-product-match') {
+      log.warn(
+        `Nenhum resultado correto por ${query.type}. ` +
+        (query.type === 'upc' ? 'Tentando busca por titulo, se existir.' : 'Sem outra busca para tentar.')
+      );
+      continue;
+    }
+
+    return {
+      status: pageOutcome.status,
+      searchOutcome,
+      pageOutcome,
+      searchAttempts: attempts,
+      reasons: pageOutcome.reasons || []
+    };
+  }
+
+  return {
+    status: 'needs_review',
+    searchOutcome: lastOutcome?.searchOutcome || null,
+    pageOutcome: lastOutcome?.pageOutcome || lastOutcome || null,
+    searchAttempts: attempts,
+    step: 'amazon-product-match',
+    reasons: allMismatches.length
+      ? ['Busca por UPC/título encontrou resultados, mas nenhum bateu com segurança com o produto correto']
+      : [describeSearchFailure(attempts)],
+    mismatches: allMismatches
+  };
+}
+
 async function processProduct(page, product, manual, audit, runtime) {
   markRuntimeState({
     currentStep: 'iniciando-produto',
@@ -1471,47 +1637,23 @@ async function processProduct(page, product, manual, audit, runtime) {
   const supplierPrice = normalizeFiniteNumber(supplierData.price);
   const supplierPriceStatus = supplierData.priceStatus || (supplierPrice !== null ? 'ok' : 'missing');
 
-  const amazonSearchOutcome = await searchAmazonForProduct(page, product, supplierData, manual, audit, runtime);
-  if (amazonSearchOutcome.status !== 'ok') {
-    recordAudit(audit, 'product:end', {
-      productIndex: product.index,
-      productName: product.name,
-      status: amazonSearchOutcome.status,
-      step: amazonSearchOutcome.step || null,
-      reasons: amazonSearchOutcome.reasons || [],
-      screenshot: amazonSearchOutcome.screenshotPath || null
-    });
-    return {
-      ...amazonSearchOutcome,
-      supplierTitle: supplierData.title || null,
-      supplierPrice,
-      supplierPriceSource: supplierData.priceSource || null,
-      supplierPriceStatus,
-      searchAttempts: amazonSearchOutcome.searchAttempts || []
-    };
-  }
+  const amazonLookupOutcome = await findAmazonProductForProduct(page, product, supplierData, manual, audit, runtime);
+  const amazonSearchOutcome = amazonLookupOutcome.searchOutcome || {};
+  const amazonPageOutcome = amazonLookupOutcome.pageOutcome || {};
 
-  const amazonPageOutcome = await openAmazonResultPage(
-    page,
-    product,
-    supplierData,
-    amazonSearchOutcome,
-    manual,
-    audit,
-    runtime
-  );
-  if (amazonPageOutcome.status !== 'ok') {
+  if (amazonLookupOutcome.status !== 'ok') {
     const fallbackBestMatch = amazonSearchOutcome.searchResult?.results?.[0] || null;
     recordAudit(audit, 'product:end', {
       productIndex: product.index,
       productName: product.name,
-      status: amazonPageOutcome.status,
-      step: amazonPageOutcome.step || null,
+      status: amazonLookupOutcome.status,
+      step: amazonLookupOutcome.step || amazonPageOutcome.step || amazonSearchOutcome.step || null,
       asin: fallbackBestMatch?.asin || null,
-      reasons: amazonPageOutcome.reasons || [],
-      screenshot: amazonPageOutcome.screenshotPath || null
+      reasons: amazonLookupOutcome.reasons || amazonPageOutcome.reasons || amazonSearchOutcome.reasons || [],
+      screenshot: amazonPageOutcome.screenshotPath || amazonSearchOutcome.screenshotPath || null
     });
     return {
+      ...amazonLookupOutcome,
       ...amazonPageOutcome,
       asin: fallbackBestMatch?.asin || null,
       amazonTitle: fallbackBestMatch?.title || null,
@@ -1520,7 +1662,7 @@ async function processProduct(page, product, manual, audit, runtime) {
       supplierPrice,
       supplierPriceSource: supplierData.priceSource || null,
       supplierPriceStatus,
-      searchAttempts: amazonSearchOutcome.searchAttempts || [],
+      searchAttempts: amazonLookupOutcome.searchAttempts || amazonSearchOutcome.searchAttempts || [],
       matchedBy: amazonSearchOutcome.matchedBy || null
     };
   }
@@ -1542,7 +1684,7 @@ async function processProduct(page, product, manual, audit, runtime) {
     extensionStatus: buildExtensionRuntimeState(amazonPageOutcome.extensionState || {})
   });
 
-  const keepaData = await extractKeepaData(page);
+  const keepaData = await extractKeepaData(page, { asin: bestMatch.asin });
   const amazonSells = await checkAmazonSells(page);
   recordAudit(audit, 'marketplace:data', {
     productIndex: product.index,
@@ -1550,60 +1692,98 @@ async function processProduct(page, product, manual, audit, runtime) {
     asin: bestMatch.asin,
     keepaLoaded: amazonPageOutcome.extensionState?.keepaLoaded === true,
     keepaAvailable: keepaData.available || false,
+    keepaSource: keepaData.source || null,
     keepaDrops30d: keepaData.bsrDrops ?? null,
+    keepaSalesYearEstimate: keepaData.salesYearEstimate ?? null,
+    keepaMonthlySold: keepaData.monthlySold ?? null,
     amazonSells
   });
 
-  let buyCost = null;
-  if (supplierPrice !== null) {
-    buyCost = calculateBuyCost(supplierPrice);
-    const inputDecision = await manual.confirm(
-      `Inserir Buy Cost $${buyCost.toFixed(2)} no AZInsight`,
-      { allowSkip: false }
-    );
+  const buyCost = supplierPrice !== null ? calculateBuyCost(supplierPrice) : null;
+  const azInsightData = useAzInsightEnabled() ? {} : { disabled: true, available: false };
+  const amazonPrice = firstMeaningfulNumber([
+    bestMatch.price
+  ]);
 
-    if (inputDecision === 'continue') {
-      await inputBuyCostInAZInsight(page, buyCost);
-      await interruptibleDelay(runtime, 1000, 2000);
+  let fbaFees = null;
+  let fbaFeesSource = null;
+  let spApiFeeResult = null;
+
+  if (amazonPrice !== null && bestMatch.asin && isSpApiConfigured()) {
+    try {
+      spApiFeeResult = await fetchFbaFeesFromSpApi(bestMatch.asin, amazonPrice);
+      if (spApiFeeResult && spApiFeeResult.totalFees > 0) {
+        fbaFees = spApiFeeResult.totalFees;
+        fbaFeesSource = 'sp-api';
+        log.info(
+          `SP-API fees para ${bestMatch.asin}: total=$${spApiFeeResult.totalFees} ` +
+          `(fba=$${spApiFeeResult.fbaFee} referral=$${spApiFeeResult.referralFee})`
+        );
+      }
+    } catch (err) {
+      log.warn(`SP-API fees falhou para ${bestMatch.asin}: ${err.message}`);
     }
   }
 
-  const azInsightData = await extractAZInsightData(page);
-  const amazonPrice = firstMeaningfulNumber([
-    bestMatch.price,
-    azInsightData.amazonPrice
-  ]);
-  const fbaFees = firstMeaningfulNumber([
-    azInsightData.fbaFee,
-    azInsightData.referralFee
-  ], { allowZero: true });
+  if (fbaFees === null && useAzInsightEnabled()) {
+    fbaFees = firstMeaningfulNumber([
+      azInsightData.fbaFee,
+      azInsightData.referralFee
+    ], { allowZero: true });
+    if (fbaFees !== null) fbaFeesSource = 'azinsight';
+  }
+
+  if (fbaFees === null && amazonPrice !== null) {
+    const estimatedFbaFees = estimateFbaFeesFallback(amazonPrice, amazonPageOutcome.amazonIdentity || {});
+    if (estimatedFbaFees !== null) {
+      fbaFees = estimatedFbaFees;
+      fbaFeesSource = 'estimativa-interna';
+      log.warn(`Sem taxa FBA da SP-API para ${bestMatch.asin}; usando estimativa interna: $${estimatedFbaFees.toFixed(2)}`);
+    }
+  }
   const amazonPriceStatus = amazonPrice !== null ? 'ok' : 'missing';
   const fbaFeesStatus = fbaFees === null ? 'missing' : (fbaFees === 0 ? 'zero_detected' : 'ok');
 
-  recordAudit(audit, 'azinsight:data', {
+  recordAudit(audit, 'fees:resolved', {
     productIndex: product.index,
     productName: product.name,
     asin: bestMatch.asin,
-    azInsightLoaded: amazonPageOutcome.extensionState?.azInsightLoaded === true,
-    azInsightAvailable: azInsightData.available || false,
-    available: azInsightData.available || false,
-    authIssue: azInsightData.authIssue || null,
-    amazonPrice: azInsightData.amazonPrice ?? null,
-    fbaFee: azInsightData.fbaFee ?? null,
     selectedAmazonPrice: amazonPrice,
     selectedFbaFees: fbaFees,
+    fbaFeesSource,
     amazonPriceStatus,
     fbaFeesStatus,
-    estimatedProfit: azInsightData.estimatedProfit ?? null,
-    roi: azInsightData.roi ?? null,
-    margin: azInsightData.margin ?? null
+    spApi: spApiFeeResult ? {
+      totalFees: spApiFeeResult.totalFees,
+      fbaFee: spApiFeeResult.fbaFee,
+      referralFee: spApiFeeResult.referralFee,
+      status: spApiFeeResult.status
+    } : null,
+    azInsight: {
+      enabled: useAzInsightEnabled(),
+      loaded: useAzInsightEnabled() && amazonPageOutcome.extensionState?.azInsightLoaded === true,
+      available: useAzInsightEnabled() && (azInsightData.available || false),
+      authIssue: azInsightData.authIssue || null,
+      amazonPrice: azInsightData.amazonPrice ?? null,
+      fbaFee: azInsightData.fbaFee ?? null,
+      fbaBuyCost: azInsightData.fbaBuyCost ?? null,
+      calculatorReady: azInsightData.calculatorReady === true,
+      loading: azInsightData.loading === true,
+      inputCount: azInsightData.inputCount ?? null,
+      rawTextSample: typeof azInsightData.rawText === 'string'
+        ? azInsightData.rawText.slice(0, 360)
+        : null,
+      estimatedProfit: azInsightData.estimatedProfit ?? null,
+      roi: azInsightData.roi ?? null,
+      margin: azInsightData.margin ?? null
+    }
   });
 
   markRuntimeState({
     extensionStatus: buildExtensionRuntimeState(
       amazonPageOutcome.extensionState || {},
       keepaData,
-      azInsightData
+      useAzInsightEnabled() ? azInsightData : null
     )
   });
 
@@ -1629,11 +1809,13 @@ async function processProduct(page, product, manual, audit, runtime) {
       amazonPrice,
       amazonPriceStatus,
       fbaFees,
+      fbaFeesSource,
       fbaFeesStatus,
       amazonSells,
       keepaDrops30d: keepaData.bsrDrops ?? null,
+      keepaSalesYearEstimate: keepaData.salesYearEstimate ?? null,
       keepaAvailable: keepaData.available || false,
-      azInsightAvailable: azInsightData.available || false
+      azInsightAvailable: useAzInsightEnabled() ? (azInsightData.available || false) : false
     };
   }
 
@@ -1641,9 +1823,10 @@ async function processProduct(page, product, manual, audit, runtime) {
     supplierPrice,
     amazonPrice,
     fbaFees,
+    fbaFeesSource,
     amazonSells,
     keepaData,
-    azInsightData
+    azInsightData: useAzInsightEnabled() ? azInsightData : {}
   });
 
   const analysisScreenshot = AUDIT_SCREENSHOTS
@@ -1685,10 +1868,12 @@ async function processProduct(page, product, manual, audit, runtime) {
     supplierAvailabilityStatus: supplierData.availabilityStatus || null,
     supplierPricePrevious: supplierData.pricePrevious ?? null,
     amazonPriceStatus,
+    fbaFeesSource,
     fbaFeesStatus,
     keepaDrops30d: keepaData.bsrDrops ?? null,
+    keepaSalesYearEstimate: keepaData.salesYearEstimate ?? null,
     keepaAvailable: keepaData.available || false,
-    azInsightAvailable: azInsightData.available || false,
+    azInsightAvailable: useAzInsightEnabled() ? (azInsightData.available || false) : false,
     analysisScreenshot
   };
 }
@@ -1958,13 +2143,31 @@ async function run() {
             log.info(`  ${icon}${reasons ? ` ${reasons}` : ''}`);
           }
 
-          if (!await interruptibleDelay(runtime, 3000, 7000)) break;
+          if (
+            !await interruptibleDelay(
+              runtime,
+              Math.min(FBA_DELAY_BETWEEN_PRODUCTS_MIN_MS, FBA_DELAY_BETWEEN_PRODUCTS_MAX_MS),
+              Math.max(FBA_DELAY_BETWEEN_PRODUCTS_MIN_MS, FBA_DELAY_BETWEEN_PRODUCTS_MAX_MS)
+            )
+          ) break;
         } catch (err) {
           if (err instanceof ManualAbortError) {
             runtime.stopRequested = true;
             runtime.stopReason = 'manual';
             log.warn('Execução interrompida pelo operador no modo manual.');
             markRuntimeState({ runStatus: 'paused', currentStep: 'interrompido-manualmente' });
+            break;
+          }
+
+          if (isExpectedShutdownInterruption(err, runtime)) {
+            log.warn(
+              `Interrupção esperada durante parada (${runtime.stopReason || 'stop'}): ${err.message}`
+            );
+            markRuntimeState({
+              runStatus: 'paused',
+              currentStep: 'interrompido-em-parada',
+              lastError: null
+            });
             break;
           }
 

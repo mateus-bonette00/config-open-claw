@@ -27,6 +27,53 @@ die() {
   exit 1
 }
 
+ensure_graphical_session_for_chrome() {
+  if [[ -z "${DISPLAY:-}" ]]; then
+    export DISPLAY="${LUCAS1_DISPLAY:-:0}"
+  fi
+
+  local uid
+  uid="$(id -u)"
+
+  local detected_xauth=""
+  shopt -s nullglob
+  for _f in /run/user/"${uid}"/.mutter-Xwaylandauth.*; do
+    if [[ -f "$_f" ]]; then
+      detected_xauth="$_f"
+      break
+    fi
+  done
+  shopt -u nullglob
+
+  if [[ -n "${XAUTHORITY:-}" && ! -f "${XAUTHORITY}" ]]; then
+    log "AVISO: XAUTHORITY='${XAUTHORITY}' nao existe (arquivo mudou apos reboot). Detectando novo..."
+    unset XAUTHORITY
+  fi
+
+  if [[ -z "${XAUTHORITY:-}" ]]; then
+    if [[ -n "${LUCAS1_XAUTHORITY:-}" && -f "$LUCAS1_XAUTHORITY" ]]; then
+      export XAUTHORITY="$LUCAS1_XAUTHORITY"
+    elif [[ -n "$detected_xauth" ]]; then
+      export XAUTHORITY="$detected_xauth"
+      log "XAUTHORITY auto-detectado: $XAUTHORITY"
+    elif [[ -f "${HOME}/.Xauthority" ]]; then
+      export XAUTHORITY="${HOME}/.Xauthority"
+    fi
+  fi
+
+  if [[ -z "${DISPLAY:-}" ]]; then
+    die "DISPLAY vazio. Defina no .env: LUCAS1_DISPLAY=:0 e (se precisar) LUCAS1_XAUTHORITY=/caminho/.Xauthority ou use o dashboard com o mesmo comando do guia (XAUTHORITY do Mutter)."
+  fi
+
+  if [[ -z "${XAUTHORITY:-}" ]]; then
+    log "AVISO: XAUTHORITY vazio — Chrome pode falhar com 'Authorization required'. Coloque LUCAS1_XAUTHORITY no .env ou inicie o dashboard com XAUTHORITY da sessao grafica (veja FUNCIONAMENTO-LUCAS1.md)."
+  fi
+
+  if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" && -S "/run/user/$(id -u)/bus" ]]; then
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+  fi
+}
+
 read_pid() {
   if [[ -f "$PID_FILE" ]]; then
     cat "$PID_FILE"
@@ -53,7 +100,13 @@ cleanup_pid_file() {
 }
 
 find_runner_pids() {
-  pgrep -f "run-fba-from-html.sh|node .*agents/fba/index.js" || true
+  pgrep -af "run-fba-from-html.sh|node .*agents/fba/index.js" | awk -v self="$$" '
+    $1 != self &&
+    $0 !~ /lucas1-control\.sh status/ &&
+    $0 !~ /pgrep -af/ {
+      print $1
+    }
+  ' || true
 }
 
 is_running() {
@@ -143,12 +196,21 @@ start_mode() {
   fi
 
   mkdir -p "$LOG_DIR"
+
+  if [[ -f "$PROJECT_DIR/.env" ]]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$PROJECT_DIR/.env" 2>/dev/null || true
+    set +a
+  fi
+
+  ensure_graphical_session_for_chrome
   {
     echo
-    echo "===== $(date '+%Y-%m-%d %H:%M:%S') | acao=${mode} ====="
+    echo "===== $(date '+%Y-%m-%d %H:%M:%S') | acao=${mode} | DISPLAY=${DISPLAY:-} | XAUTHORITY=${XAUTHORITY:-<vazio>} ====="
   } >> "$TRIGGER_LOG"
 
-  nohup setsid bash -lc "cd '$PROJECT_DIR' && bash '$RUNNER_SCRIPT' --mode '$mode' --audit --audit-screenshots" >> "$TRIGGER_LOG" 2>&1 < /dev/null &
+  nohup setsid bash -lc "export DISPLAY='${DISPLAY}'; export XAUTHORITY='${XAUTHORITY:-}'; [[ -n \"\${XAUTHORITY}\" ]] || unset XAUTHORITY; export DBUS_SESSION_BUS_ADDRESS='${DBUS_SESSION_BUS_ADDRESS:-}'; [[ -n \"\${DBUS_SESSION_BUS_ADDRESS}\" ]] || unset DBUS_SESSION_BUS_ADDRESS; export FBA_AUDIT_SCREENSHOTS='0'; export FBA_SCREENSHOTS_ENABLED='0'; export FBA_CHROME_PROFILE_STRATEGY='snapshot'; export FBA_USE_AZINSIGHT='0'; export FBA_DELAY_BETWEEN_PRODUCTS_MIN_MS='300'; export FBA_DELAY_BETWEEN_PRODUCTS_MAX_MS='800'; export FBA_AZINSIGHT_WAIT_MS='15000'; export FBA_AZINSIGHT_CALC_WAIT_MS='15000'; export FBA_AZINSIGHT_RECOVERY_AFTER_MS='5000'; export FBA_AZINSIGHT_RELOAD_AFTER_MS='8000'; export AMZ_LWA_CLIENT_ID='${AMZ_LWA_CLIENT_ID:-}'; export AMZ_LWA_CLIENT_SECRET='${AMZ_LWA_CLIENT_SECRET:-}'; export AMZ_REFRESH_TOKEN='${AMZ_REFRESH_TOKEN:-}'; export AMZ_AWS_ACCESS_KEY_ID='${AMZ_AWS_ACCESS_KEY_ID:-}'; export AMZ_AWS_SECRET_ACCESS_KEY='${AMZ_AWS_SECRET_ACCESS_KEY:-}'; export AMZ_MARKETPLACE_ID='${AMZ_MARKETPLACE_ID:-ATVPDKIKX0DER}'; export AMZ_REGION='${AMZ_REGION:-us-east-1}'; export AMZ_SPAPI_ENDPOINT='${AMZ_SPAPI_ENDPOINT:-https://sellingpartnerapi-na.amazon.com}'; cd '$PROJECT_DIR' && bash '$RUNNER_SCRIPT' --mode '$mode' --audit" >> "$TRIGGER_LOG" 2>&1 < /dev/null &
   local pid=$!
   echo "$pid" > "$PID_FILE"
 
@@ -289,6 +351,10 @@ Uso:
   bash scripts/lucas1-control.sh reset
   bash scripts/lucas1-control.sh restart
   bash scripts/lucas1-control.sh status
+
+Opcional no .env do projeto:
+  LUCAS1_DISPLAY=:0
+  LUCAS1_XAUTHORITY=/run/user/UID/.mutter-Xwaylandauth.XXXX
 EOF
     exit 64
     ;;

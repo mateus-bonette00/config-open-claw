@@ -8,6 +8,7 @@ import { startScheduler as startAfazeresScheduler } from '../zoe-tarefas-priorid
 const log = createLogger('whatsapp-lembretes');
 const state = new StateManager('whatsapp-lembretes');
 const OWNER_PHONE_FALLBACK = '553598183459';
+const DEFAULT_ALLOWED_OWNER_PHONES = ['5535998183459', '553598183459'];
 
 /**
  * Agente de Lembretes via WhatsApp
@@ -172,11 +173,26 @@ const OWNER_PHONE = normalizePhone(
   OWNER_PHONE_FALLBACK
 );
 
+const ALLOWED_OWNER_PHONES = [
+  ...new Set([
+    ...String(
+      process.env.WHATSAPP_TAREFAS_ALLOWED_PHONES ||
+      process.env.WHATSAPP_AFAZERES_ALLOWED_PHONES ||
+      ''
+    )
+      .split(',')
+      .map(value => normalizePhone(value))
+      .filter(Boolean),
+    ...DEFAULT_ALLOWED_OWNER_PHONES.map(value => normalizePhone(value)).filter(Boolean),
+    OWNER_PHONE
+  ].filter(Boolean))
+];
+
 function ensureOwnerPhone(value, context = 'telefone') {
   const normalized = normalizePhone(value);
   if (!normalized) throw new Error(`${context} é obrigatório.`);
-  if (normalized !== OWNER_PHONE) {
-    throw new Error(`phone não autorizado. Use apenas o número do dono (${OWNER_PHONE}).`);
+  if (!ALLOWED_OWNER_PHONES.includes(normalized)) {
+    throw new Error(`phone não autorizado. Use apenas os números permitidos (${ALLOWED_OWNER_PHONES.join(', ')}).`);
   }
   return normalized;
 }
@@ -852,6 +868,31 @@ function parseCommandPayload(input, prefixes = []) {
   return null;
 }
 
+function parseAfazerKeysPayload(payload) {
+  const normalized = String(payload || '')
+    .trim()
+    .replace(/\be\b/gi, ',')
+    .replace(/[;\n\r]+/g, ',');
+
+  if (!normalized) return null;
+  if (/[^\w,\-\s]/.test(normalized)) return null;
+
+  const keys = [];
+  const seen = new Set();
+
+  for (const rawToken of normalized.split(/[,\s]+/).filter(Boolean)) {
+    const key = String(rawToken).trim();
+    if (!key) continue;
+    if (!/^\d+$/.test(key) && !/^task-[a-z0-9-]+$/i.test(key)) return null;
+    if (!seen.has(key)) {
+      seen.add(key);
+      keys.push(key);
+    }
+  }
+
+  return keys.length ? keys : null;
+}
+
 function resolveAfazer(inputKey) {
   const key = String(inputKey || '').trim();
   if (!key) return null;
@@ -863,6 +904,40 @@ function resolveAfazer(inputKey) {
   }
 
   return ordered.find(task => task.id === key) || null;
+}
+
+function resolveAfazeres(inputKeys = []) {
+  const keys = Array.isArray(inputKeys) ? inputKeys : [];
+  if (!keys.length) return { tasks: [], missing: [] };
+
+  const { ordered } = getActiveAfazeres();
+  const tasks = [];
+  const missing = [];
+  const seenIds = new Set();
+
+  for (const rawKey of keys) {
+    const key = String(rawKey || '').trim();
+    if (!key) continue;
+
+    let task = null;
+    if (/^\d+$/.test(key)) {
+      task = ordered[Number.parseInt(key, 10) - 1] || null;
+    } else {
+      task = ordered.find(item => item.id === key) || null;
+    }
+
+    if (!task) {
+      missing.push(key);
+      continue;
+    }
+
+    if (!seenIds.has(task.id)) {
+      seenIds.add(task.id);
+      tasks.push(task);
+    }
+  }
+
+  return { tasks, missing };
 }
 
 function renderAfazeresList() {
@@ -892,7 +967,7 @@ function renderAfazeresList() {
   appendSection('Importante', importantes);
   appendSection('Menos importante', menosImportantes);
 
-  lines.push('Use /afazer-feita NUMERO ou /afazer-remover NUMERO.');
+  lines.push('Use /afazer-feita NUMERO (ou 1, 2 e 3) e /afazer-remover NUMERO (ou 1, 2 e 3).');
   return lines.join('\n').trim();
 }
 
@@ -956,7 +1031,9 @@ function renderAfazeresHelp() {
     '/afazer-marcar-menos-importante NUMERO_OU_ID',
     '/afazer-reclassificar NUMERO_OU_ID IMPORTANTE|MENOS_IMPORTANTE',
     '/afazer-feita NUMERO_OU_ID',
+    '/afazer-feita 1, 2 e 3',
     '/afazer-remover NUMERO_OU_ID',
+    '/afazer-remover 1, 2 e 3',
     '/afazer-status'
   ].join('\n');
 }
@@ -1064,19 +1141,51 @@ export function handleSlashCommand({ text, phone }) {
   const markDonePayload = parseCommandPayload(input, ['/afazer-feita ', '/afazeres-feita ']);
   if (markDonePayload !== null) {
     if (!markDonePayload) return 'Formato invalido. Use: /afazer-feita NUMERO_OU_ID';
-    const task = resolveAfazer(markDonePayload);
-    if (!task) return `Afazer nao encontrado: ${markDonePayload}`;
-    updateTask(task.id, { status: 'done' });
-    return `Afazer concluido: ${task.title}`;
+    const keys = parseAfazerKeysPayload(markDonePayload);
+    if (!keys) return 'Formato invalido. Use: /afazer-feita NUMERO_OU_ID ou /afazer-feita 1, 2 e 3';
+
+    const { tasks, missing } = resolveAfazeres(keys);
+    if (missing.length > 0) return `Afazer nao encontrado: ${missing.join(', ')}`;
+    if (!tasks.length) return `Afazer nao encontrado: ${markDonePayload}`;
+
+    for (const task of tasks) {
+      updateTask(task.id, { status: 'done' });
+    }
+
+    if (tasks.length === 1) return `Afazer concluido: ${tasks[0].title}`;
+
+    const pendingCount = getActiveAfazeres().ordered.length;
+    return [
+      `✅ ${tasks.length} tarefas marcadas como concluidas:`,
+      ...tasks.map(task => `• ${task.title}`),
+      '',
+      `📋 Agora ficaram ${pendingCount} pendentes.`
+    ].join('\n');
   }
 
   const removePayload = parseCommandPayload(input, ['/afazer-remover ', '/afazeres-remover ']);
   if (removePayload !== null) {
     if (!removePayload) return 'Formato invalido. Use: /afazer-remover NUMERO_OU_ID';
-    const task = resolveAfazer(removePayload);
-    if (!task) return `Afazer nao encontrado: ${removePayload}`;
-    deleteTask(task.id);
-    return `Afazer removido: ${task.title}`;
+    const keys = parseAfazerKeysPayload(removePayload);
+    if (!keys) return 'Formato invalido. Use: /afazer-remover NUMERO_OU_ID ou /afazer-remover 1, 2 e 3';
+
+    const { tasks, missing } = resolveAfazeres(keys);
+    if (missing.length > 0) return `Afazer nao encontrado: ${missing.join(', ')}`;
+    if (!tasks.length) return `Afazer nao encontrado: ${removePayload}`;
+
+    for (const task of tasks) {
+      deleteTask(task.id);
+    }
+
+    if (tasks.length === 1) return `Afazer removido: ${tasks[0].title}`;
+
+    const pendingCount = getActiveAfazeres().ordered.length;
+    return [
+      `✅ ${tasks.length} tarefas removidas:`,
+      ...tasks.map(task => `• ${task.title}`),
+      '',
+      `📋 Agora ficaram ${pendingCount} pendentes.`
+    ].join('\n');
   }
 
   if (input === '/fba' || input.startsWith('/fba ')) {
