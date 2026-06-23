@@ -115,3 +115,16 @@ docker-compose.override.yml
 .codex/
 .claude/
 .gemini/
+docs/
+scripts/
+Arquivos .md/
+artes-prosaude/
+amazon-fba/
+GEMINI.md
+Como-ver-agente-fba-funcionando-no-Notebook.md
+codios-para-ver-arquivos-do-servidor.md
+execução-varrer-fornecedores.md
+Explicacao-das-skills.md
+o-agente-fba-faz.md
+us_tomy_page2.png
+video-fba-research-final.mp4
